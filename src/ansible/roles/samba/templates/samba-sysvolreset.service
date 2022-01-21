@@ -1,0 +1,10 @@
+[Unit]
+Description=Restore sysvol permission after Samba DC is started
+
+[Service]
+Restart=on-failure
+Type=oneshot
+ExecStart=samba-tool ntacl sysvolreset
+
+[Install]
+WantedBy=multi-user.target

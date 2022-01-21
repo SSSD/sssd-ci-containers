@@ -1,0 +1,47 @@
+- name: Minimize IPA service container
+  become: True
+  block:
+  - name: Stop IPA service
+    become: True
+    service:
+      name: ipa.service
+      state: stopped
+
+  - name: Remove 389ds database to make image smaller
+    become: True
+    shell: rm -f /var/lib/dirsrv/slapd-IPA-TEST/db/__db.*
+    args:
+      warn: False
+  when: inventory_hostname == 'ipa'
+
+- name: Minimize LDAP service container
+  become: True
+  block:
+  - name: Stop directory service
+    become: True
+    service:
+      name: dirsrv@localhost.service
+      state: stopped
+
+  - name: Remove 389ds database to make image smaller
+    become: True
+    shell: rm -f /var/lib/dirsrv/slapd-localhost/db/__db.*
+    args:
+      warn: False
+  when: inventory_hostname == 'ldap'
+
+- name: Minimize client service container
+  become: True
+  block:
+  - name: Stop SSSD service
+    become: True
+    service:
+      name: sssd.service
+      state: stopped
+
+  - name: Remove SSSD's database and logs
+    become: True
+    shell: rm -f /var/lib/sss/db/* /var/lib/sss/mc/* /var/log/sssd/*
+    args:
+      warn: False
+  when: inventory_hostname == 'client' or inventory_hostname == 'ipa'

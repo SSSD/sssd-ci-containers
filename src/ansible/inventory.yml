@@ -1,0 +1,33 @@
+all:
+  children:
+    local:
+      hosts:
+        localhost:
+      vars:
+        ansible_connection: local
+        ansible_python_interpreter: auto_silent
+    base:
+      hosts:
+        base-client:
+        base-ipa:
+        base-ldap:
+        base-samba:
+        base-ground:
+        client-devel:
+      vars:
+        ansible_connection: podman
+        ansible_host: sssd-wip-base
+        ansible_python_interpreter: auto_silent
+    services:
+      hosts:
+        client:
+          ansible_host: sssd-wip-client
+        ipa:
+          ansible_host: sssd-wip-ipa
+        ldap:
+          ansible_host: sssd-wip-ldap
+        samba:
+          ansible_host: sssd-wip-samba
+      vars:
+        ansible_connection: podman
+        ansible_python_interpreter: auto_silent

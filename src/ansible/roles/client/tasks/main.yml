@@ -1,0 +1,85 @@
+- name: Create /enrollment directory
+  become: True
+  file:
+    path: /enrollment
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Join IPA domain
+  become: True
+  shell: |
+    /usr/sbin/ipa-client-install --unattended --no-ntp \
+      --domain {{ service.ipa.domain | quote }}        \
+      --principal admin                                \
+      --password {{ service.ipa.password | quote }}
+  args:
+    creates: /etc/ipa/ca.crt
+
+- name: Copy IPA keytab to /enrollment/ipa.keytab
+  become: True
+  copy:
+    src: /etc/krb5.keytab
+    dest: '/enrollment/ipa.keytab'
+    mode: 0600
+    remote_src: yes
+
+- name: Cleanup after joining the IPA domain
+  become: True
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items:
+  - /etc/krb5.conf
+  - /etc/krb5.keytab
+  - /etc/sssd/sssd.conf
+
+- name: Join Samba domain
+  become: True
+  command: realm join {{ service.samba.domain | quote }}
+  args:
+    stdin: '{{ service.samba.password }}'
+
+- name: Copy Samba keytab to /enrollment/samba.keytab
+  become: True
+  copy:
+    src: /etc/krb5.keytab
+    dest: /enrollment/samba.keytab
+    mode: 0600
+    remote_src: yes
+
+- name: Cleanup after joining the Samba domain
+  become: True
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items:
+  - /etc/krb5.conf
+  - /etc/krb5.keytab
+  - /etc/sssd/sssd.conf
+
+- name: Stop SSSD
+  become: True
+  service:
+    name: sssd.service
+    enabled: yes
+    state: stopped
+
+- name: Create /etc/sssd/sssd.conf
+  become: True
+  template:
+    src: sssd.conf
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Create /etc/krb5.conf
+  become: True
+  template:
+    src: krb5.conf
+    dest: /etc/krb5.conf
+    owner: root
+    group: root
+    mode: 0644

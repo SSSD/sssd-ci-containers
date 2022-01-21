@@ -1,0 +1,12 @@
+[general]
+config_version = 2
+full_machine_name = {{ service.ldap.fqn }}
+
+[slapd]
+instance_name = localhost
+root_dn = {{ service.ldap.bind.dn }}
+root_password = {{ service.ldap.bind.password }}
+
+[backend-userroot]
+suffix = {{ service.ldap.suffix }}
+create_suffix_entry = True

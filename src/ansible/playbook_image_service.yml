@@ -1,0 +1,36 @@
+---
+- hosts: ldap
+  gather_facts: yes
+  roles:
+  - ldap
+  vars_files:
+  - variables.yml
+
+- hosts: samba
+  gather_facts: yes
+  roles:
+  - samba
+  vars_files:
+  - variables.yml
+
+- hosts: ipa
+  gather_facts: yes
+  roles:
+  - ipa
+  vars_files:
+  - variables.yml
+
+- hosts: client
+  gather_facts: yes
+  roles:
+  - client
+  vars_files:
+  - variables.yml
+
+- hosts: services
+  gather_facts: yes
+  roles:
+  - ssh_server
+  - cleanup
+  vars_files:
+  - variables.yml

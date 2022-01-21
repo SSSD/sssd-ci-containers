@@ -1,0 +1,141 @@
+# Fedora 34 +
+
+- name: Install packages for ground base image
+  block:
+  - name: Install systemd and common tools
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - bash-completion
+      - bind9utils
+      - dbus
+      - findutils
+      - gdb
+      - git
+      - iputils-*
+      - ldap-utils
+      - ldb-tools
+      - less
+      - man
+      - mc
+      - net-tools
+      - openssh-client
+      - openssh-server
+      - python3-pip
+      - rsync
+      - sudo
+      - systemd
+      - tig
+      - tmux
+      - vim
+      - wget
+  when: inventory_hostname == 'base-ground'
+
+- name: Install packages for client base image
+  become: True
+  block:
+  - name: Install SSSD and its dependencies
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - adcli
+      - freeipa-client
+      - packagekit
+      - realmd
+      - sssd
+      - sssd-*
+  when: inventory_hostname == 'base-client'
+
+- name: Install additional packages for client development image
+  become: True
+  block:
+  - name: Install SSSD build and integration tests dependencies
+    become: True
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - adcli
+      - autoconf
+      - automake
+      - autopoint
+      - check
+      - cifs-utils
+      - clang
+      - dh-apparmor
+      - dnsutils
+      - docbook-xml
+      - docbook-xsl
+      - fakeroot
+      - faketime
+      - gettext
+      - gnutls-bin
+      - krb5-admin-server
+      - krb5-config
+      - krb5-kdc
+      - krb5-user
+      - lcov
+      - libc-ares-dev
+      - libcmocka-dev
+      - libcollection-dev
+      - libcurl4-openssl-dev
+      - libdbus-1-dev
+      - libdhash-dev
+      - libglib2.0-dev
+      - libhttp-parser-dev
+      - libini-config-dev
+      - libjansson-dev
+      - libkeyutils-dev
+      - libkrad-dev
+      - libkrb5-dev
+      - libldap2-dev
+      - libldb-dev
+      - libltdl-dev
+      - libnfsidmap-dev
+      - libnl-3-dev
+      - libnl-route-3-dev
+      - libnspr4-dev
+      - libnss-wrapper
+      - libnss3-dev
+      - libp11-kit-dev
+      - libpam-wrapper
+      - libpam0g-dev
+      - libpcre2-dev
+      - libpcre3-dev
+      - libpopt-dev
+      - libsasl2-dev
+      - libselinux1-dev
+      - libsemanage1-dev
+      - libsmbclient-dev
+      - libssl-dev
+      - libssl-dev
+      - libsystemd-dev
+      - libtalloc-dev
+      - libtdb-dev
+      - libtevent-dev
+      - libtool
+      - libtool-bin
+      - libuid-wrapper
+      - libunistring-dev
+      - libxml2-utils
+      - make
+      - packagekit
+      - pep8
+      - python-dbus
+      - python-dev
+      - python-ldap
+      - python-ldb
+      - python-psutil
+      - python-pytest
+      - python-requests
+      - python3-dev
+      - samba-dev
+      - slapd
+      - softhsm2
+      - uuid-dev
+      - valgrind
+      - xml-core
+      - xsltproc
+  when: inventory_hostname == 'client-devel'
