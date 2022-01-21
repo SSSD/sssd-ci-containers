@@ -1,0 +1,78 @@
+services:
+  dns:
+    restart: always
+    image: ${REGISTRY}/ci-dns:latest
+    container_name: dns
+    volumes:
+    - ./data/configs/dnsmasq.conf:/etc/dnsmasq.conf
+    cap_add:
+    - NET_RAW
+    - NET_ADMIN
+    networks:
+      sssd:
+        ipv4_address: 172.16.100.2
+  ipa:
+    image: ${REGISTRY}/ci-ipa:${TAG}
+    container_name: ipa
+    hostname: master.ipa.test
+    dns: 172.16.100.2
+    volumes:
+    - ./shared:/data/shared:rw
+    cap_add:
+    - SYS_ADMIN
+    - AUDIT_WRITE
+    security_opt:
+    - apparmor=unconfined
+    networks:
+      sssd:
+        ipv4_address: 172.16.100.10
+  ldap:
+    image: ${REGISTRY}/ci-ldap:${TAG}
+    container_name: ldap
+    hostname: master.ldap.test
+    dns: 172.16.100.2
+    volumes:
+    - ./shared:/data/shared:rw
+    cap_add:
+    - AUDIT_WRITE
+    networks:
+      sssd:
+        ipv4_address: 172.16.100.20
+  samba:
+    image: ${REGISTRY}/ci-samba:${TAG}
+    container_name: samba
+    hostname: dc.samba.test
+    dns: 172.16.100.2
+    volumes:
+    - ./shared:/data/shared:rw
+    cap_add:
+    - SYS_ADMIN
+    - AUDIT_WRITE
+    security_opt:
+    - apparmor=unconfined
+    networks:
+      sssd:
+        ipv4_address: 172.16.100.30
+  client:
+    image: ${REGISTRY}/ci-client:${TAG}
+    container_name: client
+    hostname: client.test
+    dns: 172.16.100.2
+    volumes:
+    - ./shared:/data/shared:rw
+    cap_add:
+    - SYS_ADMIN
+    - AUDIT_WRITE
+    security_opt:
+    - apparmor=unconfined
+    networks:
+      sssd:
+        ipv4_address: 172.16.100.40
+networks:
+  sssd:
+    name: sssd-ci
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.16.100.0/24
+         gateway: 172.16.100.1

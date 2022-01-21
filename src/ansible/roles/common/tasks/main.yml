@@ -1,0 +1,81 @@
+- name: Create /etc/sudoers
+  become: True
+  template:
+    src: sudoers
+    dest: /etc/sudoers
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Copy common data
+  become: True
+  synchronize:
+    src: '{{ playbook_dir }}/../../data/'
+    dest: /data/
+    rsync_opts:
+    - '--chmod=600'
+    - '--chown=root:root'
+
+- name: 'Change root password'
+  become: True
+  user:
+    name: root
+    update_password: always
+    password: '{{ user.root.password | password_hash("sha512") }}'
+
+- name: 'Create /root/.ssh directory'
+  become: True
+  file:
+    path: '/root/.ssh'
+    state: directory
+    mode: 0700
+
+- name: Copy root user ssh keys
+  become: True
+  copy:
+    src: '{{ playbook_dir }}/../../data/ssh-keys/{{ item.src }}'
+    dest: '/root/.ssh/{{ item.dest }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  with_items:
+  - { src: 'root.id_rsa', dest: 'id_rsa' }
+  - { src: 'root.id_rsa', dest: 'authorized_keys' }
+  - { src: 'root.id_rsa.pub', dest: 'id_rsa.pub' }
+
+- name: 'Create wheel group'
+  become: True
+  group:
+    name: wheel
+    system: yes
+    state: present
+
+- name: 'Create {{ user.regular.name }} user'
+  become: True
+  user:
+    name: '{{ user.regular.name }}'
+    uid: 1000
+    groups: wheel
+    append: yes
+    shell: /usr/bin/bash
+    password: '{{ user.regular.password | password_hash("sha512") }}'
+
+- name: 'Create /home/{{ user.regular.name }}/.ssh directory'
+  become: True
+  file:
+    path: '/home/{{ user.regular.name }}/.ssh'
+    state: directory
+    mode: 0700
+
+- name: Copy ci user ssh keys
+  become: True
+  copy:
+    src: '{{ playbook_dir }}/../../data/ssh-keys/{{ item.src }}'
+    dest: '/home/{{ user.regular.name }}/.ssh/{{ item.dest }}'
+    owner: '{{ user.regular.name }}'
+    group: '{{ user.regular.name }}'
+    mode: '0600'
+  with_items:
+  - { src: 'ci.id_rsa', dest: 'id_rsa' }
+  - { src: 'ci.id_rsa', dest: 'authorized_keys' }
+  - { src: 'ci.id_rsa.pub', dest: 'id_rsa.pub' }

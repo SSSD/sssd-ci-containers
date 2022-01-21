@@ -1,0 +1,23 @@
+name: 'Build images'
+inputs:
+  base_image:
+    description: Base image.
+    required: true
+  tag:
+    description: Output tag.
+    required: true
+  unavailable:
+    description: Space separated list of unavailable services.
+    required: false
+    default: ""
+runs:
+  using: "composite"
+  steps:
+  - name: Build containers
+    shell: bash
+    run: |
+      sudo --preserve-env=ANSIBLE_FORCE_COLOR,DOCKER_HOST \
+        make build                                        \
+          BASE_IMAGE="${{ inputs.base_image }}"           \
+          TAG="${{ inputs.tag }}"                         \
+          UNAVAILABLE="${{ inputs.unavailable }}"

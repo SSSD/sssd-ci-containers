@@ -1,0 +1,89 @@
+- name: Remove default smb.conf
+  become: True
+  file:
+    path: /etc/samba/smb.conf
+    state: absent
+
+- name: Disable systemd-resolved to clear DNS port
+  become: True
+  service:
+    name: systemd-resolved.service
+    enabled: no
+    state: stopped
+
+- name: Install Samba domain
+  become: True
+  shell: |
+    /usr/bin/samba-tool domain provision                        \
+      --realm={{ service.samba.domain | upper | quote }}        \
+      --domain={{ service.samba.netbios | quote }}              \
+      --adminpass={{ service.samba.password | quote }}          \
+      --krbtgtpass={{ service.samba.password | quote }}         \
+      --dnspass={{ service.samba.password | quote }}            \
+      --use-rfc2307
+  args:
+    creates: /etc/samba/smb.conf
+
+- name: Setup Kerberos
+  become: True
+  copy:
+    src:  /var/lib/samba/private/krb5.conf
+    dest: /etc/krb5.conf
+    mode: 0644
+    force: yes
+    remote_src: yes
+
+- name: Replace TLS certificates
+  ini_file:
+    path: /etc/samba/smb.conf
+    section: global
+    option: '{{ item.name }}'
+    value: '{{ item.value }}'
+    mode: 0600
+  with_items:
+  - { name: 'tls keyfile', value: '/data/certs/dc.samba.test.key' }
+  - { name: 'tls certfile', value: '/data/certs/dc.samba.test.crt' }
+  - { name: 'tls cafile', value: '/data/certs/ca.crt' }
+
+- name: Select authselect winbind profile
+  become: True
+  shell: |
+    if [ ! -f /usr/bin/authselect ]; then
+      exit 0
+    fi
+
+    authselect select winbind --force
+
+- name: Start Samba DC
+  become: True
+  service:
+    name: samba.service
+    enabled: yes
+    state: started
+
+- name: Set default GPO
+  become: True
+  shell: |
+    # Make sure default default GptTmpl.inf exist, otherwise GPO access check will fail
+    # on SSSD: https://bugzilla.redhat.com/show_bug.cgi?id=1839805#c18
+    gpo=/var/lib/samba/sysvol/samba.test/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}
+    mkdir -p "$gpo/MACHINE/Microsoft/Windows NT/SecEdit"
+    chown -R "SAMBA\domain admins":"SAMBA\domain admins" "$gpo"
+    echo "[System Access]" > "$gpo/MACHINE/Microsoft/Windows NT/SecEdit/GptTmpl.inf"
+
+- name: Create samba-sysvolreset.service
+  become: True
+  template:
+    src: samba-sysvolreset.service
+    dest: /etc/systemd/system/samba-sysvolreset.service
+    owner: root
+    group: root
+    mode: 0644
+
+# sysvol permission must be reset every time the container is started
+- name: Start samba-sysvolreset.service
+  become: True
+  service:
+    name: samba-sysvolreset.service
+    enabled: yes
+    state: started

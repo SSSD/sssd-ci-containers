@@ -1,0 +1,13 @@
+---
+- hosts: base
+  gather_facts: yes
+  roles:
+  - packages
+  vars_files:
+  - variables.yml
+
+- hosts: base-ground
+  roles:
+  - common
+  vars_files:
+  - variables.yml

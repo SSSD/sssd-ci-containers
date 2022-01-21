@@ -1,0 +1,38 @@
+service: {
+  ipa: {
+    domain: 'ipa.test',
+    hostname: 'master',
+    fqn: 'master.ipa.test',
+    netbios: 'IPA',
+    password: 'Secret123'
+  },
+  ldap: {
+    domain: 'ldap.test',
+    hostname: 'master',
+    fqn: 'master.ldap.test',
+    suffix: 'dc=ldap,dc=test',
+    bind: {
+      dn: 'cn=Directory Manager',
+      password: 'Secret123'
+    }
+  },
+  samba: {
+    netbios: SAMBA,
+    domain: samba.test,
+    password: Secret123
+  },
+  client: {
+    domain: 'client.test',
+    fqn: 'client.test'
+  }
+}
+
+user: {
+  root: {
+    password: Secret123
+  },
+  regular: {
+    name: ci,
+    password: Secret123
+  }
+}

@@ -1,0 +1,14 @@
+name: 'Get build matrix'
+description: 'Get build matrix for the CI containers'
+outputs:
+  matrix:
+    description: Build matrix in JSON format.
+    value: ${{ steps.matrix.outputs.matrix }}
+runs:
+  using: "composite"
+  steps:
+  - name: Get build matrix
+    id: matrix
+    shell: bash
+    run: |
+      ./src/tools/get-build-matrix.py action

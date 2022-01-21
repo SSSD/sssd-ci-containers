@@ -1,0 +1,17 @@
+- name: 'Include distribution specific package tasks [{{ ansible_distribution }} {{ ansible_distribution_major_version }}]'
+  include_tasks: '{{ include_file }}'
+  loop_control:
+    loop_var: include_file
+  with_first_found:
+  - files: '{{ ansible_distribution | distro_includes(ansible_distribution_major_version) }}'
+
+- name: 'Clear package manager cache'
+  become: True
+  shell: |
+    if [ -f /usr/bin/apt ]; then
+      rm -rf /var/lib/apt/lists/*
+    else
+      dnf clean all
+    fi
+  args:
+    warn: false

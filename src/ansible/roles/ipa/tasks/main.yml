@@ -1,0 +1,79 @@
+- name: Install IPA server
+  become: True
+  shell: |
+    set -e
+
+    alias install-ipa="/usr/sbin/ipa-server-install --unattended \
+      --realm={{ service.ipa.domain | upper | quote }}           \
+      --domain={{ service.ipa.domain | quote }}                  \
+      --ds-password={{ service.ipa.password | quote }}           \
+      --admin-password={{ service.ipa.password | quote }}        \
+      --setup-dns                                                \
+      --auto-forwarders                                          \
+      --auto-reverse                                             \
+      --no-dnssec-validation                                     \
+      --no-host-dns                                              \
+      --no-ntp"
+
+    install-ipa --external-ca
+
+    openssl x509 -days 7200 -req                                 \
+      -extfile /data/configs/openssl_sign_ca.ext                 \
+      -CA "/data/certs/ca.crt"                                   \
+      -CAkey "/data/certs/ca.key"                                \
+      --CAcreateserial                                           \
+      -in "/root/ipa.csr"                                        \
+      -out "/root/ipa.crt"
+
+    install-ipa                                                  \
+      --external-cert-file=/root/ipa.crt                         \
+      --external-cert-file=/data/certs/ca.crt
+  args:
+    creates: /etc/ipa/default.conf
+
+- name: Create pw-never-expires group
+  shell: |
+    kinit admin
+    ipa group-add pw-never-expires
+  args:
+    stdin: '{{ service.ipa.password }}'
+
+- name: Create pw-never-expires password policy
+  shell: |
+    kinit admin
+    ipa pwpolicy-add pw-never-expires --maxlife=0 --minlife=0 --priority=0
+  args:
+    stdin: '{{ service.ipa.password }}'
+
+- name: Add admin to pw-never-expires group
+  shell: |
+    kinit admin
+    ipa group-add-member pw-never-expires --users=admin
+  args:
+    stdin: '{{ service.ipa.password }}'
+
+- name: Reset admin password to apply pw-never-expires policy
+  shell: |
+    kinit admin
+    ipa user-mod admin --password
+  args:
+    stdin: |
+      {{ service.ipa.password }}
+      {{ service.ipa.password }}
+
+- name: Install IPA-AD trust
+  become: True
+  shell: |
+    /usr/sbin/ipa-adtrust-install --unattended                 \
+      --netbios-name={{ service.ipa.netbios | quote }}         \
+      --admin-password={{ service.ipa.password | quote }}      \
+      --add-sids
+
+- name: 'Setup trust with {{ service.samba.domain }}'
+  shell: |
+    kinit admin
+    ipa trust-add {{ service.samba.domain | quote }} --admin Administrator --password
+  args:
+    stdin: |
+      {{ service.ipa.password }}
+      {{ service.samba.password }}

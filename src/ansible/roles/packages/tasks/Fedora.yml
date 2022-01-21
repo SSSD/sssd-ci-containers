@@ -1,0 +1,151 @@
+- name: Install packages for ground base image
+  block:
+  - name: Install dnf plugins
+    dnf:
+      state: present
+      name:
+      - dnf-plugins-core
+
+  - name: Install additional repositories
+    shell: |
+      dnf config-manager --add-repo {{ item }}
+    args:
+      warn: false
+    with_items:
+    - https://cli.github.com/packages/rpm/gh-cli.repo
+
+  - name: Install systemd and common tools
+    dnf:
+      state: present
+      name:
+      - authselect
+      - bash-completion
+      - bind-utils
+      - dbus-tools
+      - dnf-plugins-core
+      - findutils
+      - gdb
+      - gh
+      - git
+      - iputils
+      - ldb-tools
+      - man
+      - mc
+      - net-tools
+      - openldap-clients
+      - openssh-clients
+      - openssh-server
+      - python3-pip
+      - rsync
+      - sudo
+      - systemd
+      - tig
+      - tmate
+      - tmux
+      - vim
+      - wget
+      - which
+  when: inventory_hostname == 'base-ground'
+
+- name: Install packages for client base image
+  become: True
+  block:
+  - name: Install SSSD and its dependencies
+    dnf:
+      state: present
+      name:
+      - freeipa-client
+      - realmd
+      - sssd
+      - sssd-*
+  - name: Install debug information for selected packages
+    become: True
+    shell: |
+      dnf debuginfo-install -y  \
+        dbus                    \
+        glibc                   \
+        libcmocka               \
+        libdhash                \
+        libini_config           \
+        libldb                  \
+        libtalloc               \
+        libtevent
+    args:
+      warn: False
+  when: inventory_hostname == 'base-client'
+
+- name: Install packages for LDAP base image
+  become: True
+  block:
+  - name: Install 389ds
+    become: True
+    dnf:
+      state: present
+      name:
+      - acl
+      - 389-ds-base
+  when: inventory_hostname == 'base-ldap'
+
+- name: Install packages for IPA base image
+  become: True
+  block:
+  - name: Install IPA
+    become: True
+    dnf:
+      state: present
+      name:
+      - freeipa-server
+      - freeipa-server-dns
+      - freeipa-server-trust-ad
+  when: inventory_hostname == 'base-ipa'
+
+- name: Install packages for Samba base image
+  become: True
+  block:
+  - name: Install Samba DC
+    become: True
+    dnf:
+      state: present
+      name:
+      - samba-dc
+      - samba-winbind-clients
+  when: inventory_hostname == 'base-samba'
+
+- name: Install additional packages for client development image
+  become: True
+  block:
+  - name: Install SSSD build dependencies
+    command: dnf build-dep -y sssd
+    args:
+      warn: False
+
+  - name: Install packages required for integration tests
+    become: True
+    dnf:
+      state: present
+      name:
+      - clang-analyzer
+      - curl-devel
+      - fakeroot
+      - http-parser-devel
+      - krb5-server
+      - krb5-workstation
+      - lcov
+      - libcmocka-devel
+      - libfaketime
+      - mock
+      - nss_wrapper
+      - openldap-clients
+      - openldap-servers
+      - pam_wrapper
+      - python3-ldap
+      - python3-ldb
+      - python3-psutil
+      - python3-pycodestyle
+      - python3-pytest
+      - python3-requests
+      - redhat-lsb-core
+      - rpm-build
+      - uid_wrapper
+      - valgrind
+  when: inventory_hostname == 'client-devel'

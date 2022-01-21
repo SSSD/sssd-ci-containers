@@ -1,0 +1,16 @@
+services:
+  dns:
+    image: localhost/sssd/ci-dns:latest
+    container_name: sssd-wip-dns
+  ipa:
+    image: localhost/sssd/ci-base-ipa:${TAG}
+    container_name: sssd-wip-ipa
+  ldap:
+    image: localhost/sssd/ci-base-ldap:${TAG}
+    container_name: sssd-wip-ldap
+  samba:
+    image: localhost/sssd/ci-base-samba:${TAG}
+    container_name: sssd-wip-samba
+  client:
+    image: localhost/sssd/ci-base-client:${TAG}
+    container_name: sssd-wip-client

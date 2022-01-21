@@ -1,0 +1,3 @@
+FROM docker.io/alpine:latest AS dns
+RUN apk --no-cache add dnsmasq
+ENTRYPOINT ["dnsmasq", "-k"]
