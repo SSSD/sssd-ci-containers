@@ -35,6 +35,7 @@ destroy the containers.
 * `sudo make up` reads `docker-compose.yml` and starts all services in containers
 * `sudo make stop` stops the containers, keeps theirs content
 * `sudo make down` destroys and removes the containers
+* `sudo make update` update images
 
 You can gain console access once the containers are started, either through
 podman or ssh. For example:
