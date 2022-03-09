@@ -15,6 +15,9 @@ stop:
 down:
 	docker-compose down
 
+update:
+	docker-compose pull
+
 trust-ca:
 	/bin/bash -c "src/tools/trust-ca.sh"
 
