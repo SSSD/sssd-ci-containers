@@ -10,7 +10,7 @@ and development.
 $ sudo dnf install -y podman podman-docker docker-compose
 $ sudo systemctl enable --now podman.socket
 $ sudo setsebool -P container_manage_cgroup true
-$ cp .env.example .env
+$ cp env.example .env
 $ sudo make up
 $ sudo podman exec -it client /bin/bash
 ```
@@ -26,7 +26,7 @@ and therefore it went offline: `pkill --signal SIGUSR2 sssd`.
 First, create an environment file that is consumed by docker-compose:
 
 ```console
-$ cp .env.example .env
+$ cp env.example .env
 ```
 
 Then you can run the following `make` targets in order to start, stop and
