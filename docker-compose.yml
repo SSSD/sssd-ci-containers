@@ -20,6 +20,7 @@ services:
     - ./shared:/data/shared:rw
     cap_add:
     - SYS_ADMIN
+    - SYS_PTRACE
     - AUDIT_WRITE
     security_opt:
     - apparmor=unconfined
@@ -34,6 +35,7 @@ services:
     volumes:
     - ./shared:/data/shared:rw
     cap_add:
+    - SYS_PTRACE
     - AUDIT_WRITE
     networks:
       sssd:
@@ -47,6 +49,7 @@ services:
     - ./shared:/data/shared:rw
     cap_add:
     - SYS_ADMIN
+    - SYS_PTRACE
     - AUDIT_WRITE
     security_opt:
     - apparmor=unconfined
@@ -62,6 +65,7 @@ services:
     - ./shared:/data/shared:rw
     cap_add:
     - SYS_ADMIN
+    - SYS_PTRACE
     - AUDIT_WRITE
     security_opt:
     - apparmor=unconfined
