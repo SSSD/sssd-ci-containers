@@ -12,6 +12,7 @@
       - dbus
       - findutils
       - gdb
+      - gdbserver
       - git
       - iputils-*
       - ldap-utils

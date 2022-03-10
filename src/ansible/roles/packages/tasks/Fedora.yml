@@ -25,6 +25,7 @@
       - dnf-plugins-core
       - findutils
       - gdb
+      - gdb-gdbserver
       - gh
       - git
       - iputils
