@@ -3,6 +3,7 @@ services:
     restart: always
     image: ${REGISTRY}/ci-dns:latest
     container_name: dns
+    env_file: ./env.containers
     volumes:
     - ./data/configs/dnsmasq.conf:/etc/dnsmasq.conf
     cap_add:
@@ -16,6 +17,7 @@ services:
     container_name: ipa
     hostname: master.ipa.test
     dns: 172.16.100.2
+    env_file: ./env.containers
     volumes:
     - ./shared:/data/shared:rw
     cap_add:
@@ -32,6 +34,7 @@ services:
     container_name: ldap
     hostname: master.ldap.test
     dns: 172.16.100.2
+    env_file: ./env.containers
     volumes:
     - ./shared:/data/shared:rw
     cap_add:
@@ -45,6 +48,7 @@ services:
     container_name: samba
     hostname: dc.samba.test
     dns: 172.16.100.2
+    env_file: ./env.containers
     volumes:
     - ./shared:/data/shared:rw
     cap_add:
@@ -61,6 +65,7 @@ services:
     container_name: client
     hostname: client.test
     dns: 172.16.100.2
+    env_file: ./env.containers
     volumes:
     - ./shared:/data/shared:rw
     cap_add:
