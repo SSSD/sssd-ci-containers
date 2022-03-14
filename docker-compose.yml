@@ -9,6 +9,10 @@ services:
     cap_add:
     - NET_RAW
     - NET_ADMIN
+    security_opt:
+    - apparmor=unconfined
+    - label=disable
+    - seccomp=unconfined
     networks:
       sssd:
         ipv4_address: 172.16.100.2
@@ -26,6 +30,8 @@ services:
     - AUDIT_WRITE
     security_opt:
     - apparmor=unconfined
+    - label=disable
+    - seccomp=unconfined
     networks:
       sssd:
         ipv4_address: 172.16.100.10
@@ -40,6 +46,10 @@ services:
     cap_add:
     - SYS_PTRACE
     - AUDIT_WRITE
+    security_opt:
+    - apparmor=unconfined
+    - label=disable
+    - seccomp=unconfined
     networks:
       sssd:
         ipv4_address: 172.16.100.20
@@ -57,6 +67,8 @@ services:
     - AUDIT_WRITE
     security_opt:
     - apparmor=unconfined
+    - label=disable
+    - seccomp=unconfined
     networks:
       sssd:
         ipv4_address: 172.16.100.30
@@ -74,6 +86,8 @@ services:
     - AUDIT_WRITE
     security_opt:
     - apparmor=unconfined
+    - label=disable
+    - seccomp=unconfined
     networks:
       sssd:
         ipv4_address: 172.16.100.40
