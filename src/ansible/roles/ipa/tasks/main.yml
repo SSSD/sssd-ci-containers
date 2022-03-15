@@ -1,5 +1,4 @@
 - name: Install IPA server
-  become: True
   shell: |
     set -e
 
@@ -62,7 +61,6 @@
       {{ service.ipa.password }}
 
 - name: Install IPA-AD trust
-  become: True
   shell: |
     /usr/sbin/ipa-adtrust-install --unattended                 \
       --netbios-name={{ service.ipa.netbios | quote }}         \

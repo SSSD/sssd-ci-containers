@@ -6,7 +6,6 @@
   - files: '{{ ansible_distribution | distro_includes(ansible_distribution_major_version) }}'
 
 - name: 'Clear package manager cache'
-  become: True
   shell: |
     if [ -f /usr/bin/apt ]; then
       rm -rf /var/lib/apt/lists/*

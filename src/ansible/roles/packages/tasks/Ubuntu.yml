@@ -32,7 +32,6 @@
   when: inventory_hostname == 'base-ground'
 
 - name: Install packages for client base image
-  become: True
   block:
   - name: Install SSSD and its dependencies
     apt:
@@ -48,10 +47,8 @@
   when: inventory_hostname == 'base-client'
 
 - name: Install additional packages for client development image
-  become: True
   block:
   - name: Install SSSD build and integration tests dependencies
-    become: True
     apt:
       state: present
       update_cache: yes

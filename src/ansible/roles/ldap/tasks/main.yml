@@ -1,5 +1,4 @@
 - name: Create /root/localhost.inf
-  become: True
   template:
     src: instance.inf
     dest: /root/localhost.inf
@@ -8,21 +7,18 @@
     mode: 0600
 
 - name: Create directory server instance
-  become: True
   shell: |
     dscreate from-file /root/localhost.inf
   args:
     creates: '/etc/dirsrv/slapd-localhost'
 
 - name: Install ldap certificate
-  become: True
   shell: |
     dsconf localhost security ca-certificate add --file /data/certs/ca.crt --name "sssd-ca"
     dsconf localhost security ca-certificate set-trust-flags "sssd-ca" --flags "CT,,"
     dsctl localhost tls import-server-key-cert /data/certs/master.ldap.test.crt /data/certs/master.ldap.test.key
 
 - name: Grant read-only anonymous access
-  become: True
   shell: |
     ldapmodify -D "{{ service.ldap.bind.dn }}" -w "{{ service.ldap.bind.password }}" -H ldap://localhost -x
   args:

@@ -1,5 +1,4 @@
 - name: Configure SSH daemon
-  become: True
   template:
     src: sshd.conf
     dest: /etc/ssh/sshd_config.d
@@ -8,7 +7,6 @@
     mode: 0600
 
 - name: Start SSH daemon
-  become: True
   service:
     name: sshd.service
     enabled: yes
