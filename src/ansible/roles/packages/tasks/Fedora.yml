@@ -127,6 +127,7 @@
       name:
       - clang-analyzer
       - curl-devel
+      - dbus-daemon
       - fakeroot
       - http-parser-devel
       - krb5-server
