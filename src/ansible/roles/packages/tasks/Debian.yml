@@ -1,5 +1,3 @@
-# Fedora 34 +
-
 - name: Install packages for ground base image
   block:
   - name: Install systemd and common tools
