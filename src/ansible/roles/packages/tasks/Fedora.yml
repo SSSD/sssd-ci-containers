@@ -49,7 +49,6 @@
   when: inventory_hostname == 'base-ground'
 
 - name: Install packages for client base image
-  become: True
   block:
   - name: Install SSSD and its dependencies
     dnf:
@@ -60,7 +59,6 @@
       - sssd
       - sssd-*
   - name: Install debug information for selected packages
-    become: True
     shell: |
       dnf debuginfo-install -y  \
         dbus                    \
@@ -76,10 +74,8 @@
   when: inventory_hostname == 'base-client'
 
 - name: Install packages for LDAP base image
-  become: True
   block:
   - name: Install 389ds
-    become: True
     dnf:
       state: present
       name:
@@ -88,10 +84,8 @@
   when: inventory_hostname == 'base-ldap'
 
 - name: Install packages for IPA base image
-  become: True
   block:
   - name: Install IPA
-    become: True
     dnf:
       state: present
       name:
@@ -101,10 +95,8 @@
   when: inventory_hostname == 'base-ipa'
 
 - name: Install packages for Samba base image
-  become: True
   block:
   - name: Install Samba DC
-    become: True
     dnf:
       state: present
       name:
@@ -113,7 +105,6 @@
   when: inventory_hostname == 'base-samba'
 
 - name: Install additional packages for client development image
-  become: True
   block:
   - name: Install SSSD build dependencies
     command: dnf build-dep -y sssd
@@ -121,7 +112,6 @@
       warn: False
 
   - name: Install packages required for integration tests
-    become: True
     dnf:
       state: present
       name:
