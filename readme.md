@@ -71,7 +71,7 @@ perfoming an `ldapsearch`).
 |--------------|-----------------|----------------------------|-------------------------------------|
 | ipa          | `172.16.100.10` | `master.ipa.test`          | IPA server                          |
 | ldap         | `172.16.100.20` | `master.ldap.test`         | TLS ready 389 Directory Server      |
-| samba        | `172.16.100.30` | `dc.sambe.test`            | Samba DC root domain                |
+| samba        | `172.16.100.30` | `dc.samba.test`            | Samba DC root domain                |
 | client       | `172.16.100.40` | `client.test`              | Client machine with configured SSSD |
 
 ## Available user accounts
