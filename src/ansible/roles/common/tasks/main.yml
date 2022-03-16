@@ -1,3 +1,10 @@
+- name: Set /usr/bin/python to python3
+  alternatives:
+    name: python
+    link: /usr/bin/python
+    path: /usr/bin/python3
+    priority: 1
+
 - name: Create /etc/sudoers
   template:
     src: sudoers
