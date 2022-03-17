@@ -169,7 +169,7 @@ target. It takes multiple environment variables:
 The following example builds the CentOS Stream 8 images:
 
 ```console
-$ sudo make build BASE_IMAGE=quay.io/centos/centos:stream8 TAG=centos8 UNAVAILABLE=samba
+$ sudo make build BASE_IMAGE=quay.io/centos/centos:stream8 TAG=centos-8 UNAVAILABLE=samba
 ```
 
 The images are stored in local `localhost/sssd` image registry.
