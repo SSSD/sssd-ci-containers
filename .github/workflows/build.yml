@@ -14,7 +14,7 @@ on:
     - 'docker-compose.yml'
   workflow_dispatch:
   schedule:
-  - cron: '0 1 * * 0'
+  - cron: '0 1 * * *'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
