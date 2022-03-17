@@ -26,6 +26,8 @@ export BASE_IMAGE="${BASE_IMAGE:-registry.fedoraproject.org/fedora:latest}"
 export TAG="${TAG:-latest}"
 export UNAVAILABLE="${UNAVAILABLE:-}"
 export ANSIBLE_CONFIG=./ansible/ansible.cfg
+export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
+export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
 
 echo "Building from: $BASE_IMAGE"
 echo "Building with tag: $TAG"
@@ -111,7 +113,7 @@ build_base_image "ci-base-ldap:${TAG}"   base-ipa
 
 # Create services
 compose up --detach
-ansible-playbook ./ansible/playbook_image_service.yml
+ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 compose stop
 build_service_image sssd-wip-client client
 build_service_image sssd-wip-ipa ipa
