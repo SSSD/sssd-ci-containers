@@ -15,6 +15,9 @@ on:
   workflow_dispatch:
   schedule:
   - cron: '0 1 * * 0'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 env:
   ANSIBLE_FORCE_COLOR: 1
   DOCKER_HOST: unix:///run/podman/podman.sock
