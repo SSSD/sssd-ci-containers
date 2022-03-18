@@ -116,6 +116,7 @@
       - libuid-wrapper
       - libunistring-dev
       - libxml2-utils
+      - lsb-release
       - make
       - packagekit
       - pep8

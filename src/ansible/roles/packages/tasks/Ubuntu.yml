@@ -116,17 +116,18 @@
       - libuid-wrapper
       - libunistring-dev
       - libxml2-utils
+      - lsb-release
       - make
       - packagekit
       - pep8
       - python3-dbus
+      - python3-dev
       - python3-dev
       - python3-ldap
       - python3-ldb
       - python3-psutil
       - python3-pytest
       - python3-requests
-      - python3-dev
       - samba-dev
       - slapd
       - softhsm2
