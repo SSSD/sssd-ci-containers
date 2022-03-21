@@ -23,7 +23,7 @@ services:
     dns: 172.16.100.2
     env_file: ./env.containers
     volumes:
-    - ./shared:/data/shared:rw
+    - ./shared:/shared:rw
     cap_add:
     - SYS_ADMIN
     - SYS_PTRACE
@@ -42,7 +42,7 @@ services:
     dns: 172.16.100.2
     env_file: ./env.containers
     volumes:
-    - ./shared:/data/shared:rw
+    - ./shared:/shared:rw
     cap_add:
     - SYS_PTRACE
     - AUDIT_WRITE
@@ -60,7 +60,7 @@ services:
     dns: 172.16.100.2
     env_file: ./env.containers
     volumes:
-    - ./shared:/data/shared:rw
+    - ./shared:/shared:rw
     cap_add:
     - SYS_ADMIN
     - SYS_PTRACE
@@ -79,7 +79,7 @@ services:
     dns: 172.16.100.2
     env_file: ./env.containers
     volumes:
-    - ./shared:/data/shared:rw
+    - ./shared:/shared:rw
     cap_add:
     - SYS_ADMIN
     - SYS_PTRACE
