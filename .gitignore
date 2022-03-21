@@ -2,3 +2,6 @@
 __pycache__
 /.env
 /docker-compose.override*
+
+shared/**/*
+!shared/.gitkeep
