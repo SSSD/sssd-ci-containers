@@ -7,7 +7,7 @@ push:
 	/bin/bash -c "src/push.sh"
 
 up:
-	docker-compose up --detach
+	docker-compose up --detach ${LIMIT}
 
 stop:
 	docker-compose stop
