@@ -23,3 +23,6 @@ trust-ca:
 
 setup-dns:
 	/bin/bash -c "src/tools/setup-dns.sh"
+
+setup-dns-files:
+	/bin/bash -c "src/tools/setup-dns-files.sh"

@@ -64,6 +64,10 @@ perfoming an `ldapsearch`).
 * `sudo make setup-dns` forward all `*.test` queries to sssd-ci DNS server.
   *Note that this will disable systemd-resolved and enable dnsmasq in
   NetworkManager.*
+* `sudo make setup-dns-files` append containers fully qualified hostnames to
+  */etc/hosts* so they can be resolved directly without DNS. *You can use it
+  instead of `setup-dns` on systems where it is not desired or possible to
+  tinker with systemd-resolved or NetworkManager configuration.*
 
 ## Available containers
 
