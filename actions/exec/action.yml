@@ -1,0 +1,58 @@
+name: 'Execute script inside a container'
+inputs:
+  script:
+    description: Script to run.
+    required: true
+  where:
+    description: Which container will run the script.
+    required: false
+    default: client
+  user:
+    description: User that will be used to run the script.
+    required: false
+    default: ci
+  log-file:
+    description: Path to the log file where the output will be stored.
+    required: false
+  working-directory:
+    description: Working directory.
+    required: false
+    default: /
+runs:
+  using: "composite"
+  steps:
+  - name: Create temporary script
+    shell: bash
+    id: script
+    env:
+      script: ${{ inputs.script }}
+    run: |
+      file=`mktemp`
+      echo -e "$script" > "$file"
+      echo ::set-output name=path::$file
+
+  - name: Copy file to the container
+    shell: bash
+    env:
+      path: ${{ steps.script.outputs.path }}
+      container: ${{ inputs.where }}
+    run: |
+      sudo podman cp "$path" "$container:$path"
+      sudo podman exec "$container" chmod a=rx "$path"
+
+  - name: Execute command
+    shell: bash
+    env:
+      path: ${{ steps.script.outputs.path }}
+      user: ${{ inputs.user }}
+      container: ${{ inputs.where }}
+      log: ${{ inputs.log-file }}
+      workdir: ${{ inputs.working-directory }}
+    run: |
+      set -ex -o pipefail
+      [[ ! -z $log ]] && log=\"$log\"
+      sudo podman exec                                 \
+        --user "$user"                                 \
+        --env "USER=$user"                             \
+        --workdir "$workdir"                           \
+        "$container" /bin/bash -c "$path" |& tee $log

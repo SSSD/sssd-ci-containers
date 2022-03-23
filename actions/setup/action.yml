@@ -1,0 +1,82 @@
+name: 'Setup and start sssd-ci-containers'
+inputs:
+  path:
+    description: Where to checkout sssd-ci-containers sources.
+    required: false
+    default: sssd-ci-containers
+  tag:
+    description: Image tag to pull.
+    required: false
+    default: latest
+  registry:
+    description: Image registry.
+    required: false
+    default: quay.io/sssd
+  limit:
+    description: Comma separated list of services to run (empty = all).
+    required: false
+  override:
+    description: Override docker-compose.
+    required: false
+runs:
+  using: "composite"
+  steps:
+  - name: Install dependencies
+    shell: bash
+    run: |
+      set -ex
+      sudo apt-get update
+      sudo apt-get install -y podman docker-compose
+      sudo systemctl enable --now podman.socket
+
+  - name: Checkout sssd-ci-containers repository
+    uses: actions/checkout@v2
+    with:
+      repository: SSSD/sssd-ci-containers
+      path: ${{ inputs.path }}
+
+  - name: Add override
+    shell: bash
+    env:
+      OVERRIDE: ${{ inputs.override }}
+    run: |
+      if [[ ! -z $OVERRIDE ]]; then
+        echo "$OVERRIDE" > "${{ inputs.path }}/docker-compose.override.yml"
+        cat "${{ inputs.path }}/docker-compose.override.yml"
+      fi
+
+  - name: Setup DNS
+    shell: bash
+    run: |
+      sudo make -C "${{ inputs.path }}" setup-dns-files
+
+  - name: Print docker-compose config
+    shell: bash
+    run: |
+      export REGISTRY="${{ inputs.registry }}"
+      export TAG="${{ inputs.tag }}"
+      docker-compose --project-directory "${{ inputs.path }}" config
+
+  - name: Start containers
+    shell: bash
+    run: |
+        sudo make -C "${{ inputs.path }}" up         \
+          DOCKER_HOST=unix:///run/podman/podman.sock \
+          LIMIT="${{ inputs.limit }}"                \
+          REGISTRY="${{ inputs.registry }}"          \
+          TAG="${{ inputs.tag }}"
+
+  - name: Change regular user uid to 1001
+    shell: bash
+    run: |
+      # GitHub-hosted runner user has uid 1001, so lets propagate this to the
+      # containers to simplify permission management of shared folders.
+
+      for svc in `sudo podman container ls --format "{{ .Names }}"`; do
+        if [ $svc != "dns" ]; then
+          sudo podman exec "$svc" usermod -u 1001 ci &
+          sudo podman exec "$svc" groupmod -g 1001 ci &
+        fi
+      done
+
+      wait
