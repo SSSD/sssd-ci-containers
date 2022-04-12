@@ -5,9 +5,11 @@
     alias install-ipa="/usr/sbin/ipa-server-install --unattended \
       --realm={{ service.ipa.domain | upper | quote }}           \
       --domain={{ service.ipa.domain | quote }}                  \
+      --netbios-name={{ service.ipa.netbios | quote }}           \
       --ds-password={{ service.ipa.password | quote }}           \
       --admin-password={{ service.ipa.password | quote }}        \
       --setup-dns                                                \
+      --setup-adtrust                                            \
       --auto-forwarders                                          \
       --auto-reverse                                             \
       --no-dnssec-validation                                     \
@@ -59,13 +61,6 @@
     stdin: |
       {{ service.ipa.password }}
       {{ service.ipa.password }}
-
-- name: Install IPA-AD trust
-  shell: |
-    /usr/sbin/ipa-adtrust-install --unattended                 \
-      --netbios-name={{ service.ipa.netbios | quote }}         \
-      --admin-password={{ service.ipa.password | quote }}      \
-      --add-sids
 
 - name: 'Setup trust with {{ service.samba.domain }}'
   shell: |
