@@ -103,7 +103,7 @@
       - libpopt-dev
       - libsasl2-dev
       - libselinux1-dev
-      - libsemanage1-dev
+      - libsemanage-dev
       - libsmbclient-dev
       - libssl-dev
       - libssl-dev
