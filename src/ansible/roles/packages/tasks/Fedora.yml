@@ -139,4 +139,9 @@
       - rpm-build
       - uid_wrapper
       - valgrind
+
+  - name: Install additional python packages
+    pip:
+      name:
+      - flaky
   when: inventory_hostname == 'client-devel'

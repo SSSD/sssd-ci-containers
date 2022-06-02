@@ -135,4 +135,9 @@
       - valgrind
       - xml-core
       - xsltproc
+
+  - name: Install additional python packages
+    pip:
+      name:
+      - flaky
   when: inventory_hostname == 'client-devel'

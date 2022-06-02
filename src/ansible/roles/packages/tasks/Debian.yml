@@ -21,6 +21,7 @@
       - net-tools
       - openssh-client
       - openssh-server
+      - python-pip
       - python3-pip
       - rsync
       - sudo
@@ -135,4 +136,10 @@
       - valgrind
       - xml-core
       - xsltproc
+
+  - name: Install additional python packages
+    pip:
+      executable: pip2 # python2 is used to execute integration tests
+      name:
+      - flaky
   when: inventory_hostname == 'client-devel'
