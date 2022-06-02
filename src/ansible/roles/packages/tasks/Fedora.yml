@@ -136,7 +136,6 @@
       - python3-pycodestyle
       - python3-pytest
       - python3-requests
-      - redhat-lsb-core
       - rpm-build
       - uid_wrapper
       - valgrind
