@@ -168,7 +168,8 @@ target. It takes multiple environment variables:
   `registry.fedoraproject.org/fedora:latest`
 * `TAG`: tag of the result images, default is `latest`
 * `UNAVAILABLE`: space separated list of unavailable services, default is empty
-  (all services are available), e.g. `ipa ldap samba`
+  (all services are available). If multiple values are provided, you need to
+  enclose them in quotation marks, e.g. `"ipa ldap samba"`
 
 The following example builds the CentOS Stream 8 images:
 
