@@ -21,7 +21,6 @@
       - net-tools
       - openssh-client
       - openssh-server
-      - python-pip
       - python3-pip
       - rsync
       - sudo
@@ -31,6 +30,16 @@
       - vim
       - wget
   when: inventory_hostname == 'base-ground'
+
+- name: Enable backports repo to install freeipa
+  block:
+  - name: Enable backports repo
+    copy:
+      dest: /etc/apt/sources.list.d/backports.list
+      content: "deb http://deb.debian.org/debian bullseye-backports main"
+      owner: root
+      group: root
+      mode: '0644'
 
 - name: Install packages for client base image
   block:
@@ -120,15 +129,14 @@
       - lsb-release
       - make
       - packagekit
-      - pep8
-      - python-dbus
-      - python-dev
-      - python-ldap
-      - python-ldb
-      - python-psutil
-      - python-pytest
-      - python-requests
+      - python3-dbus
       - python3-dev
+      - python3-ldap
+      - python3-ldb
+      - python3-psutil
+      - python3-pycodestyle
+      - python3-pytest
+      - python3-requests
       - samba-dev
       - slapd
       - softhsm2
@@ -139,7 +147,6 @@
 
   - name: Install additional python packages
     pip:
-      executable: pip2 # python2 is used to execute integration tests
       name:
       - flaky
   when: inventory_hostname == 'client-devel'
