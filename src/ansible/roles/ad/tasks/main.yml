@@ -1,0 +1,89 @@
+- name: Allow access from our network
+  win_firewall_rule:
+    name: Allow access from our network
+    direction: in
+    action: allow
+    enabled: yes
+    state: present
+
+- name: Set the default SSH shell to PowerShell
+  win_regedit:
+    path: HKLM:\SOFTWARE\OpenSSH
+    name: DefaultShell
+    data: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+    type: string
+    state: present
+
+- name: Install Active Directory Services
+  win_feature:
+    name: '{{ item }}'
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+  with_items:
+  - AD-Domain-Services
+  - DNS
+
+- name: 'Create new AD forest {{ service.ad.domain }}'
+  win_shell: |
+    Import-Module ADDSDeployment
+
+    Install-ADDSForest                                                        \
+      -DomainName "{{ service.ad.domain }}"                                   \
+      -CreateDnsDelegation:$false                                             \
+      -DomainNetbiosName "{{ service.ad.netbios }}"                           \
+      -ForestMode "WinThreshold"                                              \
+      -DomainMode "WinThreshold"                                              \
+      -Force:$true                                                            \
+      -InstallDns:$true                                                       \
+      -NoRebootOnCompletion:$true                                             \
+      -SafeModeAdministratorPassword                                          \
+        (ConvertTo-SecureString '{{ service.ad.safe_password }}' -AsPlainText -Force)
+  register: installation
+  args:
+    creates: 'C:\Windows\NTDS'
+
+- name: Reboot machine
+  win_reboot:
+  when: installation.changed
+
+- name: Make sure Active Directory Web Services is running
+  win_service:
+    name: adws
+    start_mode: auto
+    state: started
+
+- name: Copy sudo schema to guest
+  win_copy:
+    src: '{{ item }}.schema'
+    dest: 'C:\{{ item }}.schema'
+  with_items:
+  - sudo
+
+- name: Install additional schemas
+  win_shell: |
+    ldifde -i -f C:\{{ item }}.schema -c dc=X {{ service.ad.suffix }} -b "Administrator" "{{ service.ad.netbios }}" "vagrant"
+  register: schema
+  failed_when: schema.rc != 0 and schema.stdout is not search('ENTRY_EXISTS')
+  changed_when: schema.rc == 0
+  with_items:
+  - sudo
+
+- name: Set Password Never Expires for system users
+  win_shell: |
+    Import-Module ActiveDirectory
+
+    $user = Get-ADUser -Server {{ service.ad.domain }} -Identity {{ item }}   \
+      -Properties PasswordNeverExpires
+    if ($user.PasswordNeverExpires -eq $true) {
+      exit 255
+    }
+
+    Set-ADUser -Server {{ service.ad.domain }} -Identity {{ item }}           \
+      -PasswordNeverExpires $true
+  register: result
+  failed_when: "result.rc != 255 and result.rc != 0"
+  changed_when: "result.rc == 0"
+  with_items:
+  - Administrator
+  - vagrant
