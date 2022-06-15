@@ -1,0 +1,28 @@
+Vagrant.configure("2") do |config|
+    config.vm.define "ad" do |this|
+        this.vm.box = "peru/windows-server-2022-standard-x64-eval"
+        this.vm.hostname = "dc"
+        this.vm.guest = :windows
+        this.vm.communicator = "winrm"
+        this.winrm.username = "Administrator"
+        this.vm.network "private_network",
+            :ip => "172.16.200.10",
+            :libvirt__dhcp_enabled => false,
+            :libvirt__network_address => '172.16.200.0/24',
+            :libvirt__forward_mode => 'route'
+
+        this.vm.provider :libvirt do |libvirt|
+            libvirt.memory = 4092
+
+            if defined?(libvirt.qemu_use_session)
+                libvirt.qemu_use_session = false
+            end
+        end
+
+        this.vm.provision "ansible" do |ansible|
+            ansible.inventory_path = "./ansible/inventory.yml"
+            ansible.playbook = "./ansible/playbook_vagrant.yml"
+            ansible.config_file = "./ansible/ansible.cfg"
+        end
+    end
+end

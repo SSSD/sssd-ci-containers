@@ -24,6 +24,13 @@ service: {
   client: {
     domain: 'client.test',
     fqn: 'client.test'
+  },
+  ad: {
+    domain: ad.test,
+    hostname: 'dc',
+    netbios: AD,
+    safe_password: Secret123,
+    suffix: 'dc=ad,dc=test'
   }
 }
 
