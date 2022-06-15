@@ -1,3 +1,43 @@
+# dns server
 FROM docker.io/alpine:latest AS dns
 RUN apk --no-cache add dnsmasq
 ENTRYPOINT ["dnsmasq", "-k"]
+
+# vagrant with preinstalled plugins and ansible
+FROM ubuntu:latest as vagrant-base
+ENV VAGRANT_HOME /vagrant
+ENV VAGRANT_DEFAULT_PROVIDER=libvirt
+RUN mkdir /vagrant
+RUN set -e \
+    && apt update \
+    && apt install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+      jq \
+      kmod \
+      libvirt-clients \
+      openssh-client \
+      openssh-server \
+      python3-pip \
+      rsync \
+    && rm -rf /var/lib/apt/lists
+RUN set -e \
+    && VERSION=`curl -s https://api.github.com/repos/hashicorp/vagrant/tags | jq -r '.[0].name' | sed 's/^v//'` \
+    && curl https://releases.hashicorp.com/vagrant/${VERSION}/vagrant_${VERSION}_x86_64.deb -o vagrant.deb \
+    && apt update && apt install -y ./vagrant.deb && rm -rf /var/lib/apt/lists/* \
+    && rm -f vagrant.deb
+
+FROM vagrant-base as vagrant-plugins
+WORKDIR /build
+RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
+RUN set -e \
+    && apt update && apt build-dep -y vagrant ruby-libvirt \
+    && apt install -y --no-install-recommends libxslt-dev libxml2-dev libvirt-dev ruby-bundler ruby-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists
+RUN vagrant plugin install vagrant-libvirt
+RUN vagrant plugin install vagrant-sshfs
+
+FROM vagrant-base as vagrant
+ENTRYPOINT ["/usr/bin/bash"]
+COPY --from=vagrant-plugins /vagrant /vagrant
+RUN pip3 install ansible pywinrm
