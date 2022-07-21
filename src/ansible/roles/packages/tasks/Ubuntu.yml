@@ -8,6 +8,7 @@
       - bash-completion
       - bind9utils
       - dbus
+      - expect
       - findutils
       - gdb
       - gdbserver
