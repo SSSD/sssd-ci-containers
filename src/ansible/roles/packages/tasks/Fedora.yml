@@ -23,6 +23,7 @@
       - bind-utils
       - dbus-tools
       - dnf-plugins-core
+      - expect
       - findutils
       - gdb
       - gdb-gdbserver
