@@ -17,9 +17,14 @@
   synchronize:
     src: '{{ playbook_dir }}/../../data/'
     dest: /data/
-    rsync_opts:
-    - '--chmod=600'
-    - '--chown=root:root'
+
+# synchronize rsync option --chown was ignored for some reason
+- name: Set correct permissions on /data
+  shell: |
+    chown -R root:root /data
+    chmod -R 0755 /data
+    chmod 0600 $(find /data -type f)
+    chmod 0644 /data/certs/*.crt
 
 - name: 'Change root password'
   user:
