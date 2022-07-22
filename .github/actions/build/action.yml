@@ -20,4 +20,5 @@ runs:
         make build                                        \
           BASE_IMAGE="${{ inputs.base_image }}"           \
           TAG="${{ inputs.tag }}"                         \
-          UNAVAILABLE="${{ inputs.unavailable }}"
+          UNAVAILABLE="${{ inputs.unavailable }}"         \
+          XDG_RUNTIME_DIR=
