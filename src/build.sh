@@ -29,15 +29,23 @@ export ANSIBLE_CONFIG=./ansible/ansible.cfg
 export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
 export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
 
+# Debugging options
+export CLEANUP=${CLEANUP:-yes}
+export SKIP_BASE=${SKIP_BASE:-no}
+
 echo "Building from: $BASE_IMAGE"
 echo "Building with tag: $TAG"
 echo "Building in priviledged mode: $PRIVILEDGED"
 echo "Storing in: $REGISTRY"
 
+if [ "$CLEANUP" == "no" ]; then
+  trap - EXIT
+fi
+
 set -xe
 
 function cleanup {
-  ${DOCKER} rm sssd-wip-base --force
+  ${DOCKER} rm sssd-wip-base --force || :
   compose down
 }
 
@@ -103,13 +111,15 @@ function build_service_image {
   ${DOCKER} commit "$from" "${REGISTRY}/ci-$name:${TAG}"
 }
 
-# Create base images
-${DOCKER} build --file "Containerfile" --target dns --tag "${REGISTRY}/ci-dns:latest" .
-build_base_image "$BASE_IMAGE" base-ground
-build_base_image "ci-base-ground:${TAG}" base-client
-build_base_image "ci-base-ground:${TAG}" base-ldap
-build_base_image "ci-base-ground:${TAG}" base-samba
-build_base_image "ci-base-ldap:${TAG}"   base-ipa
+if [ "$SKIP_BASE" == 'no' ]; then
+  # Create base images
+  ${DOCKER} build --file "Containerfile" --target dns --tag "${REGISTRY}/ci-dns:latest" .
+  build_base_image "$BASE_IMAGE" base-ground
+  build_base_image "ci-base-ground:${TAG}" base-client
+  build_base_image "ci-base-ground:${TAG}" base-ldap
+  build_base_image "ci-base-ground:${TAG}" base-samba
+  build_base_image "ci-base-ldap:${TAG}"   base-ipa
+fi
 
 # Create services
 compose up --detach
