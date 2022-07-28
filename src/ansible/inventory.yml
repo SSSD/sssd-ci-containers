@@ -5,7 +5,7 @@ all:
         localhost:
       vars:
         ansible_connection: local
-        ansible_python_interpreter: auto_silent
+        ansible_python_interpreter: /usr/bin/python3
     base:
       hosts:
         base-client:
@@ -17,7 +17,7 @@ all:
       vars:
         ansible_connection: podman
         ansible_host: sssd-wip-base
-        ansible_python_interpreter: auto_silent
+        ansible_python_interpreter: /usr/bin/python3
     services:
       hosts:
         client:
@@ -30,4 +30,4 @@ all:
           ansible_host: sssd-wip-samba
       vars:
         ansible_connection: podman
-        ansible_python_interpreter: auto_silent
+        ansible_python_interpreter: /usr/bin/python3
