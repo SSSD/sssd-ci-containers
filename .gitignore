@@ -2,6 +2,7 @@
 __pycache__
 /.env
 /docker-compose.override*
+.vagrant
 
 shared/**/*
 !shared/.gitkeep

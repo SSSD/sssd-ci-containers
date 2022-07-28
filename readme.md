@@ -142,6 +142,78 @@ services:
     image: ${REGISTRY}/ci-client-devel:${TAG}
 ```
 
+## Using real Active Directory instance
+
+Active Directory does not run in containers so we have Samba DC container to
+mitigate this. However, there may be situations when we need to test against
+real Active Directory running on a Windows server. There is a virtual machine
+defined in [Vagrantfile](./src/Vagrantfile) that can be instantiated via
+[vagrant](https://www.vagrantup.com/).
+
+| Name         |        IP       |      FQDN       | Netbios name | Description    |
+|--------------|-----------------|-----------------|--------------|----------------|
+| ad           | `172.16.200.10` | `dc.ad.test`    | `AD`         | AD forest root |
+
+### Preqrequisites
+
+The following vagrant plugins are required:
+
+* `vagrant-libvirt`
+* `winrm` and `winrm-elevated` (these are built-in to the official [Hashicorp package](https://www.vagrantup.com/downloads))
+
+There are often compatibility issues and bugs when mixing packages provided by
+Linux distributions and non-packaged plugins that require difficult workarounds.
+We recommend to use vagrant from
+[quay.io/sssd/vagrant:latest](https://quay.io/repository/sssd/vagrant?tab=tags&tag=latest)
+container instead to prevent any issues. You can define the following function
+in your `.bashrc`:
+
+```bash
+function vagrant {
+  dir="${VAGRANT_HOME:-$HOME/.vagrant.d}"
+  mkdir -p "$dir/"{boxes,data,tmp}
+
+  podman run -it --rm \
+    -e LIBVIRT_DEFAULT_URI \
+    -v /var/run/libvirt/:/var/run/libvirt/ \
+    -v "$dir/boxes:/vagrant/boxes" \
+    -v "$dir/data:/vagrant/data" \
+    -v "$dir/tmp:/vagrant/tmp" \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w $(realpath "${PWD}") \
+    --network host \
+    --security-opt label=disable \
+    quay.io/sssd/vagrant:latest \
+      vagrant $@
+}
+```
+
+### Starting and stopping the virtual machine
+
+```console
+$ cd ./src
+$ vagrant up
+$ vagrant halt
+$ vagrant destroy
+```
+
+### Creating IPA trust
+
+First, start the CI containers with `sudo make up`, after that you can setup trust
+between `ipa.test` and `ad.test`.
+
+```console
+$ sudo podman exec ipa /usr/bin/bash -c 'echo Secret123 | kinit admin && echo vagrant | ipa trust-add ad.test --admin Administrator --password'
+```
+
+### Joining client into the ad.test domain
+
+First, start the CI containers with `sudo make up`, after that you can enroll the client to `ad.test` domain.
+
+```console
+sudo podman exec client /usr/bin/bash -c 'echo -e Administrator\nvagrant | realm join ad.test'
+```
+
 # Advanced topics
 
 ## Recreating certificates and ssh keys

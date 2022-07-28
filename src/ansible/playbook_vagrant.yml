@@ -1,0 +1,7 @@
+---
+- hosts: ad
+  gather_facts: yes
+  roles:
+  - ad
+  vars_files:
+  - variables.yml
