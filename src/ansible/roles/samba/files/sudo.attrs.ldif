@@ -1,0 +1,130 @@
+dn: CN=sudoUser,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.1
+schemaIdGuid:: //ytX3k5E8mkc6LWgoND+Q==
+cn: sudoUser
+name: sudoUser
+lDAPDisplayName: sudoUser
+description: User(s) who may  run sudo
+attributeSyntax: 2.5.5.5
+oMSyntax: 22
+isSingleValued: FALSE
+
+dn: CN=sudoHost,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.2
+schemaIdGuid:: 82e1Hf487BDUcBI1WfDraA==
+cn: sudoHost
+name: sudoHost
+lDAPDisplayName: sudoHost
+description: Host(s) who may run sudo
+attributeSyntax: 2.5.5.5
+oMSyntax: 22
+isSingleValued: FALSE
+
+dn: CN=sudoCommand,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.3
+schemaIdGuid:: ghdg+gPkvRd8V9BOtwrG8g==
+cn: sudoCommand
+name: sudoCommand
+lDAPDisplayName: sudoCommand
+description: Command(s) to be executed by sudo
+attributeSyntax: 2.5.5.5
+oMSyntax: 22
+isSingleValued: FALSE
+
+dn: CN=sudoRunAs,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.4
+schemaIdGuid:: d4cy8I6W8Al6aEYyUbHb1A==
+cn: sudoRunAs
+name: sudoRunAs
+lDAPDisplayName: sudoRunAs
+description: User(s) impersonated by sudo (deprecated)
+attributeSyntax: 2.5.5.5
+oMSyntax: 22
+isSingleValued: FALSE
+
+dn: CN=sudoOption,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.5
+schemaIdGuid:: BenwRQeqlB9xi0+XvVQKzg==
+cn: sudoOption
+name: sudoOption
+lDAPDisplayName: sudoOption
+description: Options(s) followed by sudo
+attributeSyntax: 2.5.5.5
+oMSyntax: 22
+isSingleValued: FALSE
+
+dn: CN=sudoRunAsUser,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.6
+schemaIdGuid:: KdyHPmGCzCHuh9Dpf3RSHw==
+cn: sudoRunAsUser
+name: sudoRunAsUser
+lDAPDisplayName: sudoRunAsUser
+description: User(s) impersonated by sudo
+attributeSyntax: 2.5.5.5
+oMSyntax: 22
+isSingleValued: FALSE
+
+dn: CN=sudoRunAsGroup,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.7
+schemaIdGuid:: P8xh3i8n3z601NmgS5k3LQ==
+cn: sudoRunAsGroup
+name: sudoRunAsGroup
+lDAPDisplayName: sudoRunAsGroup
+description: Group(s) impersonated by sudo
+attributeSyntax: 2.5.5.5
+oMSyntax: 22
+isSingleValued: FALSE
+
+dn: CN=sudoNotBefore,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.8
+schemaIdGuid:: 8Ahfnub8lt8bbfKnBEHNOA==
+cn: sudoNotBefore
+name: sudoNotBefore
+lDAPDisplayName: sudoNotBefore
+description: Start of time interval for which the entry is valid
+attributeSyntax: 2.5.5.11
+oMSyntax: 24
+isSingleValued: FALSE
+
+dn: CN=sudoNotAfter,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.9
+schemaIdGuid:: OfqkhVrfOFetpb8xEDYmCg==
+cn: sudoNotAfter
+name: sudoNotAfter
+lDAPDisplayName: sudoNotAfter
+description: End of time interval for which the entry is valid
+attributeSyntax: 2.5.5.11
+oMSyntax: 24
+isSingleValued: FALSE
+
+dn: CN=sudoOrder,CN=Schema,CN=Configuration,dc=samba,dc=test
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.15953.9.1.10
+schemaIdGuid:: MGwmF4dyOUDTGr0KFZd+ag==
+cn: sudoOrder
+name: sudoOrder
+lDAPDisplayName: sudoOrder
+description: an integer to order the sudoRole entries
+attributeSyntax: 2.5.5.9
+oMSyntax: 2
+isSingleValued: FALSE
+

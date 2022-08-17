@@ -49,6 +49,29 @@
 
     authselect select winbind --force
 
+- name: Enable schema extensions
+  ini_file:
+    path: /etc/samba/smb.conf
+    section: global
+    option: "dsdb:schema update allowed"
+    value: true
+    mode: '0600'
+    backup: no
+
+- name: Copy sudo schema
+  copy:
+    src: '{{ item }}'
+    dest: '/etc/samba/{{ item }}'
+  with_items:
+  - sudo.attrs.ldif
+  - sudo.class.ldif
+
+- name: Install sudo schema
+  shell: |
+    export LDB_MODULES_PATH=/usr/lib64/samba/ldb
+    ldbadd -H /var/lib/samba/private/sam.ldb /etc/samba/sudo.attrs.ldif
+    ldbadd -H /var/lib/samba/private/sam.ldb /etc/samba/sudo.class.ldif
+
 - name: Start Samba DC
   service:
     name: samba.service
