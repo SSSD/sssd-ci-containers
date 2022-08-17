@@ -21,7 +21,7 @@
       set -ex
       rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9
       dnf install --setopt=install_weak_deps=False -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-      dnf copr enable -y @sssd/ci-deps
+      dnf copr enable -y @sssd/ci-deps centos-stream-9
     args:
       warn: False
 
