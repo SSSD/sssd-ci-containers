@@ -25,7 +25,7 @@ jobs:
 
     - name: Build image
       run: |
-        sudo podman build --file "src/Containerfile" --target=vagrant --tag "localhost/vagrant:latest" ./src
+        sudo -E XDG_RUNTIME_DIR= podman build --file "src/Containerfile" --target=vagrant --tag "localhost/vagrant:latest" ./src
 
     - name: Publish image
       if: github.event_name != 'pull_request'
