@@ -87,3 +87,29 @@
   with_items:
   - Administrator
   - vagrant
+
+- name: Disable automatic DNS updates
+  win_regedit:
+    path: '{{ item.path }}'
+    name: '{{ item.name }}'
+    data: '{{ item.value }}'
+    type: dword
+    state: present
+  with_items:
+  - {path: 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters', name: 'DisableDynamicUpdate', value: 1}
+  - {path: 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters', name: 'RegisterDnsARecords', value: 0}
+  - {path: 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters', name: 'UseDynamicDns', value: 0}
+
+- name: Allow only specific IP address for the DNS server
+  win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\DNS\Parameters
+    name: PublishAddresses
+    data: "172.16.200.10"
+    type: string
+    state: present
+
+- name: Remove vagrant IP address from DNS
+  win_shell: |
+    Get-DnsServerResourceRecord -ZoneName "{{ service.ad.domain }}" -RRType A \
+      | Where-Object {$_.RecordData.ipv4address -ne "172.16.200.10"}          \
+      | Remove-DnsServerResourceRecord -ZoneName "{{ service.ad.domain }}" -Force
