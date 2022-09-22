@@ -46,7 +46,7 @@
     mode: '0600'
   with_items:
   - { src: 'root.id_rsa', dest: 'id_rsa' }
-  - { src: 'root.id_rsa', dest: 'authorized_keys' }
+  - { src: 'root.id_rsa.pub', dest: 'authorized_keys' }
   - { src: 'root.id_rsa.pub', dest: 'id_rsa.pub' }
 
 - name: 'Create wheel group'
@@ -79,5 +79,5 @@
     mode: '0600'
   with_items:
   - { src: 'ci.id_rsa', dest: 'id_rsa' }
-  - { src: 'ci.id_rsa', dest: 'authorized_keys' }
+  - { src: 'ci.id_rsa.pub', dest: 'authorized_keys' }
   - { src: 'ci.id_rsa.pub', dest: 'id_rsa.pub' }
