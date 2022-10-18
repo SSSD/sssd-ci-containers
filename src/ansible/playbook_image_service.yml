@@ -27,6 +27,13 @@
   vars_files:
   - variables.yml
 
+- hosts: nfs
+  gather_facts: yes
+  roles:
+  - nfs
+  vars_files:
+  - variables.yml
+
 - hosts: services
   gather_facts: yes
   roles:
