@@ -51,11 +51,22 @@
       name:
       - adcli
       - freeipa-client
+      - nfs-common
       - packagekit
       - realmd
       - sssd
       - sssd-*
   when: inventory_hostname == 'base-client'
+
+- name: Install packages for NFS base image
+  block:
+  - name: Install NFS
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - nfs-kernel-server
+  when: inventory_hostname == 'base-nfs'
 
 - name: Install additional packages for client development image
   block:

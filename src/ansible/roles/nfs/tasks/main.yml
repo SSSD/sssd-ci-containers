@@ -1,0 +1,8 @@
+- name: Start NFS services
+  service:
+    name: '{{ item }}.service'
+    enabled: yes
+    state: started
+  with_items:
+  - nfs-server
+  - rpcbind

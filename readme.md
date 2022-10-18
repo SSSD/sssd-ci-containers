@@ -77,6 +77,7 @@ perfoming an `ldapsearch`).
 | ldap         | `172.16.100.20` | `master.ldap.test`         | TLS ready 389 Directory Server      |
 | samba        | `172.16.100.30` | `dc.samba.test`            | Samba DC root domain                |
 | client       | `172.16.100.40` | `client.test`              | Client machine with configured SSSD |
+| nfs          | `172.16.100.50` | `nfs.test`                 | NFS server                          |
 
 ## Available user accounts
 
@@ -274,6 +275,7 @@ are:
     base-ground --> base-ldap
     base-ground --> base-client
     base-ground --> base-samba
+    base-ground --> base-nfs
 
     base-ldap --> base-ipa
     base-ldap --> ldap
@@ -284,4 +286,6 @@ are:
     client --> client-devel
 
     base-samba --> samba
+
+    base-nfs --> nfs
 ```

@@ -56,6 +56,7 @@
       state: present
       name:
       - freeipa-client
+      - nfs-utils
       - realmd
       - sssd
       - sssd-*
@@ -104,6 +105,15 @@
       - samba-dc
       - samba-winbind-clients
   when: inventory_hostname == 'base-samba'
+
+- name: Install packages for NFS base image
+  block:
+  - name: Install NFS
+    dnf:
+      state: present
+      name:
+      - nfs-utils
+  when: inventory_hostname == 'base-nfs'
 
 - name: Install additional packages for client development image
   block:

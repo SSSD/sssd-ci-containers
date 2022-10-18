@@ -16,7 +16,7 @@ set -xe
 mkdir -p $OUT
 mkdir -p $OUT/hosts
 
-for name in client ldap ipa samba; do
+for name in client ldap ipa samba nfs; do
     for type in ecdsa ed25519 rsa; do
         ssh-keygen -C "Well known key for sssd-ci." -t ecdsa -f "$OUT/hosts/$name.${type}_key" -N "" <<< y
     done

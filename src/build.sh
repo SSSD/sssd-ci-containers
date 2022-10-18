@@ -5,17 +5,17 @@
 #                     ==============
 #
 #                     original image
-# |----------------------------------------------------|
-# |                    base-ground                     |
-# |----------------------------------------------------|
-# |        base-ldap    |  base-client  |  base-samba  |
-# |------------------------------------ |--------------|
-# |  base-ipa  |        |               |              |
-# |------------|        |               |              |
-# |    ipa     |  ldap  |    client     |     samba    |
-# |            |        |---------------|              |
-# |            |        |  client-dev   |              |
-# |------------|--------|---------------|--------------|
+# |-----------------------------------------------------------------|
+# |                    base-ground                                  |
+# |-----------------------------------------------------------------|
+# |        base-ldap    |  base-client  |  base-samba  |  base-nfs  |
+# |------------------------------------ |--------------|------------|
+# |  base-ipa  |        |               |              |            |
+# |------------|        |               |              |            |
+# |    ipa     |  ldap  |    client     |     samba    |    nfs     |
+# |            |        |---------------|              |            |
+# |            |        |  client-dev   |              |            |
+# |------------|--------|---------------|--------------|------------|
 
 trap "cleanup &> /dev/null || :" EXIT
 pushd $(realpath `dirname "$0"`) &> /dev/null
@@ -119,6 +119,7 @@ if [ "$SKIP_BASE" == 'no' ]; then
   build_base_image "ci-base-ground:${TAG}" base-ldap
   build_base_image "ci-base-ground:${TAG}" base-samba
   build_base_image "ci-base-ldap:${TAG}"   base-ipa
+  build_base_image "ci-base-ground:${TAG}" base-nfs
 fi
 
 # Create services
@@ -129,6 +130,7 @@ build_service_image sssd-wip-client client
 build_service_image sssd-wip-ipa ipa
 build_service_image sssd-wip-ldap ldap
 build_service_image sssd-wip-samba samba
+build_service_image sssd-wip-nfs nfs
 compose down
 
 # Create development images with additional packages
