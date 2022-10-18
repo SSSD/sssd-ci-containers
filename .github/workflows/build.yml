@@ -29,7 +29,7 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Get build matrix
       id: matrix
       uses: ./.github/actions/get-build-matrix
@@ -45,7 +45,7 @@ jobs:
         image: ${{ fromJson(needs.get-matrix.outputs.matrix) }}
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install dependencies
       uses: ./.github/actions/install-dependencies
@@ -82,7 +82,7 @@ jobs:
         ]
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install dependencies
       uses: ./.github/actions/install-dependencies

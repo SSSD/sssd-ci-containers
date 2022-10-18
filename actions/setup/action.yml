@@ -30,7 +30,7 @@ runs:
       sudo systemctl enable --now podman.socket
 
   - name: Checkout sssd-ci-containers repository
-    uses: actions/checkout@v2
+    uses: actions/checkout@v3
     with:
       repository: SSSD/sssd-ci-containers
       path: ${{ inputs.path }}
