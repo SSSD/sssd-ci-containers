@@ -3,6 +3,7 @@
 import json
 import requests
 import sys
+import os
 
 
 def get_matrix(image, image_tags, ci_tag, ci_tag_extra):
@@ -40,6 +41,7 @@ matrix.extend(get_matrix('registry.fedoraproject.org/fedora', fedora_stable, 'fe
 matrix.extend(get_matrix('registry.fedoraproject.org/fedora', fedora_devel, 'fedora-{tag}', 'rawhide'))
 
 if 'action' in sys.argv[1:]:
-    print(f'::set-output name=matrix::{json.dumps(matrix)}')
-else:
-    print(json.dumps(matrix, indent=2))
+    with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+        f.write(f'matrix={json.dumps(matrix)}')
+
+print(json.dumps(matrix, indent=2))
