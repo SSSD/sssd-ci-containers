@@ -32,6 +32,14 @@
   args:
     creates: /etc/ipa/default.conf
 
+- name: Remove auto.master and auto.direct maps
+  shell: |
+    kinit admin
+    ipa automountmap-del default auto.master
+    ipa automountmap-del default auto.direct
+  args:
+    stdin: '{{ service.ipa.password }}'
+
 - name: Create pw-never-expires group
   shell: |
     kinit admin
