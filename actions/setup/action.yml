@@ -50,6 +50,12 @@ runs:
     run: |
       sudo make -C "${{ inputs.path }}" setup-dns-files
 
+  - name: Trust container CA
+    shell: bash
+    run: |
+        sudo cp "${{ inputs.path }}/data/certs/ca.crt" /usr/local/share/ca-certificates
+        sudo update-ca-certificates
+
   - name: Print docker-compose config
     shell: bash
     run: |
