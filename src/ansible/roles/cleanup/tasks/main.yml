@@ -7,8 +7,6 @@
 
   - name: Remove 389ds database to make image smaller
     shell: rm -f /var/lib/dirsrv/slapd-IPA-TEST/db/__db.*
-    args:
-      warn: False
   when: inventory_hostname == 'ipa'
 
 - name: Minimize LDAP service container
@@ -20,8 +18,6 @@
 
   - name: Remove 389ds database to make image smaller
     shell: rm -f /var/lib/dirsrv/slapd-localhost/db/__db.*
-    args:
-      warn: False
   when: inventory_hostname == 'ldap'
 
 - name: Minimize client service container
@@ -33,6 +29,4 @@
 
   - name: Remove SSSD's database and logs
     shell: rm -f /var/lib/sss/db/* /var/lib/sss/mc/* /var/log/sssd/*
-    args:
-      warn: False
   when: inventory_hostname == 'client' or inventory_hostname == 'ipa'

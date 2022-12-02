@@ -9,8 +9,6 @@
   - name: Install additional repositories
     shell: |
       dnf config-manager --add-repo {{ item }}
-    args:
-      warn: false
     with_items:
     - https://cli.github.com/packages/rpm/gh-cli.repo
 
@@ -71,8 +69,6 @@
         libldb                  \
         libtalloc               \
         libtevent
-    args:
-      warn: False
   when: inventory_hostname == 'base-client'
 
 - name: Install packages for LDAP base image
@@ -119,8 +115,6 @@
   block:
   - name: Install SSSD build dependencies
     command: dnf build-dep -y sssd
-    args:
-      warn: False
 
   - name: Install packages required for integration tests
     dnf:

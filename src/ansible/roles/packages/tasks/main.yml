@@ -12,5 +12,3 @@
     else
       dnf clean all
     fi
-  args:
-    warn: false
