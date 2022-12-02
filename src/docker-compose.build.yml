@@ -17,3 +17,6 @@ services:
   nfs:
     image: localhost/sssd/ci-base-nfs:${TAG}
     container_name: sssd-wip-nfs
+  kdc:
+    image: localhost/sssd/ci-base-kdc:${TAG}
+    container_name: sssd-wip-kdc

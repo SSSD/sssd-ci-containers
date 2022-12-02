@@ -111,6 +111,26 @@ services:
     networks:
       sssd:
         ipv4_address: 172.16.100.50
+  kdc:
+    image: ${REGISTRY}/ci-kdc:${TAG}
+    container_name: kdc
+    hostname: kdc.test
+    dns: 172.16.100.2
+    env_file: ./env.containers
+    volumes:
+    - ./shared:/shared:rw
+    - ./exports:/exports:rw
+    cap_add:
+    - SYS_ADMIN
+    - SYS_PTRACE
+    - AUDIT_WRITE
+    security_opt:
+    - apparmor=unconfined
+    - label=disable
+    - seccomp=unconfined
+    networks:
+      sssd:
+        ipv4_address: 172.16.100.60
 networks:
   sssd:
     name: sssd-ci

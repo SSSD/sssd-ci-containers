@@ -2,6 +2,7 @@
 - hosts: base
   gather_facts: yes
   roles:
+  - facts
   - packages
   vars_files:
   - variables.yml
