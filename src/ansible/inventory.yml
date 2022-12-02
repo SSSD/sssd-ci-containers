@@ -13,6 +13,7 @@ all:
         base-ldap:
         base-samba:
         base-nfs:
+        base-kdc:
         base-ground:
         client-devel:
       vars:
@@ -31,6 +32,8 @@ all:
           ansible_host: sssd-wip-samba
         nfs:
           ansible_host: sssd-wip-nfs
+        kdc:
+          ansible_host: sssd-wip-kdc
       vars:
         ansible_connection: podman
         ansible_python_interpreter: /usr/bin/python3

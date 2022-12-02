@@ -8,6 +8,6 @@
 
 - name: Start SSH daemon
   service:
-    name: sshd.service
+    name: '{{ systemd.services.sshd }}'
     enabled: yes
     state: started

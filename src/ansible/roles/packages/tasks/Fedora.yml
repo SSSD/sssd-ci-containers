@@ -111,6 +111,17 @@
       - nfs-utils
   when: inventory_hostname == 'base-nfs'
 
+- name: Install packages for KDC base image
+  block:
+  - name: Install KDC
+    dnf:
+      state: present
+      name:
+      - krb5-libs
+      - krb5-server
+      - krb5-workstation
+  when: inventory_hostname == 'base-kdc'
+
 - name: Install additional packages for client development image
   block:
   - name: Install SSSD build dependencies

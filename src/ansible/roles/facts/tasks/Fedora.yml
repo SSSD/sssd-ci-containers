@@ -1,0 +1,7 @@
+- name: Set distribution specific facts
+  set_fact:
+    systemd:
+      services:
+        kadmin: kadmin.service
+        krb5kdc: krb5kdc.service
+        sshd: sshd.service

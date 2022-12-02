@@ -78,6 +78,7 @@ perfoming an `ldapsearch`).
 | samba        | `172.16.100.30` | `dc.samba.test`            | Samba DC root domain                |
 | client       | `172.16.100.40` | `client.test`              | Client machine with configured SSSD |
 | nfs          | `172.16.100.50` | `nfs.test`                 | NFS server                          |
+| kdc          | `172.16.100.60` | `kdc.test`                 | Kerberos KDC                        |
 
 ## Available user accounts
 
@@ -276,6 +277,7 @@ are:
     base-ground --> base-client
     base-ground --> base-samba
     base-ground --> base-nfs
+    base-ground --> base-kdc
 
     base-ldap --> base-ipa
     base-ldap --> ldap
@@ -288,4 +290,6 @@ are:
     base-samba --> samba
 
     base-nfs --> nfs
+
+    base-kdc --> kdc
 ```

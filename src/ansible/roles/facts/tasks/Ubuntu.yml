@@ -1,0 +1,2 @@
+- name: 'Facts are the same as in Debian'
+  include_tasks: 'Debian.yml'

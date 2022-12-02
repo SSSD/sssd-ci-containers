@@ -25,6 +25,12 @@ service: {
     domain: 'client.test',
     fqn: 'client.test'
   },
+  kdc: {
+    realm: TEST,
+    domain: test,
+    fqn: kdc.test,
+    master_password: Secret123
+  },
   ad: {
     domain: ad.test,
     hostname: 'dc',

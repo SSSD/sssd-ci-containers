@@ -68,6 +68,18 @@
       - nfs-kernel-server
   when: inventory_hostname == 'base-nfs'
 
+- name: Install packages for KDC base image
+  block:
+  - name: Install KDC
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - krb5-admin-server
+      - krb5-config
+      - krb5-kdc
+  when: inventory_hostname == 'base-kdc'
+
 - name: Install additional packages for client development image
   block:
   - name: Install SSSD build and integration tests dependencies

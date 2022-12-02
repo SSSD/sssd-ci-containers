@@ -1,41 +1,53 @@
 ---
-- hosts: ldap
+- hosts: services
   gather_facts: yes
+  roles:
+  - facts
+
+- hosts: ldap
+  gather_facts: no
   roles:
   - ldap
   vars_files:
   - variables.yml
 
 - hosts: samba
-  gather_facts: yes
+  gather_facts: no
   roles:
   - samba
   vars_files:
   - variables.yml
 
 - hosts: ipa
-  gather_facts: yes
+  gather_facts: no
   roles:
   - ipa
   vars_files:
   - variables.yml
 
 - hosts: client
-  gather_facts: yes
+  gather_facts: no
   roles:
   - client
   vars_files:
   - variables.yml
 
 - hosts: nfs
-  gather_facts: yes
+  gather_facts: no
   roles:
   - nfs
   vars_files:
   - variables.yml
 
+- hosts: kdc
+  gather_facts: no
+  roles:
+  - kdc
+  vars_files:
+  - variables.yml
+
 - hosts: services
-  gather_facts: yes
+  gather_facts: no
   roles:
   - ssh_server
   - cleanup
