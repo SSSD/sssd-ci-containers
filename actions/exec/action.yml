@@ -29,7 +29,7 @@ runs:
     run: |
       file=`mktemp`
       echo -e "$script" > "$file"
-      echo ::set-output name=path::$file
+      echo "path=$file" >> $GITHUB_OUTPUT
 
   - name: Copy file to the container
     shell: bash
