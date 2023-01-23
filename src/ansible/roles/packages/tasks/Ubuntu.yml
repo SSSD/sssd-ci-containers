@@ -26,8 +26,10 @@
       - rsync
       - sudo
       - systemd
+      - tcpdump
       - tig
       - tmux
+      - tshark
       - vim
       - wget
   when: inventory_hostname == 'base-ground'

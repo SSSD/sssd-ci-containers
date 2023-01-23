@@ -39,12 +39,14 @@
       - rsync
       - sudo
       - systemd
+      - tcpdump
       - tig
       - tmate
       - tmux
       - vim
       - wget
       - which
+      - wireshark-cli
   when: inventory_hostname == 'base-ground'
 
 - name: Install packages for client base image
