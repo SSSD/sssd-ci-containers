@@ -23,7 +23,7 @@ RUN set -e \
     && rm -rf /var/lib/apt/lists
 RUN set -e \
     && VERSION=`curl -s https://api.github.com/repos/hashicorp/vagrant/tags | jq -r '.[0].name' | sed 's/^v//'` \
-    && curl https://releases.hashicorp.com/vagrant/${VERSION}/vagrant_${VERSION}_x86_64.deb -o vagrant.deb \
+    && curl https://releases.hashicorp.com/vagrant/${VERSION}/vagrant_${VERSION}-1_amd64.deb -o vagrant.deb \
     && apt update && apt install -y ./vagrant.deb && rm -rf /var/lib/apt/lists/* \
     && rm -f vagrant.deb
 
