@@ -83,6 +83,8 @@ services:
     cap_add:
     - SYS_ADMIN
     - SYS_PTRACE
+    - NET_RAW
+    - NET_ADMIN
     - AUDIT_WRITE
     security_opt:
     - apparmor=unconfined
