@@ -1,0 +1,78 @@
+# This config is specific to downstream ci and does not
+# handle multiple AD DCs and other setups yet.
+# TODO: Add all AD servers
+# TODO: Remove meta_ip dependency (from  idm-ci).
+# TODO: Generalize this for all machines.
+# dnsmasq config
+listen-address=::1,127.0.0.53,127.0.0.1,{{ hostvars['dns.test']['meta_ip'] }}
+log-queries
+log-facility=-
+local=/test/
+domain=test
+
+# Disable caching so we always query AD and IPA DNS
+cache-size=0
+
+# These zones have their own DNS server
+{% if 'master.ipa.test' in hostvars %}
+server=/ipa.test/{{ hostvars['master.ipa.test']['meta_ip'] }}
+{% endif %}
+{% if 'dc.samba.test' in hostvars %}
+server=/samba.test/{{ hostvars['dc.samba.test']['meta_ip'] }}
+{% endif %}
+{% if 'dc.ad.test' in hostvars %}
+server=/ad.test/{{ hostvars['dc.ad.test']['meta_ip'] }}
+{% endif %}
+
+
+#{% for host in vars['hostvars'] %}
+#address=/{{ host }}/{{ hostvars[host]['meta_ip'] }}
+#{% endfor %}
+
+
+# Add A records for LDAP, client and other machines without own DNS server
+{% if 'master.ldap.test' in hostvars %}
+address=/master.ldap.test/{{ hostvars['master.ldap.test']['meta_ip'] }}
+{% endif %}
+{% if 'client.test' in hostvars %}
+address=/client.test/{{ hostvars['client.test']['meta_ip'] }}
+{% endif %}
+{# For nfs and kdc we plan to put them alternatively on the ldap machine to save resources. #}
+{% if 'nfs.test' in hostvars %}
+address=/nfs.test/{{ hostvars['nfs.test']['meta_ip'] }}
+{% elif 'master.ldap.test' in hostvars %}
+address=/nfs.test/{{ hostvars['master.ldap.test']['meta_ip'] }}
+{% endif %}
+{% if 'kdc.test' in hostvars %}
+address=/kdc.test/{{ hostvars['kdc.test']['meta_ip'] }}
+{% elif 'master.ldap.test' in hostvars %}
+address=/kdc.test/{{ hostvars['master.ldap.test']['meta_ip'] }}
+{% endif %}
+
+# Add SRV record for LDAP
+{% if 'master.ldap.test' in hostvars %}
+srv-host=_ldap._tcp.ldap.test,master.ldap.test,389
+{% endif %}
+
+# Add PTR records for all machines
+{% if 'master.ipa.test' in hostvars %}
+ptr-record={{ hostvars['master.ipa.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,master.ipa.test
+{% endif %}
+{% if 'master.ldap.test' in hostvars %}
+ptr-record={{ hostvars['master.ldap.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,master.ldap.test
+{% endif %}
+{% if 'dc.samba.test' in hostvars %}
+ptr-record={{ hostvars['dc.samba.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,dc.samba.test
+{% endif %}
+{% if 'client.test' in hostvars %}
+ptr-record={{ hostvars['client.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,client.test
+{% endif %}
+{% if 'dc.ad.test' in hostvars %}
+ptr-record={{ hostvars['dc.ad.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,dc.ad.test
+{% endif %}
+{% if 'kdc.test' in hostvars %}
+ptr-record={{ hostvars['kdc.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,kdc.test
+{% endif %}
+{% if 'nfs.test' in hostvars %}
+ptr-record={{ hostvars['nfs.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,nfs.test
+{% endif %}

@@ -19,13 +19,19 @@
   gather_facts: no
   roles:
   - ipa
-  - passkey
 
 - hosts: client.test
   gather_facts: no
   roles:
   - client
-  - passkey
+
+- hosts: client.test, master.ipa.test
+  gather_facts: no
+  tasks:
+  - name: Include passkey
+    include_role:
+      name: passkey
+    when: passkey_support
 
 - hosts: nfs.test
   gather_facts: no

@@ -39,6 +39,9 @@
     ipa automountmap-del default auto.direct
   args:
     stdin: '{{ service.ipa.password }}'
+  register: automountmapdel
+  failed_when:
+  - 'automountmapdel.rc != 0 and "automount map not found" not in automountmapdel.stderr'
 
 - name: Create pw-never-expires group
   shell: |
@@ -46,6 +49,9 @@
     ipa group-add pw-never-expires
   args:
     stdin: '{{ service.ipa.password }}'
+  register: pwneverexpires
+  failed_when:
+  - 'pwneverexpires.rc != 0 and "already exists" not in pwneverexpires.stderr'
 
 - name: Create pw-never-expires password policy
   shell: |
@@ -53,6 +59,9 @@
     ipa pwpolicy-add pw-never-expires --maxlife=0 --minlife=0 --priority=0
   args:
     stdin: '{{ service.ipa.password }}'
+  register: policy
+  failed_when:
+  - 'policy.rc != 0 and "already used by pw-never-expires" not in policy.stderr'
 
 - name: Add admin to pw-never-expires group
   shell: |
@@ -60,6 +69,9 @@
     ipa group-add-member pw-never-expires --users=admin
   args:
     stdin: '{{ service.ipa.password }}'
+  register: member
+  failed_when:
+  - 'member.rc != 0 and "This entry is already a member" not in member.stdout'
 
 - name: Reset admin password to apply pw-never-expires policy
   shell: |
@@ -70,6 +82,16 @@
       {{ service.ipa.password }}
       {{ service.ipa.password }}
 
+- name: 'Check trust with other domains'
+  shell: |
+    kinit admin
+    ipa trust-find
+  args:
+    stdin: |
+      {{ service.ipa.password }}
+  register: trust
+  failed_when: False
+
 - name: 'Setup trust with {{ service.samba.domain }}'
   shell: |
     kinit admin
@@ -78,3 +100,20 @@
     stdin: |
       {{ service.ipa.password }}
       {{ service.samba.password }}
+  when:
+  - 'service.samba.domain not in trust.stdout'
+  - join_samba
+  - trust_ipa_samba
+
+- name: 'Setup trust with {{ service.ad.domain }}'
+  shell: |
+    kinit admin
+    ipa trust-add {{ service.ad.domain | quote }} --admin Administrator --password
+  args:
+    stdin: |
+      {{ service.ad.safe_password }}
+      {{ service.ad.safe_password }}
+  when:
+  - 'service.ad.domain not in trust.stdout'
+  - join_ad
+  - trust_ipa_ad

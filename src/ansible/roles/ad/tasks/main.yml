@@ -5,6 +5,7 @@
     action: allow
     enabled: yes
     state: present
+  when: open_firewall
 
 - name: Set the default SSH shell to PowerShell
   win_regedit:
@@ -14,38 +15,32 @@
     type: string
     state: present
 
-- name: Install Active Directory Services
-  win_feature:
-    name: '{{ item }}'
-    include_management_tools: yes
-    include_sub_features: yes
-    state: present
-  with_items:
-  - AD-Domain-Services
-  - DNS
+- name: Detect cygwin
+  win_stat:
+    path: 'C:\cygwin64\etc'
+  register: cygwin
 
-- name: 'Create new AD forest {{ service.ad.domain }}'
-  win_shell: |
-    Import-Module ADDSDeployment
+- name: Configure shell for cygwin
+  win_lineinfile:
+    path: 'C:\cygwin64\etc\nsswitch.conf'
+    line: "db_shell: /cygdrive/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+  when: cygwin.stat.exists
+  register: configured_cygwin
 
-    Install-ADDSForest                                                        \
-      -DomainName "{{ service.ad.domain }}"                                   \
-      -CreateDnsDelegation:$false                                             \
-      -DomainNetbiosName "{{ service.ad.netbios }}"                           \
-      -ForestMode "WinThreshold"                                              \
-      -DomainMode "WinThreshold"                                              \
-      -Force:$true                                                            \
-      -InstallDns:$true                                                       \
-      -NoRebootOnCompletion:$true                                             \
-      -SafeModeAdministratorPassword                                          \
-        (ConvertTo-SecureString '{{ service.ad.safe_password }}' -AsPlainText -Force)
-  register: installation
-  args:
-    creates: 'C:\Windows\NTDS'
-
-- name: Reboot machine
+- name: Reboot machine to apply changes in cygwin config
   win_reboot:
-  when: installation.changed
+  when: configured_cygwin.changed and skip_addc_install
+
+- name: 'Install AD server'
+  include_tasks: 'install.yml'
+  when: not skip_addc_install
+
+- name: Install management tools
+  win_feature:
+    name:
+    - RSAT-AD-Tools
+    include_sub_features: yes
+    include_management_tools: yes
 
 - name: Make sure Active Directory Web Services is running
   win_service:
@@ -53,21 +48,9 @@
     start_mode: auto
     state: started
 
-- name: Copy sudo schema to guest
-  win_copy:
-    src: '{{ item }}.schema'
-    dest: 'C:\{{ item }}.schema'
-  with_items:
-  - sudo
-
-- name: Install additional schemas
-  win_shell: |
-    ldifde -i -f C:\{{ item }}.schema -c dc=X {{ service.ad.suffix }} -b "Administrator" "{{ service.ad.netbios }}" "vagrant"
-  register: schema
-  failed_when: schema.rc != 0 and schema.stdout is not search('ENTRY_EXISTS')
-  changed_when: schema.rc == 0
-  with_items:
-  - sudo
+- name: 'Add sudo schema and possibly other'
+  include_tasks: 'schema.yml'
+  when: not skip_schema
 
 - name: Set Password Never Expires for system users
   win_shell: |
@@ -84,32 +67,14 @@
   register: result
   failed_when: "result.rc != 255 and result.rc != 0"
   changed_when: "result.rc == 0"
+  until: "result.rc == 0"
+  # The AD is sometimes not ready to proccess requests so we retry
+  # to make it stable.
+  retries: 5
+  delay: 60
   with_items:
-  - Administrator
-  - vagrant
+  - "{{ ad_permanent_users }}"
 
-- name: Disable automatic DNS updates
-  win_regedit:
-    path: '{{ item.path }}'
-    name: '{{ item.name }}'
-    data: '{{ item.value }}'
-    type: dword
-    state: present
-  with_items:
-  - {path: 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters', name: 'DisableDynamicUpdate', value: 1}
-  - {path: 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters', name: 'RegisterDnsARecords', value: 0}
-  - {path: 'HKLM:\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters', name: 'UseDynamicDns', value: 0}
-
-- name: Allow only specific IP address for the DNS server
-  win_regedit:
-    path: HKLM:\SYSTEM\CurrentControlSet\Services\DNS\Parameters
-    name: PublishAddresses
-    data: "172.16.200.10"
-    type: string
-    state: present
-
-- name: Remove vagrant IP address from DNS
-  win_shell: |
-    Get-DnsServerResourceRecord -ZoneName "{{ service.ad.domain }}" -RRType A \
-      | Where-Object {$_.RecordData.ipv4address -ne "172.16.200.10"}          \
-      | Remove-DnsServerResourceRecord -ZoneName "{{ service.ad.domain }}" -Force
+- name: 'Configure DNS on vagrant AD'
+  include_tasks: 'dns.yml'
+  when: not skip_dns

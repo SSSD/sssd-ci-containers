@@ -2,4 +2,4 @@
 - hosts: dc.ad.test
   gather_facts: yes
   roles:
-  - ad
+  - { role: ad, enable_firewall: yes }

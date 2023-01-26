@@ -9,3 +9,9 @@
   set_fact:
     buildroot: no
     debuginfo: no
+    ipa: '{{ ipa_packages }}'
+
+- name: Set distribution specific facts for RHEL 7
+  set_fact:
+    passkey_support: No
+  when: ansible_distribution_major_version == '7'

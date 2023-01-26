@@ -15,6 +15,8 @@
 - name: Create Kerberos database
   shell: |
     /usr/sbin/kdb5_util -P "{{ service.kdc.master_password }}" create -s
+  args:
+    creates: "/var/kerberos/krb5kdc/principal"
 
 - name: Start Kerberos services
   service:

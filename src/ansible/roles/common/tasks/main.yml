@@ -1,3 +1,7 @@
+- name: Set data path
+  set_fact:
+    data_path: '{{ role_path }}/../../../../data'
+
 - name: Set /usr/bin/python to python3
   alternatives:
     name: python
@@ -12,9 +16,15 @@
     group: root
     mode: 0600
 
+- name: Create /data
+  file:
+    path: '/data'
+    state: directory
+    mode: 0700
+
 - name: Copy common data
   synchronize:
-    src: '{{ playbook_dir }}/../../data/'
+    src: '{{ data_path }}/'
     dest: /data/
 
 # synchronize rsync option --chown was ignored for some reason
@@ -48,15 +58,24 @@
 
 - name: Copy root user ssh keys
   copy:
-    src: '{{ playbook_dir }}/../../data/ssh-keys/{{ item.src }}'
+    src: '{{ data_path }}/ssh-keys/{{ item.src }}'
     dest: '/root/.ssh/{{ item.dest }}'
     owner: 'root'
     group: 'root'
     mode: '0600'
   with_items:
   - { src: 'root.id_rsa', dest: 'id_rsa' }
-  - { src: 'root.id_rsa.pub', dest: 'authorized_keys' }
   - { src: 'root.id_rsa.pub', dest: 'id_rsa.pub' }
+
+- name: Append or create authorized_keys
+  lineinfile:
+    dest: "/root/.ssh/authorized_keys"
+    line: "{{ lookup('file', '{{ data_path }}/ssh-keys/root.id_rsa.pub') }}"
+    create: yes
+    state: present
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
 
 - name: 'Create wheel group'
   group:
@@ -94,7 +113,7 @@
 
 - name: Copy ci user ssh keys
   copy:
-    src: '{{ playbook_dir }}/../../data/ssh-keys/{{ item.src }}'
+    src: '{{ data_path }}/ssh-keys/{{ item.src }}'
     dest: '/home/{{ user.regular.name }}/.ssh/{{ item.dest }}'
     owner: '{{ user.regular.name }}'
     group: '{{ user.regular.name }}'

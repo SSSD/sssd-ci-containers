@@ -1,3 +1,7 @@
+- name: Select packageset
+  set_fact:
+    extended_packageset: "{{ extended_packageset | default('no') }}"
+
 - name: Install packages for ground base image
   block:
   - name: Install dnf plugins
@@ -6,33 +10,14 @@
       name:
       - dnf-plugins-core
 
-  - name: Install additional repositories
-    shell: |
-      dnf config-manager --add-repo {{ item }}
-    with_items:
-    - https://cli.github.com/packages/rpm/gh-cli.repo
-
-  - name: Install systemd and common tools
+  - name: Install systemd and minimal set of packages
     dnf:
       state: present
       name:
       - authselect
-      - bash-completion
       - bind-utils
-      - dbus-tools
-      - dnf-plugins-core
-      - e2fsprogs
       - expect
-      - findutils
       - firewalld
-      - gdb
-      - gdb-gdbserver
-      - gh
-      - git
-      - iputils
-      - ldb-tools
-      - man
-      - mc
       - net-tools
       - openldap-clients
       - openssh-clients
@@ -41,43 +26,100 @@
       - policycoreutils
       - policycoreutils-python-utils
       - python3-pip
-      - rsync
       - sudo
       - systemd
+      disable_gpg_check: yes
+  when: "'base_ground' in group_names"
+
+- name: Install extended set of packages
+  block:
+  - name: Install additional repositories
+    shell: |
+      dnf config-manager --add-repo {{ item }}
+    with_items:
+    - https://cli.github.com/packages/rpm/gh-cli.repo
+  - name: Install additional packages
+    dnf:
+      state: present
+      name:
+      - bash-completion
+      - bind-utils
+      - dbus-tools
+      - e2fsprogs
+      - expect
+      - findutils
+      - firewalld
+      - gdb
+      - gdb-gdbserver
+      - iputils
+      - ldb-tools
+      - man
+      - net-tools
+      - passwd
+      - policycoreutils
+      - policycoreutils-python-utils
+      - python3-pip
+      - rsync
       - tcpdump
+      - wget
+      - which
+      - wireshark-cli
+      - gh
+      - git
+      - mc
       - tig
       - tmate
       - tmux
       - vim
-      - wget
-      - which
-      - wireshark-cli
-  when: "'base_ground' in group_names"
+      disable_gpg_check: yes
+  when:
+  - "'base_ground' in group_names"
+  - extended_packageset
 
 - name: Install packages for client base image
   block:
+  - name: Install ipa client
+    dnf:
+      state: present
+      name: '{{ ipa.client }}'
+
   - name: Install SSSD and its dependencies
     dnf:
       state: present
       name:
-      - freeipa-client
       - nfs-utils
       - realmd
       - sssd
       - sssd-*
+
   - name: Install debug information for selected packages
-    shell: |
-      dnf debuginfo-install -y  \
-        dbus                    \
-        glibc                   \
-        libcmocka               \
-        libdhash                \
-        libini_config           \
-        libldb                  \
-        libtalloc               \
-        libtevent
+    command: dnf debuginfo-install  -y  {{ item }}
+    with_items:
+      - dbus
+      - glibc
+      - libcmocka
+      - libdhash
+      - libini_config
+      - libldb
+      - libtalloc
+      - libtevent
+    ignore_errors: yes
     when: debuginfo
-  when: "'base_client' in group_names"
+
+  - name: Install test dependencies on client
+    dnf:
+      state: present
+      name:
+      - ldb-tools
+      - net-tools
+      - wireshark-cli
+      - tcpdump
+      - autofs
+      - krb5-workstation
+      disable_gpg_check: yes
+    when:
+    - 'not extended_packageset'
+  when: "'base_client' in group_names or 'client' in group_names"
 
 - name: Install packages for LDAP base image
   block:
@@ -87,18 +129,15 @@
       name:
       - acl
       - 389-ds-base
-  when: "'base_ldap' in group_names"
+  when: "'base_ldap' in group_names or 'ldap' in group_names or 'ipa' in group_names"
 
 - name: Install packages for IPA base image
   block:
   - name: Install IPA
     dnf:
       state: present
-      name:
-      - freeipa-server
-      - freeipa-server-dns
-      - freeipa-server-trust-ad
-  when: "'base_ipa' in group_names"
+      name: '{{ ipa.server }}'
+  when: "'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Samba base image
   block:
@@ -108,7 +147,7 @@
       name:
       - samba-dc
       - samba-winbind-clients
-  when: "'base_samba' in group_names"
+  when: "'base_samba' in group_names or 'samba' in group_names"
 
 - name: Install packages for NFS base image
   block:
@@ -117,7 +156,7 @@
       state: present
       name:
       - nfs-utils
-  when: "'base_nfs' in group_names"
+  when: "'base_nfs' in group_names or 'nfs' in group_names"
 
 - name: Install packages for KDC base image
   block:
@@ -128,7 +167,7 @@
       - krb5-libs
       - krb5-server
       - krb5-workstation
-  when: "'base_kdc' in group_names"
+  when: "'base_kdc' in group_names or 'kdc' in group_names"
 
 - name: Install packages that are shared with IPA and client base images
   block:
@@ -140,7 +179,7 @@
       - openssl-devel
       - umockdev
     when: passkey_support
-  when: "'base_client' in group_names or 'base_ipa' in group_names"
+  when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Keycloak base image
   block:

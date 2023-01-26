@@ -59,7 +59,7 @@
       - libssl-dev
       - umockdev
     when: passkey_support
-  when: "'base_client' in group_names"
+  when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for NFS base image
   block:
@@ -69,7 +69,7 @@
       update_cache: yes
       name:
       - nfs-kernel-server
-  when: "'base_nfs' in group_names"
+  when: "'base_nfs' in group_names or 'nfs' in group_names"
 
 - name: Install packages for KDC base image
   block:
@@ -81,7 +81,7 @@
       - krb5-admin-server
       - krb5-config
       - krb5-kdc
-  when: "'base_kdc' in group_names"
+  when: "'base_kdc' in group_names or 'kdc' in group_names"
 
 - name: Install packages for Keycloak base image
   block:
