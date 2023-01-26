@@ -1,0 +1,32 @@
+- name: Install Active Directory Services
+  win_feature:
+    name: '{{ item }}'
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+  with_items:
+  - AD-Domain-Services
+  - DNS
+
+- name: 'Create new AD forest {{ service.ad.domain }}'
+  win_shell: |
+    Import-Module ADDSDeployment
+
+    Install-ADDSForest                                                        \
+      -DomainName "{{ service.ad.domain }}"                                   \
+      -CreateDnsDelegation:$false                                             \
+      -DomainNetbiosName "{{ service.ad.netbios }}"                           \
+      -ForestMode "WinThreshold"                                              \
+      -DomainMode "WinThreshold"                                              \
+      -Force:$true                                                            \
+      -InstallDns:$true                                                       \
+      -NoRebootOnCompletion:$true                                             \
+      -SafeModeAdministratorPassword                                          \
+        (ConvertTo-SecureString '{{ service.ad.safe_password }}' -AsPlainText -Force)
+  register: installation
+  args:
+    creates: 'C:\Windows\NTDS'
+
+- name: Reboot machine
+  win_reboot:
+  when: installation.changed

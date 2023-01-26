@@ -56,3 +56,20 @@ user: {
     password: Secret123
   }
 }
+
+freeipa_packages: {
+    server: [ freeipa-server, freeipa-server-dns, freeipa-server-trust-ad ],
+    client: [ freeipa-client, ]
+}
+
+ipa_packages: {
+    server: [ ipa-server-dns, ipa-server, ipa-server-trust-ad ],
+    client: [ ipa-client, ]
+}
+
+join_samba: yes
+join_ipa: yes
+join_ldap: yes
+join_ad: no
+trust_ipa_samba: yes
+trust_ipa_ad: no

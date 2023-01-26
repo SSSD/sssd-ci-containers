@@ -11,3 +11,9 @@
     name: '{{ systemd.services.sshd }}'
     enabled: yes
     state: restarted
+  register: restart_res
+  until: "restart_res is not failed"
+  # The ssh service restart sometimes gets stuck on VMs in openstack,
+  # so we retry to make it more robust.
+  retries: 5
+  delay: 30

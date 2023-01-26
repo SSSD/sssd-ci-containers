@@ -1,0 +1,13 @@
+---
+# Users to be configured that their password never expires
+ad_permanent_users:
+- Administrator
+- vagrant
+# Skip vagrant-specific configuration of dns
+skip_dns: no
+# Skip installation of AD server
+skip_addc_install: no
+# Skip addition of sudo shcmea and possibly other ones
+skip_schema: no
+# Open firewall for all incomming traffic.
+open_firewall: yes

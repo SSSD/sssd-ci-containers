@@ -9,6 +9,7 @@
   shell: |
     if [ -f /usr/bin/apt ]; then
       rm -rf /var/lib/apt/lists/*
-    else
+    fi
+    if [ -f /usr/bin/dnf ]; then
       dnf clean all
     fi

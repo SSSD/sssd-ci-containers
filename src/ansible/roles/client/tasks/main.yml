@@ -1,3 +1,7 @@
+- name: Set domains
+  set_fact:
+    domains: []
+
 - name: Create /enrollment directory
   file:
     path: /enrollment
@@ -7,50 +11,125 @@
     mode: '0700'
 
 - name: Join IPA domain
-  shell: |
-    /usr/sbin/ipa-client-install --unattended --no-ntp \
-      --domain {{ service.ipa.domain | quote }}        \
-      --principal admin                                \
-      --password {{ service.ipa.password | quote }}
-  args:
-    creates: /etc/ipa/ca.crt
+  block:
+  - name: Run ipa-client-install
+    shell: |
+      /usr/sbin/ipa-client-install --unattended --no-ntp \
+        --domain {{ service.ipa.domain | quote }}        \
+        --principal admin                                \
+        --password {{ service.ipa.password | quote }}
+    args:
+      creates: /etc/ipa/ca.crt
 
-- name: Copy IPA keytab to /enrollment/ipa.keytab
-  copy:
-    src: /etc/krb5.keytab
-    dest: '/enrollment/ipa.keytab'
-    mode: 0600
-    remote_src: yes
+  - name: Stat /enrollment/ipa.keytab
+    stat:
+      path: /enrollment/ipa.keytab
+    register: enrollment_ipa
 
-- name: Cleanup after joining the IPA domain
-  file:
-    path: '{{ item }}'
-    state: absent
-  with_items:
-  - /etc/krb5.conf
-  - /etc/krb5.keytab
-  - /etc/sssd/sssd.conf
+  - name: Copy IPA keytab to /enrollment/ipa.keytab
+    copy:
+      src: /etc/krb5.keytab
+      dest: '/enrollment/ipa.keytab'
+      mode: 0600
+      remote_src: yes
+    when: not enrollment_ipa.stat.exists
+
+  - name: Cleanup after joining the IPA domain
+    file:
+      path: '{{ item }}'
+      state: absent
+    with_items:
+    - /etc/krb5.conf
+    - /etc/krb5.keytab
+    - /etc/sssd/sssd.conf
+
+  - name: Add ipa to domains
+    set_fact:
+      domains: "{{ domains + [service.ipa.domain] }}"
+  when: join_ipa
 
 - name: Join Samba domain
-  command: realm join {{ service.samba.domain | quote }}
-  args:
-    stdin: '{{ service.samba.password }}'
+  block:
+  - name: Stat /enrollment/samba.keytab to detect that we are already joined
+    stat:
+      path:  /enrollment/samba.keytab
+    register: enrollment_samba_1
 
-- name: Copy Samba keytab to /enrollment/samba.keytab
-  copy:
-    src: /etc/krb5.keytab
-    dest: /enrollment/samba.keytab
-    mode: 0600
-    remote_src: yes
+  - name: Realm join Samba domain
+    command: realm join {{ service.samba.domain | quote }} --verbose
+    args:
+      stdin: '{{ service.samba.password }}'
+    when: not enrollment_samba_1.stat.exists
 
-- name: Cleanup after joining the Samba domain
-  file:
-    path: '{{ item }}'
-    state: absent
-  with_items:
-  - /etc/krb5.conf
-  - /etc/krb5.keytab
-  - /etc/sssd/sssd.conf
+  - name: Stat /enrollment/samba.keytab
+    stat:
+      path:  /enrollment/samba.keytab
+    register: enrollment_samba
+
+  - name: Copy Samba keytab to /enrollment/samba.keytab
+    copy:
+      src: /etc/krb5.keytab
+      dest: /enrollment/samba.keytab
+      mode: 0600
+      remote_src: yes
+    when: not enrollment_samba.stat.exists
+
+  - name: Cleanup after joining the Samba domain
+    file:
+      path: '{{ item }}'
+      state: absent
+    with_items:
+    - /etc/krb5.conf
+    - /etc/krb5.keytab
+    - /etc/sssd/sssd.conf
+
+  - name: Add samba to domains
+    set_fact:
+      domains: "{{ domains + [service.samba.domain] }}"
+  when: join_samba
+
+- name: Join ldap domain
+  block:
+  - name: Add ldap to domains
+    set_fact:
+      domains: "{{ domains + [service.ldap.domain] }}"
+  when: join_ldap
+
+- name: Join AD
+  block:
+  - name: Stat /enrollment/ad.keytab to detect that we are already joined
+    stat:
+      path:  /enrollment/ad.keytab
+    register: enrollment_ad_1
+
+  - name: Join AD domain
+    command: realm join {{ service.ad.domain | quote }} --verbose
+    args:
+      stdin: '{{ service.ad.safe_password }}'
+    when: not enrollment_ad_1.stat.exists
+
+  - name: Stat /enrollment/ad.keytab
+    stat:
+      path:  /enrollment/ad.keytab
+    register: enrollment_ad
+
+  - name: Copy AD keytab to /enrollment/ad.keytab
+    copy:
+      src: /etc/krb5.keytab
+      dest: /enrollment/ad.keytab
+      mode: 0600
+      remote_src: yes
+    when: not enrollment_ad.stat.exists
+
+  - name: Cleanup after joining the AD domain
+    file:
+      path: '{{ item }}'
+      state: absent
+    with_items:
+    - /etc/krb5.conf
+    - /etc/krb5.keytab
+    - /etc/sssd/sssd.conf
+  when: join_ad
 
 - name: Stop SSSD
   service:
@@ -82,3 +161,7 @@
     else
       exit 0
     fi
+
+- name: Show configured domains
+  debug:
+    msg: "domains = {{ ', '.join(domains) }}"

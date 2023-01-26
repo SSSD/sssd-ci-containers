@@ -1,0 +1,30 @@
+- name: Install dnsmasq package
+  package:
+    name:
+    - dnsmasq
+    state: present
+
+- name: Place dnsmasq config
+  template:
+    src: etc.dnsmasq.conf.j2
+    dest: /etc/dnsmasq.conf
+    owner: root
+    group: root
+    mode: 0600
+  register: config
+
+- name: Gather the package facts
+  package_facts:
+
+- name: Disable systemd-resolved (if present)
+  service:
+    name: systemd-resolved
+    enabled: false
+    state: stopped
+  when: "'systemd-resolved' in ansible_facts.packages"
+
+- name: Restart dnsmasq service
+  service:
+    name: dnsmasq
+    enabled: true
+    state: restarted

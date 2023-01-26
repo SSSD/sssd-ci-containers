@@ -1,0 +1,29 @@
+---
+- hosts: dns
+  gather_facts: yes
+  become: yes
+  roles:
+  - dns
+
+- name: Include base
+  ansible.builtin.import_playbook: playbook_image_base.yml
+  vars:
+    passkey_support: "{{ override_passkey_support | default('no') | bool }}"
+    user_regular_uid: 1024
+    ansible_become: yes
+
+- name: Include services
+  ansible.builtin.import_playbook: playbook_image_service.yml
+  vars:
+    passkey_support: "{{ override_passkey_support | default('no') | bool }}"
+    user_regular_uid: 1024
+    ansible_become: yes
+    join_ad: "{{ override_join_ad | default('yes') | bool }}"
+    join_ldap: "{{ override_join_ldap | default('yes') | bool }}"
+    join_samba: "{{ override_join_samba | default('yes') | bool }}"
+    join_ipa: "{{ override_join_ipa | default('yes') | bool }}"
+
+- hosts: ad
+  gather_facts: yes
+  roles:
+  - { role: ad, skip_install: yes, skip_dns: yes, ad_permanent_users: ['Administrator'] }

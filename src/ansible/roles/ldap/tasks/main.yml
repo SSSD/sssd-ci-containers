@@ -27,6 +27,9 @@
       changetype: modify
       add: aci
       aci: (targetattr=*)(version 3.0; acl "Enable anyone read"; allow (read, search, compare)(userdn="ldap:///anyone");)
+  register: ldapmod
+  failed_when:
+  - 'ldapmod.rc != 0 and "ldap_modify: Type or value exists" not in ldapmod.stderr'
 
 - name: 'Install additional schema: passkey'
   shell: |
