@@ -27,3 +27,16 @@
       changetype: modify
       add: aci
       aci: (targetattr=*)(version 3.0; acl "Enable anyone read"; allow (read, search, compare)(userdn="ldap:///anyone");)
+
+- name: 'Install additional schema: passkey'
+  shell: |
+    ldapmodify -D "{{ service.ldap.bind.dn }}" -w "{{ service.ldap.bind.password }}" -H ldap://localhost -x
+  args:
+    stdin: |
+      dn: cn=schema
+      changetype: modify
+      add: attributeTypes
+      attributeTypes: ( 2.16.840.1.113730.3.8.24.27 NAME 'passkey' DESC 'Passkey mapping' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+      -
+      add: objectclasses
+      objectclasses: ( 2.16.840.1.113730.3.8.24.9 NAME 'passkeyUser' DESC 'IPA passkey user' AUXILIARY MAY passkey)
