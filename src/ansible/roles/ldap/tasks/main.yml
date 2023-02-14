@@ -40,3 +40,9 @@
       -
       add: objectclasses
       objectclasses: ( 2.16.840.1.113730.3.8.24.9 NAME 'passkeyUser' DESC 'IPA passkey user' AUXILIARY MAY passkey)
+
+- name: Restart LDAP service
+  service:
+    name: dirsrv@localhost.service
+    enabled: yes
+    state: restarted
