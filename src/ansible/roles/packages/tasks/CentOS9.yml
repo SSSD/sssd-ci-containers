@@ -31,7 +31,7 @@
       option: 'gpgcheck'
       value: 'false'
       mode: 0644
-  when: inventory_hostname == 'base-ground'
+  when: "'base_ground' in group_names"
 
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'

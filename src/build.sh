@@ -93,7 +93,7 @@ function build_base_image {
     base_install_python
   fi
 
-  ansible-playbook --limit "$name" ./ansible/playbook_image_base.yml
+  ansible-playbook --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
   ${DOCKER} stop sssd-wip-base
   ${DOCKER} commit                     \
     --change 'CMD ["/sbin/init"]'      \

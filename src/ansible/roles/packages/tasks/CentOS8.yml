@@ -29,7 +29,7 @@
   - name: Enable IdM module
     shell: |
       dnf module enable -y idm:DL1
-  when: inventory_hostname == 'base-ground'
+  when: "'base_ground' in group_names"
 
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'

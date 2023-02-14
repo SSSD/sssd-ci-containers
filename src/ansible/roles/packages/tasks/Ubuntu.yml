@@ -33,7 +33,7 @@
       - tshark
       - vim
       - wget
-  when: inventory_hostname == 'base-ground'
+  when: "'base_ground' in group_names"
 
 - name: Install packages for client base image
   block:
@@ -49,7 +49,7 @@
       - realmd
       - sssd
       - sssd-*
-  when: inventory_hostname == 'base-client'
+  when: "'base_client' in group_names"
 
 - name: Install packages for NFS base image
   block:
@@ -59,7 +59,7 @@
       update_cache: yes
       name:
       - nfs-kernel-server
-  when: inventory_hostname == 'base-nfs'
+  when: "'base_nfs' in group_names"
 
 - name: Install packages for KDC base image
   block:
@@ -71,7 +71,7 @@
       - krb5-admin-server
       - krb5-config
       - krb5-kdc
-  when: inventory_hostname == 'base-kdc'
+  when: "'base_kdc' in group_names"
 
 - name: Install additional packages for client development image
   block:
@@ -167,4 +167,4 @@
     pip:
       name:
       - flaky
-  when: inventory_hostname == 'client-devel'
+  when: "'client_devel' in group_names"

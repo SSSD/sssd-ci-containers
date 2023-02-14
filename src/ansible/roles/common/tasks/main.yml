@@ -58,7 +58,7 @@
 - name: 'Create {{ user.regular.name }} user'
   user:
     name: '{{ user.regular.name }}'
-    uid: 1000
+    uid: '{{ user.regular.uid }}'
     groups: wheel
     append: yes
     shell: /usr/bin/bash
