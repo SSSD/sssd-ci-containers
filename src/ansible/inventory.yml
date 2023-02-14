@@ -7,40 +7,70 @@ all:
         ansible_connection: local
         ansible_python_interpreter: /usr/bin/python3
     base:
-      hosts:
-        base-client:
-        base-ipa:
-        base-ldap:
-        base-samba:
-        base-nfs:
-        base-kdc:
-        base-ground:
-        client-devel:
+      children:
+        base_client:
+          hosts:
+            base-client
+        base_ipa:
+          hosts:
+            base-ipa
+        base_ldap:
+          hosts:
+            base-ldap
+        base_samba:
+          hosts:
+            base-samba
+        base_nfs:
+          hosts:
+            base-nfs
+        base_kdc:
+          hosts:
+            base-kdc
+        base_ground:
+          hosts:
+            base-ground
+        client_devel:
+          hosts:
+            client-devel
       vars:
         ansible_connection: podman
         ansible_host: sssd-wip-base
         ansible_python_interpreter: /usr/bin/python3
     services:
-      hosts:
+      children:
         client:
-          ansible_host: sssd-wip-client
+          hosts:
+            client.host:
+              ansible_host: sssd-wip-client
         ipa:
-          ansible_host: sssd-wip-ipa
+          hosts:
+            ipa.host:
+              ansible_host: sssd-wip-ipa
         ldap:
-          ansible_host: sssd-wip-ldap
+          hosts:
+            ldap.host:
+              ansible_host: sssd-wip-ldap
         samba:
-          ansible_host: sssd-wip-samba
+          hosts:
+            samba.host:
+              ansible_host: sssd-wip-samba
         nfs:
-          ansible_host: sssd-wip-nfs
+          hosts:
+            nfs.host:
+              ansible_host: sssd-wip-nfs
         kdc:
-          ansible_host: sssd-wip-kdc
+          hosts:
+            kdc.host:
+              ansible_host: sssd-wip-kdc
       vars:
         ansible_connection: podman
         ansible_python_interpreter: /usr/bin/python3
     windows:
       hosts:
         ad:
-          ansible_host: 172.16.200.10
+          hosts:
+            ad:
+              ansible_host: 172.16.200.10
       vars:
         ansible_connection: winrm
         ansible_port: 5985

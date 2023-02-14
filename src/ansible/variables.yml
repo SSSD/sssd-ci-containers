@@ -45,6 +45,7 @@ user: {
     password: Secret123
   },
   regular: {
+    uid: 1000,
     name: ci,
     password: Secret123
   }

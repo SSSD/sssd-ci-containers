@@ -48,7 +48,7 @@
       - wget
       - which
       - wireshark-cli
-  when: inventory_hostname == 'base-ground'
+  when: "'base_ground' in group_names"
 
 - name: Install packages for client base image
   block:
@@ -72,7 +72,7 @@
         libldb                  \
         libtalloc               \
         libtevent
-  when: inventory_hostname == 'base-client'
+  when: "'base_client' in group_names"
 
 - name: Install packages for LDAP base image
   block:
@@ -82,7 +82,7 @@
       name:
       - acl
       - 389-ds-base
-  when: inventory_hostname == 'base-ldap'
+  when: "'base_ldap' in group_names"
 
 - name: Install packages for IPA base image
   block:
@@ -93,7 +93,7 @@
       - freeipa-server
       - freeipa-server-dns
       - freeipa-server-trust-ad
-  when: inventory_hostname == 'base-ipa'
+  when: "'base_ipa' in group_names"
 
 - name: Install packages for Samba base image
   block:
@@ -103,7 +103,7 @@
       name:
       - samba-dc
       - samba-winbind-clients
-  when: inventory_hostname == 'base-samba'
+  when: "'base_samba' in group_names"
 
 - name: Install packages for NFS base image
   block:
@@ -112,7 +112,7 @@
       state: present
       name:
       - nfs-utils
-  when: inventory_hostname == 'base-nfs'
+  when: "'base_nfs' in group_names"
 
 - name: Install packages for KDC base image
   block:
@@ -123,7 +123,7 @@
       - krb5-libs
       - krb5-server
       - krb5-workstation
-  when: inventory_hostname == 'base-kdc'
+  when: "'base_kdc' in group_names"
 
 - name: Install additional packages for client development image
   block:
@@ -163,4 +163,4 @@
     pip:
       name:
       - flaky
-  when: inventory_hostname == 'client-devel'
+  when: "'client_devel' in group_names"

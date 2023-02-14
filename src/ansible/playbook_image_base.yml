@@ -7,7 +7,7 @@
   vars_files:
   - variables.yml
 
-- hosts: base-ground
+- hosts: base_ground
   roles:
   - common
   vars_files:
