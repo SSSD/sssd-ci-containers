@@ -22,6 +22,7 @@
       - net-tools
       - openssh-client
       - openssh-server
+      - passwd
       - python3-pip
       - rsync
       - sudo

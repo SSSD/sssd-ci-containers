@@ -35,6 +35,7 @@
       - openldap-clients
       - openssh-clients
       - openssh-server
+      - passwd
       - python3-pip
       - rsync
       - sudo
