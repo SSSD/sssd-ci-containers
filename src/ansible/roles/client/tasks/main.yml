@@ -73,3 +73,12 @@
     owner: root
     group: root
     mode: 0644
+
+- name: Set SELinux label for /enrollment
+  shell: |
+    if selinuxenabled; then
+      semanage fcontext -a -t etc_t "/enrollment(/.*)*"
+      restorecon -R -v /enrollment
+    else
+      exit 0
+    fi

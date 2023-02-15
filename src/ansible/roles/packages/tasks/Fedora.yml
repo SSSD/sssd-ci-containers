@@ -36,6 +36,8 @@
       - openssh-clients
       - openssh-server
       - passwd
+      - policycoreutils
+      - policycoreutils-python-utils
       - python3-pip
       - rsync
       - sudo

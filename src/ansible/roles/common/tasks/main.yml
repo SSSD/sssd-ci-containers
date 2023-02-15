@@ -25,6 +25,15 @@
     chmod 0600 $(find /data -type f)
     chmod 0644 /data/certs/*.crt
 
+- name: Set SELinux label for /data
+  shell: |
+    if selinuxenabled; then
+      semanage fcontext -a -t etc_t "/data(/.*)*"
+      restorecon -R -v /data
+    else
+      exit 0
+    fi
+
 - name: 'Change root password'
   user:
     name: root
