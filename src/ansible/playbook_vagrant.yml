@@ -1,5 +1,5 @@
 ---
-- hosts: ad
+- hosts: dc.ad.test
   gather_facts: yes
   roles:
   - ad
