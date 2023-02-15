@@ -4,42 +4,42 @@
   roles:
   - facts
 
-- hosts: ldap
+- hosts: master.ldap.test
   gather_facts: no
   roles:
   - ldap
   vars_files:
   - variables.yml
 
-- hosts: samba
+- hosts: dc.samba.test
   gather_facts: no
   roles:
   - samba
   vars_files:
   - variables.yml
 
-- hosts: ipa
+- hosts: master.ipa.test
   gather_facts: no
   roles:
   - ipa
   vars_files:
   - variables.yml
 
-- hosts: client
+- hosts: client.test
   gather_facts: no
   roles:
   - client
   vars_files:
   - variables.yml
 
-- hosts: nfs
+- hosts: nfs.test
   gather_facts: no
   roles:
   - nfs
   vars_files:
   - variables.yml
 
-- hosts: kdc
+- hosts: kdc.test
   gather_facts: no
   roles:
   - kdc

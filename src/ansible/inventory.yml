@@ -40,36 +40,36 @@ all:
       children:
         client:
           hosts:
-            client.host:
+            client.test:
               ansible_host: sssd-wip-client
         ipa:
           hosts:
-            ipa.host:
+            master.ipa.test:
               ansible_host: sssd-wip-ipa
         ldap:
           hosts:
-            ldap.host:
+            master.ldap.test:
               ansible_host: sssd-wip-ldap
         samba:
           hosts:
-            samba.host:
+            dc.samba.test:
               ansible_host: sssd-wip-samba
         nfs:
           hosts:
-            nfs.host:
+            nfs.test:
               ansible_host: sssd-wip-nfs
         kdc:
           hosts:
-            kdc.host:
+            kdc.test:
               ansible_host: sssd-wip-kdc
       vars:
         ansible_connection: podman
         ansible_python_interpreter: /usr/bin/python3
     windows:
-      hosts:
+      children:
         ad:
           hosts:
-            ad:
+            dc.ad.test:
               ansible_host: 172.16.200.10
       vars:
         ansible_connection: winrm
