@@ -10,4 +10,4 @@
   service:
     name: '{{ systemd.services.sshd }}'
     enabled: yes
-    state: started
+    state: restarted
