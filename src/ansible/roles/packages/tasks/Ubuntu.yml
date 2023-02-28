@@ -49,6 +49,14 @@
       - realmd
       - sssd
       - sssd-*
+  - name: Install packages required for passkey testing
+    apt:
+      state: present
+      name:
+      - gcc
+      - libssl-dev
+      - umockdev
+    when: passkey_support
   when: "'base_client' in group_names"
 
 - name: Install packages for NFS base image
@@ -132,7 +140,6 @@
       - libselinux1-dev
       - libsemanage-dev
       - libsmbclient-dev
-      - libssl-dev
       - libssl-dev
       - libsystemd-dev
       - libtalloc-dev
