@@ -30,6 +30,7 @@ services:
     - SYS_PTRACE
     - AUDIT_WRITE
     - SYS_CHROOT
+    - NET_ADMIN
     security_opt:
     - apparmor=unconfined
     - label=disable
