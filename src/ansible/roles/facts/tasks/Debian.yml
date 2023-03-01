@@ -5,3 +5,4 @@
         kadmin: krb5-admin-server.service
         krb5kdc: krb5-kdc.service
         sshd: ssh.service
+    passkey_support: No
