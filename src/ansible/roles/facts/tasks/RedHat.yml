@@ -1,5 +1,9 @@
-- name: 'Facts are the same as in Fedora'
-  include_tasks: 'Fedora.yml'
+- name: 'Facts are the same as in CentOS {{ ansible_distribution_major_version }}'
+  include_tasks: '{{ include_centos }}'
+  loop_control:
+    loop_var: include_centos
+  with_first_found:
+  - files: '{{ "CentOS" | distro_includes(ansible_distribution_major_version) }}'
 
 - name: Set distribution specific facts
   set_fact:

@@ -7,3 +7,4 @@
         sshd: sshd.service
     buildroot: yes
     debuginfo: yes
+    passkey_support: Yes
