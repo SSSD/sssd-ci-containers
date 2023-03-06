@@ -148,3 +148,5 @@ networks:
      config:
        - subnet: 172.16.100.0/24
          gateway: 172.16.100.1
+     options:
+        driver: host-local
