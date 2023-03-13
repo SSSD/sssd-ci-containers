@@ -1,0 +1,6 @@
+services:
+  client:
+    cap_add:
+    - SYS_RAWIO
+    devices:
+    - "$HIDRAW:$HIDRAW"
