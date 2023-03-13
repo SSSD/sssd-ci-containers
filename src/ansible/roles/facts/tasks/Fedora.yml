@@ -5,3 +5,5 @@
         kadmin: kadmin.service
         krb5kdc: krb5kdc.service
         sshd: sshd.service
+    buildroot: yes
+    debuginfo: yes

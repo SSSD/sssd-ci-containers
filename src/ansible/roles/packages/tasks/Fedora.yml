@@ -74,6 +74,7 @@
         libldb                  \
         libtalloc               \
         libtevent
+    when: debuginfo
   when: "'base_client' in group_names"
 
 - name: Install packages for LDAP base image

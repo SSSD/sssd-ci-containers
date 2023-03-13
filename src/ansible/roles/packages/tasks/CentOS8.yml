@@ -6,7 +6,7 @@
       name:
       - dnf-plugins-core
 
-  - name: Install additional repositories
+  - name: Install buildroot
     template:
       src: repo
       dest: '/etc/yum.repos.d/{{ item.name }}.repo'
@@ -15,6 +15,7 @@
       mode: 0644
     with_items:
     - {name: 'buildroot', url: 'https://koji.mbox.centos.org/kojifiles/repos/dist-c8-stream-build/latest/$basearch'}
+    when: buildroot
 
   - name: Install EPEL repository
     dnf:
