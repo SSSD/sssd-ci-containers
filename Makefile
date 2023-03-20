@@ -7,11 +7,11 @@ push:
 	/bin/bash -c "src/push.sh"
 
 up:
-	docker-compose up --detach ${LIMIT}
+	docker-compose up --no-recreate --detach ${LIMIT}
 
 up-passkey:
 	export HIDRAW=$(shell fido2-token -L|cut -f1 -d:) \
-	&& docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
+	&& docker-compose --no-recreate -f docker-compose.yml -f docker-compose.passkey.yml up \
 	--detach ${LIMIT}
 
 stop:
