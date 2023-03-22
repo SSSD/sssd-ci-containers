@@ -11,8 +11,8 @@ up:
 
 up-passkey:
 	export HIDRAW=$(shell fido2-token -L|cut -f1 -d:) \
-	&& docker-compose --no-recreate -f docker-compose.yml -f docker-compose.passkey.yml up \
-	--detach ${LIMIT}
+	&& docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
+	--no-recreate --detach ${LIMIT}
 
 stop:
 	docker-compose stop
