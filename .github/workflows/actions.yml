@@ -1,0 +1,32 @@
+name: Actions
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - 'actions/**'
+  pull_request:
+    paths:
+    - 'actions/**'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup containers
+      uses: ./actions/setup
+      with:
+        path: sssd-ci-containers
+
+    - name: Exec in containers
+      uses: ./actions/exec
+      with:
+        working-directory: /
+        script: ls
