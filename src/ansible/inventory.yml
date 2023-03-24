@@ -1,4 +1,6 @@
 all:
+  vars:
+    ansible_become: yes
   children:
     local:
       hosts:
