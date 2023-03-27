@@ -4,11 +4,7 @@
   roles:
   - facts
   - packages
-  vars_files:
-  - variables.yml
 
 - hosts: base_ground
   roles:
   - common
-  vars_files:
-  - variables.yml
