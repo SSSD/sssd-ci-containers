@@ -40,12 +40,13 @@ service: {
   }
 }
 
+user_regular_uid: 1000
 user: {
   root: {
     password: Secret123
   },
   regular: {
-    uid: 1000,
+    uid: "{{ user_regular_uid | int }}",
     name: ci,
     password: Secret123
   }
