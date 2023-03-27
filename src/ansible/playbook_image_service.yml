@@ -8,48 +8,34 @@
   gather_facts: no
   roles:
   - ldap
-  vars_files:
-  - variables.yml
 
 - hosts: dc.samba.test
   gather_facts: no
   roles:
   - samba
-  vars_files:
-  - variables.yml
 
 - hosts: master.ipa.test
   gather_facts: no
   roles:
   - ipa
-  vars_files:
-  - variables.yml
 
 - hosts: client.test
   gather_facts: no
   roles:
   - client
-  vars_files:
-  - variables.yml
 
 - hosts: nfs.test
   gather_facts: no
   roles:
   - nfs
-  vars_files:
-  - variables.yml
 
 - hosts: kdc.test
   gather_facts: no
   roles:
   - kdc
-  vars_files:
-  - variables.yml
 
 - hosts: services
   gather_facts: no
   roles:
   - ssh_server
   - cleanup
-  vars_files:
-  - variables.yml
