@@ -64,8 +64,13 @@ runs:
       docker-compose --project-directory "${{ inputs.path }}" config
 
   - name: Start containers
-    shell: bash
-    run: |
+    uses: nick-fields/retry@v2
+    with:
+      shell: bash
+      max_attempts: 3
+      timeout_minutes: 5
+      retry_on: error
+      command: |
         sudo make -C "${{ inputs.path }}" up         \
           DOCKER_HOST=unix:///run/podman/podman.sock \
           LIMIT="${{ inputs.limit }}"                \
