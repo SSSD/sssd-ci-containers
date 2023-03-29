@@ -170,6 +170,12 @@
       - uid_wrapper
       - valgrind
 
+  - name: Install packages required for multihost tests
+    dnf:
+      state: present
+      name:
+      - e2fsprogs
+
   - name: Install additional python packages
     pip:
       name:

@@ -170,6 +170,13 @@
       - xml-core
       - xsltproc
 
+  - name: Install packages required for multihost tests
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - e2fsprogs
+
   - name: Install additional python packages
     pip:
       name:
