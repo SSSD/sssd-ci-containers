@@ -26,6 +26,9 @@ all:
         base_kdc:
           hosts:
             base-kdc
+        base_keycloak:
+          hosts:
+            base-keycloak
         base_ground:
           hosts:
             base-ground
@@ -62,6 +65,10 @@ all:
           hosts:
             kdc.test:
               ansible_host: sssd-wip-kdc
+        keycloak:
+          hosts:
+            master.keycloak.test:
+              ansible_host: sssd-wip-keycloak
       vars:
         ansible_connection: podman
         ansible_python_interpreter: /usr/bin/python3

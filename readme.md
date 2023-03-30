@@ -79,6 +79,7 @@ perfoming an `ldapsearch`).
 | client       | `172.16.100.40` | `client.test`              | Client machine with configured SSSD |
 | nfs          | `172.16.100.50` | `nfs.test`                 | NFS server                          |
 | kdc          | `172.16.100.60` | `kdc.test`                 | Kerberos KDC                        |
+| keycloak     | `172.16.100.70` | `master.keycloak.test`     | Keycloak IdP                        |
 
 ## Available user accounts
 
@@ -278,6 +279,7 @@ are:
     base-ground --> base-samba
     base-ground --> base-nfs
     base-ground --> base-kdc
+    base-ground --> base-keycloak
 
     base-ldap --> base-ipa
     base-ldap --> ldap
@@ -292,4 +294,6 @@ are:
     base-nfs --> nfs
 
     base-kdc --> kdc
+
+    base-keycloak --> keycloak
 ```

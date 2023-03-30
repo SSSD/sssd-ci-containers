@@ -85,6 +85,19 @@
       - krb5-kdc
   when: "'base_kdc' in group_names"
 
+- name: Install packages for Keycloak base image
+  block:
+  - name: Install Keycloak dependencies
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - openjdk-11-jre-headless
+      - openssl
+      - unzip
+      - ca-certificates
+  when: "'base_keycloak' in group_names"
+
 - name: Install additional packages for client development image
   block:
   - name: Install SSSD build and integration tests dependencies

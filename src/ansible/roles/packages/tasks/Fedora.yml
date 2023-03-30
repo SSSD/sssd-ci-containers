@@ -142,6 +142,17 @@
     when: passkey_support
   when: "'base_client' in group_names or 'base_ipa' in group_names"
 
+- name: Install packages for Keycloak base image
+  block:
+  - name: Install Keycloak dependencies
+    dnf:
+      state: present
+      name:
+      - java-11-openjdk-headless
+      - openssl
+      - unzip
+  when: "'base_keycloak' in group_names"
+
 - name: Install additional packages for client development image
   block:
   - name: Install SSSD build dependencies

@@ -1,0 +1,118 @@
+- name: Get Keycloak latest version info
+  uri:
+    url: https://api.github.com/repos/keycloak/keycloak/releases/latest
+    method: GET
+    return_content: yes
+    status_code: 200
+    body_format: json
+  register: result
+
+- name: Set keycloak_url fact
+  set_fact:
+    keycloak_url: "{{ base_url }}/{{ result.json.tag_name }}/keycloak-{{ result.json.tag_name }}.tar.gz"
+
+- name: Print keycloak_url
+  debug:
+    msg: "keycloak_url={{ keycloak_url }}"
+
+- name: Create Keycloak user/group
+  user:
+    name: keycloak
+    home: /opt/keycloak
+    system: yes
+    create_home: yes
+
+- name: Download software zipfile
+  get_url:
+    url: "{{ keycloak_url }}"
+    dest: /tmp/keycloak.tgz
+
+- name: Unzip software
+  unarchive:
+    remote_src: yes
+    src: /tmp/keycloak.tgz
+    dest: /opt/keycloak
+    owner: keycloak
+    group: keycloak
+    extra_opts:
+    - --strip-components=1
+
+- name: Change ownership of files in /data/certs
+  file:
+    path: /data/certs/master.keycloak.test.key
+    mode: 0644
+
+- name: Add CA certificate to keystore
+  shell: |
+    keytool -noprompt -import \
+      -keystore /data/certs/master.keycloak.test.keystore \
+      -file /data/certs/ca.crt \
+      -alias ca.crt \
+      -trustcacerts -storepass {{ service.keycloak.admin_password }}
+  args:
+    creates: /data/certs/master.keycloak.test.keystore
+
+- name: Add Keycloak certificate to keystore
+  shell: |
+    keytool -noprompt -import \
+      -keystore /data/certs/master.keycloak.test.keystore \
+      -file /data/certs/master.keycloak.test.crt \
+      -alias master.keycloak.test.crt \
+      -trustcacerts -storepass {{ service.keycloak.admin_password }}
+
+- name: Run build step for Keycloak
+  shell: |
+    su - keycloak -c '''
+    export KEYCLOAK_ADMIN=admin
+    export KEYCLOAK_ADMIN_PASSWORD={{ service.keycloak.admin_password }}
+    export KC_HOSTNAME=$(hostname):8443
+    export KC_HTTPS_CERTIFICATE_FILE=/data/certs/master.keycloak.test.crt
+    export KC_HTTPS_CERTIFICATE_KEY_FILE=/data/certs/master.keycloak.test.key
+    export KC_HTTPS_TRUST_STORE_FILE=/data/certs/master.keycloak.test.keystore
+    export KC_HTTPS_TRUST_STORE_PASSWORD={{ service.keycloak.admin_password }}
+    export KC_HTTP_RELATIVE_PATH=/auth
+    /opt/keycloak/bin/kc.sh build
+    '''
+
+- name: Create Keycloak service env file
+  copy:
+    content: |
+      KEYCLOAK_ADMIN=admin
+      KEYCLOAK_ADMIN_PASSWORD={{ service.keycloak.admin_password }}
+      KC_HOSTNAME={{ inventory_hostname }}
+      KC_HTTPS_CERTIFICATE_FILE=/data/certs/master.keycloak.test.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE=/data/certs/master.keycloak.test.key
+      KC_HTTPS_TRUST_STORE_FILE=/data/certs/master.keycloak.test.keystore
+      KC_HTTPS_TRUST_STORE_PASSWORD={{ service.keycloak.admin_password }}
+      KC_HTTP_RELATIVE_PATH=/auth
+    dest: /etc/keycloak.env
+
+- name: Create systemd Keycloak service file
+  copy:
+    content: |
+      [Unit]
+      Description=Keycloak Server
+      After=network.target
+
+      [Service]
+      Type=idle
+      EnvironmentFile=/etc/keycloak.env
+
+      User=keycloak
+      Group=keycloak
+      ExecStart=/opt/keycloak/bin/kc.sh start
+      TimeoutStartSec=600
+      TimeoutStopSec=600
+
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/keycloak.service
+
+- name: Reload systemd to pickup changes added for Keycloak
+  systemd:
+    daemon_reload: yes
+
+- name: Enable Keycloak service
+  systemd:
+    name: keycloak
+    enabled: yes

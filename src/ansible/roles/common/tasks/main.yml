@@ -90,3 +90,12 @@
   - { src: 'ci.id_rsa', dest: 'id_rsa' }
   - { src: 'ci.id_rsa.pub', dest: 'authorized_keys' }
   - { src: 'ci.id_rsa.pub', dest: 'id_rsa.pub' }
+
+- name: Copy CA certificate to local pki anchors
+  copy:
+    src: /data/certs/ca.crt
+    dest: "{{ ca_trust_dir }}"
+    remote_src: yes
+
+- name: Update system CA trusts to pick up new certificate
+  command: "{{ ca_trust_update }}"

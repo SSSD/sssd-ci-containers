@@ -5,17 +5,17 @@
 #                     ==============
 #
 #                     original image
-# |----------------------------------------------------|
-# |                    base-ground                    |
-# |----------------------------------------------------|
-# |        base-ldap    |  base-client  |  base-samba  |
-# |------------------------------------ |--------------|
-# |  base-ipa  |        |               |              |
-# |------------|        |               |              |
-# |    ipa     |  ldap  |    client     |     samba    |
-# |            |        |---------------|              |
-# |            |        |  client-dev   |              |
-# |------------|--------|---------------|--------------|
+# |------------------------------------------------------------------------------------------------|
+# |                                       base-ground                                              |
+# |------------------------------------------------------------------------------------------------|
+# |        base-ldap    |  base-client  |  base-samba  |  base-nfs  |  base-keycloak  |  base-kdc  |
+# |------------------------------------ |--------------|------------|-----------------|------------|
+# |  base-ipa  |        |               |              |            |                 |            |
+# |------------|        |               |              |            |                 |            |
+# |    ipa     |  ldap  |    client     |     samba    |    nfs     |    keycloak     |     kdc    |
+# |            |        |---------------|              |            |                 |            |
+# |            |        |  client-dev   |              |            |                 |            |
+# |------------|--------|---------------|--------------|------------|-----------------|------------|
 
 trap "cleanup &> /dev/null || :" EXIT
 pushd $(realpath `dirname "$0"`) &> /dev/null
@@ -59,6 +59,7 @@ push ci-base-ldap "$TAG" "$EXTRA_TAGS"
 push ci-base-samba "$TAG" "$EXTRA_TAGS"
 push ci-base-nfs "$TAG" "$EXTRA_TAGS"
 push ci-base-kdc "$TAG" "$EXTRA_TAGS"
+push ci-base-keycloak "$TAG" "$EXTRA_TAGS"
 
 # Push service images
 push ci-dns latest ""
@@ -69,3 +70,4 @@ push ci-ldap "$TAG" "$EXTRA_TAGS"
 push ci-samba "$TAG" "$EXTRA_TAGS"
 push ci-nfs "$TAG" "$EXTRA_TAGS"
 push ci-kdc "$TAG" "$EXTRA_TAGS"
+push ci-keycloak "$TAG" "$EXTRA_TAGS"
