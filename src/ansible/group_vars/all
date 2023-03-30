@@ -31,6 +31,11 @@ service: {
     fqn: kdc.test,
     master_password: Secret123
   },
+  keycloak: {
+    domain: keycloak.test,
+    fqn: master.keycloak.test,
+    admin_password: Secret123
+  },
   ad: {
     domain: ad.test,
     hostname: 'dc',

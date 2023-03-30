@@ -37,6 +37,11 @@
   roles:
   - kdc
 
+- hosts: master.keycloak.test
+  gather_facts: no
+  roles:
+  - keycloak
+
 - hosts: services
   gather_facts: no
   roles:

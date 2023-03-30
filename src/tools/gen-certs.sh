@@ -23,7 +23,7 @@ mkdir -p $OUT
 openssl req -new -x509 -days 7200 -config "$REQ_CONFIG" -subj "$SUBJECT/CN=ca" -keyout "$OUT/ca.key" -out "$OUT/ca.crt"
 
 # Create certificates
-for service in master.ldap.test dc.samba.test; do
+for service in master.ldap.test dc.samba.test master.keycloak.test; do
     openssl req -new -config "$REQ_CONFIG" -subj "$SUBJECT/CN=$service" -keyout "$OUT/$service.key" -out "$OUT/$service.csr"
     openssl x509 -req -days 7200 -extfile "$X509_CONFIG" -CA "$OUT/ca.crt" -CAkey "$OUT/ca.key" -CAcreateserial -in "$OUT/$service.csr" -out "$OUT/$service.crt"
     rm -f "$OUT/$service.csr"

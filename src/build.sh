@@ -5,17 +5,17 @@
 #                     ==============
 #
 #                     original image
-# |-----------------------------------------------------------------|
-# |                    base-ground                                  |
-# |-----------------------------------------------------------------|
-# |        base-ldap    |  base-client  |  base-samba  |  base-nfs  |  base-kdc  |
-# |------------------------------------ |--------------|------------|------------|
-# |  base-ipa  |        |               |              |            |            |
-# |------------|        |               |              |            |            |
-# |    ipa     |  ldap  |    client     |     samba    |    nfs     |     kdc    |
-# |            |        |---------------|              |            |            |
-# |            |        |  client-dev   |              |            |            |
-# |------------|--------|---------------|--------------|------------|------------|
+# |------------------------------------------------------------------------------------------------|
+# |                                       base-ground                                              |
+# |------------------------------------------------------------------------------------------------|
+# |        base-ldap    |  base-client  |  base-samba  |  base-nfs  |  base-keycloak  |  base-kdc  |
+# |------------------------------------ |--------------|------------|-----------------|------------|
+# |  base-ipa  |        |               |              |            |                 |            |
+# |------------|        |               |              |            |                 |            |
+# |    ipa     |  ldap  |    client     |     samba    |    nfs     |    keycloak     |     kdc    |
+# |            |        |---------------|              |            |                 |            |
+# |            |        |  client-dev   |              |            |                 |            |
+# |------------|--------|---------------|--------------|------------|-----------------|------------|
 
 trap "cleanup &> /dev/null || :" EXIT
 pushd $(realpath `dirname "$0"`) &> /dev/null
@@ -50,7 +50,7 @@ function cleanup {
 }
 
 function compose {
-  docker-compose -f "../docker-compose.yml" -f "./docker-compose.build.yml" $@
+  docker-compose -f "../docker-compose.yml" -f "../docker-compose.keycloak.yml" -f "./docker-compose.build.yml" $@
 }
 
 function base_exec {
@@ -121,6 +121,7 @@ if [ "$SKIP_BASE" == 'no' ]; then
   build_base_image "ci-base-ldap:${TAG}"   base-ipa
   build_base_image "ci-base-ground:${TAG}" base-nfs
   build_base_image "ci-base-ground:${TAG}" base-kdc
+  build_base_image "ci-base-ground:${TAG}" base-keycloak
 fi
 
 # Create services
@@ -133,6 +134,7 @@ build_service_image sssd-wip-ldap ldap
 build_service_image sssd-wip-samba samba
 build_service_image sssd-wip-nfs nfs
 build_service_image sssd-wip-kdc kdc
+build_service_image sssd-wip-keycloak keycloak
 compose down
 
 # Create development images with additional packages
