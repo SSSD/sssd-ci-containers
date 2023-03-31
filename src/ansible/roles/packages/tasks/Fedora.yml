@@ -21,6 +21,7 @@
       - bind-utils
       - dbus-tools
       - dnf-plugins-core
+      - e2fsprogs
       - expect
       - findutils
       - gdb
@@ -169,12 +170,6 @@
       - rpm-build
       - uid_wrapper
       - valgrind
-
-  - name: Install packages required for multihost tests
-    dnf:
-      state: present
-      name:
-      - e2fsprogs
 
   - name: Install additional python packages
     pip:
