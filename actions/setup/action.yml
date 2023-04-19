@@ -71,6 +71,11 @@ runs:
       timeout_minutes: 5
       retry_on: error
       command: |
+        # Put it down first to allow smooth retry and avoid "network need to be recreated" issue
+        # This is a workaround for older podman
+        sudo make -C "${{ inputs.path }}" down         \
+          DOCKER_HOST=unix:///run/podman/podman.sock
+
         sudo make -C "${{ inputs.path }}" up         \
           DOCKER_HOST=unix:///run/podman/podman.sock \
           LIMIT="${{ inputs.limit }}"                \
