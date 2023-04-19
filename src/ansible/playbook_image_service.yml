@@ -18,11 +18,13 @@
   gather_facts: no
   roles:
   - ipa
+  - passkey
 
 - hosts: client.test
   gather_facts: no
   roles:
   - client
+  - passkey
 
 - hosts: nfs.test
   gather_facts: no

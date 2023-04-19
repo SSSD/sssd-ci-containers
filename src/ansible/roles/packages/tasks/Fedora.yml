@@ -76,14 +76,6 @@
         libtalloc               \
         libtevent
     when: debuginfo
-  - name: Install packages required for passkey testing
-    dnf:
-      state: present
-      name:
-      - gcc
-      - openssl-devel
-      - umockdev
-    when: passkey_support
   when: "'base_client' in group_names"
 
 - name: Install packages for LDAP base image
@@ -136,6 +128,18 @@
       - krb5-server
       - krb5-workstation
   when: "'base_kdc' in group_names"
+
+- name: Install packages that are shared with IPA and client base images
+  block:
+  - name: Install packages required for passkey testing
+    dnf:
+      state: present
+      name:
+      - gcc
+      - openssl-devel
+      - umockdev
+    when: passkey_support
+  when: "'base_client' in group_names or 'base_ipa' in group_names"
 
 - name: Install additional packages for client development image
   block:

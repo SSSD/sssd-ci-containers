@@ -1,0 +1,20 @@
+- name: Build random.so for passkey testing
+  block:
+  - name: Copy random.c to /opt
+    copy:
+      src: random.c
+      dest: /opt/random.c
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Build random.so
+    shell: |
+      cd /opt
+      gcc -fPIC -shared -o random.so random.c -lcrypto
+
+  - name: Remove random.c
+    file:
+      path: /opt/random.c
+      state: absent
+  when: passkey_support
