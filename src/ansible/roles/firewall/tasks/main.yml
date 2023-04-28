@@ -1,0 +1,9 @@
+- name: Start firewalld
+  service:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: Set default firewalld zone to trusted
+  shell: |
+    firewall-cmd --set-default-zone=trusted
