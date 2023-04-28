@@ -11,6 +11,7 @@
       - e2fsprogs
       - expect
       - findutils
+      - firewalld
       - gdb
       - gdbserver
       - git

@@ -24,6 +24,7 @@
       - e2fsprogs
       - expect
       - findutils
+      - firewalld
       - gdb
       - gdb-gdbserver
       - gh

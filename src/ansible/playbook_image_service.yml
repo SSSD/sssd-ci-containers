@@ -3,6 +3,7 @@
   gather_facts: yes
   roles:
   - facts
+  - firewall
 
 - hosts: master.ldap.test
   gather_facts: no
