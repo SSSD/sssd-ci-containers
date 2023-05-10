@@ -29,6 +29,7 @@ services:
     - SYS_ADMIN
     - SYS_PTRACE
     - AUDIT_WRITE
+    - AUDIT_CONTROL
     - SYS_CHROOT
     - NET_ADMIN
     security_opt:
@@ -49,6 +50,7 @@ services:
     cap_add:
     - SYS_PTRACE
     - AUDIT_WRITE
+    - AUDIT_CONTROL
     - SYS_CHROOT
     - NET_ADMIN
     security_opt:
@@ -70,6 +72,7 @@ services:
     - SYS_ADMIN
     - SYS_PTRACE
     - AUDIT_WRITE
+    - AUDIT_CONTROL
     - SYS_CHROOT
     - NET_ADMIN
     security_opt:
@@ -93,6 +96,7 @@ services:
     - NET_RAW
     - NET_ADMIN
     - AUDIT_WRITE
+    - AUDIT_CONTROL
     - SYS_CHROOT
     security_opt:
     - apparmor=unconfined
@@ -114,6 +118,7 @@ services:
     - SYS_ADMIN
     - SYS_PTRACE
     - AUDIT_WRITE
+    - AUDIT_CONTROL
     - SYS_CHROOT
     - NET_ADMIN
     security_opt:
@@ -136,6 +141,7 @@ services:
     - SYS_ADMIN
     - SYS_PTRACE
     - AUDIT_WRITE
+    - AUDIT_CONTROL
     - SYS_CHROOT
     - NET_ADMIN
     security_opt:
