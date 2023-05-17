@@ -6,5 +6,6 @@
         krb5kdc: krb5-kdc.service
         sshd: ssh.service
     passkey_support: Yes
+    user_regular_uid: 1024
     ca_trust_dir: /etc/ssl/certs
     ca_trust_update: update-ca-certificates

@@ -184,9 +184,18 @@
       - valgrind
       - xml-core
       - xsltproc
+  when: "'client_devel' in group_names"
 
-  - name: Install additional python packages
+- name: Install additional python packages
+  block:
+  - name: Install flaky via pip
     pip:
       name:
       - flaky
+  rescue:
+  - name: Install flaky via pip with break-system-packages
+    pip:
+      name:
+      - flaky
+      extra_args: --break-system-packages
   when: "'client_devel' in group_names"
