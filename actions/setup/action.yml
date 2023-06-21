@@ -26,7 +26,7 @@ runs:
     run: |
       set -ex
       sudo apt-get update
-      sudo apt-get install -y podman docker-compose
+      sudo apt-get install -y podman=3.4.3 docker-compose
       sudo systemctl enable --now podman.socket
 
   - name: Checkout sssd-ci-containers repository
