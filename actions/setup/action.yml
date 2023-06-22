@@ -27,6 +27,12 @@ runs:
       set -ex
       sudo apt-get update
       sudo apt-get install -y podman docker-compose
+
+      # Workaround https://github.com/actions/runner-images/issues/7753
+      curl -O http://archive.ubuntu.com/ubuntu/pool/universe/g/golang-github-containernetworking-plugins/containernetworking-plugins_1.1.1+ds1-1_amd64.deb
+      sudo dpkg -i containernetworking-plugins_1.1.1+ds1-1_amd64.deb
+      rm --force containernetworking-plugins_1.1.1+ds1-1_amd64.deb
+
       sudo systemctl enable --now podman.socket
 
   - name: Checkout sssd-ci-containers repository
