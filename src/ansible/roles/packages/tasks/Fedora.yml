@@ -148,7 +148,7 @@
     dnf:
       state: present
       name:
-      - java-11-openjdk-headless
+      - java-17-openjdk-headless
       - openssl
       - unzip
   when: "'base_keycloak' in group_names"

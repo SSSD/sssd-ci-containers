@@ -90,7 +90,7 @@
       state: present
       update_cache: yes
       name:
-      - openjdk-11-jre-headless
+      - openjdk-17-jre-headless
       - openssl
       - unzip
       - ca-certificates
