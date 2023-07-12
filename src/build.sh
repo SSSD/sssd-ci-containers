@@ -57,16 +57,20 @@ function base_exec {
   ${DOCKER} exec sssd-wip-base /bin/bash -c "$1"
 }
 
-# Make sure that python is installed, so we can use ansible.
+# Make sure that Ansible dependencies are installed so we can run playbooks
 function base_install_python {
-  if base_exec '[ -f /usr/bin/python3 ]'; then
-    return 0
+  # Install python3 if not available
+  if base_exec '[ ! -f /usr/bin/python3 ]'; then
+    if base_exec '[ -f /usr/bin/apt ]'; then
+      base_exec 'apt update && apt install -y python3 && rm -rf /var/lib/apt/lists/*'
+    else
+      base_exec 'dnf install -y python3 && dnf clean all'
+    fi
   fi
 
-  if base_exec '[ -f /usr/bin/apt ]'; then
-    base_exec 'apt update && apt install -y python3 && rm -rf /var/lib/apt/lists/*'
-  else
-    base_exec 'dnf install -y python3 && dnf clean all'
+  # Remove dnf-5 to workaround many issues that yet needs to be fixed
+  if base_exec '[ -f /usr/bin/dnf5 ]'; then
+    base_exec 'dnf install -y python3-dnf && dnf remove -y dnf5 && ln -s /usr/bin/dnf-3 /usr/bin/dnf && dnf clean all'
   fi
 }
 
