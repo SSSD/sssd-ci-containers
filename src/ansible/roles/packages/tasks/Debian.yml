@@ -92,10 +92,11 @@
       state: present
       update_cache: yes
       name:
-      - openjdk-11-jre-headless
+      - openjdk-17-jre-headless
       - openssl
       - unzip
       - ca-certificates
+      - ca-certificates-java
   when: "'base_keycloak' in group_names"
 
 - name: Install additional packages for client development image
