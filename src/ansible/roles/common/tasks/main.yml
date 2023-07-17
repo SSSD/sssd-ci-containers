@@ -64,6 +64,19 @@
     system: yes
     state: present
 
+- name: 'Check if user with uid {{ user.regular.uid }} already exists'
+  shell: |
+    getent passwd {{ user.regular.uid }} | cut -d ':' -f 1
+  register: regular_user_check
+
+- name: 'Remove regular user with uid {{ user.regular.uid }} to avoid conflicts'
+  user:
+    name: '{{ regular_user_check.stdout }}'
+    state: absent
+    remove: yes
+    force: yes
+  when: regular_user_check.stdout | length > 0
+
 - name: 'Create {{ user.regular.name }} user'
   user:
     name: '{{ user.regular.name }}'
