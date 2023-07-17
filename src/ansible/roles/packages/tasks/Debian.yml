@@ -87,16 +87,21 @@
 
 - name: Install packages for Keycloak base image
   block:
+  - name: Install ca-certificates-java first to avoid dep issues
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - ca-certificates-java
   - name: Install Keycloak dependencies
     apt:
       state: present
       update_cache: yes
       name:
-      - openjdk-17-jre-headless
       - openssl
       - unzip
       - ca-certificates
-      - ca-certificates-java
+      - openjdk-17-jre-headless
   when: "'base_keycloak' in group_names"
 
 - name: Install additional packages for client development image
