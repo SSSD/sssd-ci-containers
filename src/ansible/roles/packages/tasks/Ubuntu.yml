@@ -186,7 +186,9 @@
       - xsltproc
 
   - name: Install additional python packages
-    pip:
+    apt:
+      state: present
+      update_cache: yes
       name:
-      - flaky
+      - python3-flaky
   when: "'client_devel' in group_names"
