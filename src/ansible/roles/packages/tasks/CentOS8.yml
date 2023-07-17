@@ -14,7 +14,7 @@
       group: root
       mode: 0644
     with_items:
-    - {name: 'buildroot', url: 'https://koji.mbox.centos.org/kojifiles/repos/dist-c8-stream-build/latest/$basearch'}
+    - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c8s-build/latest/$basearch'}
     when: buildroot
 
   - name: Install EPEL repository
