@@ -75,7 +75,7 @@
     state: absent
     remove: yes
     force: yes
-  when: regular_user_check.stdout | length > 0
+  when: regular_user_check.stdout | length > 0 and regular_user_check.stdout != user.regular.name
 
 - name: 'Create {{ user.regular.name }} user'
   user:
