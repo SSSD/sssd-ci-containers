@@ -1,15 +1,10 @@
 - name: Get Keycloak latest version info
-  uri:
-    url: https://api.github.com/repos/keycloak/keycloak/releases/latest
-    method: GET
-    return_content: yes
-    status_code: 200
-    body_format: json
+  shell: curl -L https://api.github.com/repos/keycloak/keycloak/releases/latest | jq -r '.tag_name'
   register: result
 
 - name: Set keycloak_url fact
   set_fact:
-    keycloak_url: "{{ base_url }}/{{ result.json.tag_name }}/keycloak-{{ result.json.tag_name }}.tar.gz"
+    keycloak_url: "{{ base_url }}/{{ result.stdout }}/keycloak-{{ result.stdout }}.tar.gz"
 
 - name: Print keycloak_url
   debug:
@@ -23,9 +18,7 @@
     create_home: yes
 
 - name: Download software zipfile
-  get_url:
-    url: "{{ keycloak_url }}"
-    dest: /tmp/keycloak.tgz
+  command: curl -L {{ keycloak_url }} -o /tmp/keycloak.tgz
 
 - name: Unzip software
   unarchive:

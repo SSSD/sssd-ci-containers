@@ -186,10 +186,13 @@
   - name: Install Keycloak dependencies
     dnf:
       state: present
+      allowerasing: true
       name:
       - java-17-openjdk-headless
       - openssl
       - unzip
+      - curl
+      - jq
   when: "'base_keycloak' in group_names"
 
 - name: Install additional packages for client development image

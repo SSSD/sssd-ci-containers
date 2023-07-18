@@ -102,6 +102,8 @@
       - unzip
       - ca-certificates
       - openjdk-17-jre-headless
+      - curl
+      - jq
   when: "'base_keycloak' in group_names"
 
 - name: Install additional packages for client development image
