@@ -23,10 +23,6 @@
       name:
       - epel-release
 
-  - name: Install @sssd/ci-deps repositories
-    shell: |
-      dnf copr enable -y @sssd/ci-deps centos-stream-8
-
   - name: Enable IdM module
     shell: |
       dnf module enable -y idm:DL1

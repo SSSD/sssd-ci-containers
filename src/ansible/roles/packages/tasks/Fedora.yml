@@ -10,6 +10,10 @@
       name:
       - dnf-plugins-core
 
+  - name: Install @sssd/ci-deps repositories
+    shell: |
+      dnf copr enable -y @sssd/ci-deps
+
   - name: Install systemd and minimal set of packages
     dnf:
       state: present
@@ -175,8 +179,7 @@
     dnf:
       state: present
       name:
-      - gcc
-      - openssl-devel
+      - ci-sssd-random
       - umockdev
     when: passkey_support
   when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"

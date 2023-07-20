@@ -1,0 +1,35 @@
+name: Build RPMs
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  rpms:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:38
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ./src/rpms
+      run: |
+        dnf install -y rpm-build dnf-plugins-core
+        dnf build-dep -y ./ci-sssd.spec
+
+    - name: Build srpm
+      shell: bash
+      working-directory: ./src/rpms
+      run: make srpm
+
+    - name: Build rpms
+      shell: bash
+      working-directory: ./src/rpms
+      run: make rpms
