@@ -19,19 +19,13 @@
   gather_facts: no
   roles:
   - ipa
+  - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
 
 - hosts: client.test
   gather_facts: no
   roles:
   - client
-
-- hosts: client.test, master.ipa.test
-  gather_facts: no
-  tasks:
-  - name: Include passkey
-    include_role:
-      name: passkey
-    when: passkey_support
+  - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
 
 - hosts: nfs.test
   gather_facts: no

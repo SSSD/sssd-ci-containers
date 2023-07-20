@@ -22,16 +22,6 @@
       set -ex
       rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9
       dnf install --setopt=install_weak_deps=False -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-      dnf copr enable -y @sssd/ci-deps centos-stream-9
-
-  # Required until https://pagure.io/copr/copr/issue/2106 gets fixed
-  - name: Disable gpgcheck for @sssd/cli-deps
-    ini_file:
-      path: '/etc/yum.repos.d/_copr:copr.fedorainfracloud.org:group_sssd:ci-deps.repo'
-      section: 'copr:copr.fedorainfracloud.org:group_sssd:ci-deps'
-      option: 'gpgcheck'
-      value: 'false'
-      mode: 0644
   when: "'base_ground' in group_names"
 
 - name: 'Packages are the same as in Fedora'
