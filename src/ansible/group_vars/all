@@ -73,3 +73,4 @@ join_ldap: yes
 join_ad: no
 trust_ipa_samba: yes
 trust_ipa_ad: no
+extended_packageset: yes
