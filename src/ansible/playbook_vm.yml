@@ -11,6 +11,7 @@
     passkey_support: "{{ override_passkey_support | default('no') | bool }}"
     user_regular_uid: 1024
     ansible_become: yes
+    extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
 
 - name: Include services
   ansible.builtin.import_playbook: playbook_image_service.yml
@@ -22,8 +23,9 @@
     join_ldap: "{{ override_join_ldap | default('yes') | bool }}"
     join_samba: "{{ override_join_samba | default('yes') | bool }}"
     join_ipa: "{{ override_join_ipa | default('yes') | bool }}"
+    extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
 
 - hosts: ad
   gather_facts: yes
   roles:
-  - { role: ad, skip_install: yes, skip_dns: yes, ad_permanent_users: ['Administrator'] }
+  - { role: ad, skip_addc_install: yes, skip_dns: yes, ad_permanent_users: ['Administrator'] }
