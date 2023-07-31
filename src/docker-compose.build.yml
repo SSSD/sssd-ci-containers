@@ -20,3 +20,6 @@ services:
   kdc:
     image: localhost/sssd/ci-base-kdc:${TAG}
     container_name: sssd-wip-kdc
+  keycloak:
+    image: localhost/sssd/ci-base-keycloak:${TAG}
+    container_name: sssd-wip-keycloak
