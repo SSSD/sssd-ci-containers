@@ -141,6 +141,12 @@ RAND_bytes (unsigned char *buf, int num)
     return 1;
 }
 
+void __attribute__ ((visibility ("protected")))
+arc4random_buf(void *buf, size_t nbytes)
+{
+	memset (buf, 0x1, nbytes);
+}
+
 static void __attribute__((constructor))
 install_mock_provider(void)
 {
