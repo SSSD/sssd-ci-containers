@@ -17,6 +17,7 @@ sed -i '/client.test/d' /etc/hosts
 sed -i '/nfs.test/d' /etc/hosts
 sed -i '/kdc.test/d' /etc/hosts
 sed -i '/dc.ad.test/d' /etc/hosts
+sed -i '/dc1.ad.test/d' /etc/hosts
 
 # Append the lines
 echo "172.16.100.10 master.ipa.test" >> /etc/hosts
@@ -26,3 +27,4 @@ echo "172.16.100.40 client.test" >> /etc/hosts
 echo "172.16.100.50 nfs.test" >> /etc/hosts
 echo "172.16.100.60 kdc.test" >> /etc/hosts
 echo "172.16.200.10 dc.ad.test" >> /etc/hosts
+echo "172.16.200.11 dc1.ad.test" >> /etc/hosts

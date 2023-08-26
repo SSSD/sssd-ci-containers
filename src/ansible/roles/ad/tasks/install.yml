@@ -26,7 +26,37 @@
   register: installation
   args:
     creates: 'C:\Windows\NTDS'
+  when: not join_domain
 
 - name: Reboot machine
   win_reboot:
   when: installation.changed
+
+- name: Join domain
+  win_domain_membership:
+    dns_domain_name: "{{ service.ad.domain }}"
+    domain_admin_user: "{{ ansible_user }}@{{ service.ad.domain }}"
+    domain_admin_password: "{{ service.ad.safe_password }}"
+    state: domain
+    register: join
+  when: join_domain
+
+- name: reboot windows server
+  win_reboot:
+  when: join.changed
+
+- name: 'Create new AD forest {{ service.ad.domain }}'
+  win_domain_controller:
+    dns_domain_name: "{{ service.ad.domain }}"
+    domain_admin_user: "{{ ansible_user }}@{{ meta_domain }}"
+    domain_admin_password: "{{ service.ad.safe_password }}" 
+    safe_mode_password: "{{ service.ad.safe_password }}"
+    install_dns: true
+    state: domain_controller
+  register: installation
+  when: join_domain
+
+- name: Reboot machine
+  win_reboot:
+  when: installation.reboot_required
+

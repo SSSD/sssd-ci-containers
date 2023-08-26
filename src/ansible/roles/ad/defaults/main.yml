@@ -7,7 +7,11 @@ ad_permanent_users:
 skip_dns: no
 # Skip installation of AD server
 skip_addc_install: no
-# Skip addition of sudo shcmea and possibly other ones
+# Skip addition of sudo schema and possibly other ones
 skip_schema: no
-# Open firewall for all incomming traffic.
+# Open firewall for all incoming traffic.
 open_firewall: yes
+# Sets the primary addc
+primary_addc: yes
+# Joins the domain as an additional addc.
+join_domain: no

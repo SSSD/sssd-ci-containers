@@ -28,4 +28,4 @@
 - hosts: ad
   gather_facts: yes
   roles:
-  - { role: ad, skip_addc_install: yes, skip_dns: yes, ad_permanent_users: ['Administrator'] }
+    - { role: ad, skip_addc_install: yes, join_domain: no, skip_dns: yes, ad_permanent_users: ['Administrator'] }
