@@ -1,3 +1,13 @@
+- name: Configure IPA IP address (from metadata)
+  set_fact:
+    ipa_ip: "{{ hostvars[inventory_hostname]['meta_ip'] }}"
+  when: '"meta_ip" in hostvars[inventory_hostname]'
+
+- name: Configure IPA IP address (from ssh)
+  set_fact:
+    ipa_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+  when: '"meta_ip" not in hostvars[inventory_hostname]'
+
 - name: Install IPA server
   shell: |
     set -e
@@ -9,6 +19,7 @@
       --ds-password={{ service.ipa.password | quote }}           \
       --admin-password={{ service.ipa.password | quote }}        \
       --setup-dns                                                \
+      --ip-address={{ ipa_ip | quote }}                          \
       --setup-adtrust                                            \
       --auto-forwarders                                          \
       --auto-reverse                                             \
