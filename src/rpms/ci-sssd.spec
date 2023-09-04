@@ -1,6 +1,8 @@
+%define build_timestamp %(date +"%%Y_%%m_%%d_%%H_%%M_%%S")
+
 Name:           ci-sssd
 Version:        1
-Release:        1%{?dist}
+Release:        1%{?dist}.%{build_timestamp}
 Summary:        SSSD CI Packages
 URL:            https://github.com/SSSD/sssd-ci-containers
 
