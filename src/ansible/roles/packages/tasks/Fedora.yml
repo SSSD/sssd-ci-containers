@@ -116,6 +116,7 @@
       name:
       - ldb-tools
       - net-tools
+      - nss-pam-ldapd
       - wireshark-cli
       - tcpdump
       - autofs

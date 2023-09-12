@@ -169,6 +169,7 @@
       - libxml2-utils
       - lsb-release
       - make
+      - nslcd
       - packagekit
       - pep8
       - python3-dbus
