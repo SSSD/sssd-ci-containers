@@ -35,6 +35,9 @@ all:
         client_devel:
           hosts:
             client-devel
+        ipa_devel:
+          hosts:
+            ipa-devel
       vars:
         ansible_connection: podman
         ansible_host: sssd-wip-base

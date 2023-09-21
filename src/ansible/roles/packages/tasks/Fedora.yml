@@ -235,4 +235,4 @@
     pip:
       name:
       - flaky
-  when: "'client_devel' in group_names"
+  when: "'client_devel' in group_names or 'ipa_devel' in group_names"
