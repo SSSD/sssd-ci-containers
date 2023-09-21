@@ -133,8 +133,10 @@ samba-dc on CentOS Stream) it is created from `fedora:latest` instead.
 ## Overriding images
 
 There is also a development version to
-[ci-client](https://quay.io/repository/sssd/ci-client) image, named
-[ci-client-devel](https://quay.io/repository/sssd/ci-client-devel). This image
+[ci-client](https://quay.io/repository/sssd/ci-client) and
+[ci-ipa](https://quay.io/repository/sssd/ci-ipa) images, named
+[ci-client-devel](https://quay.io/repository/sssd/ci-client-devel) and
+[ci-ipa-devel](https://quay.io/repository/sssd/ci-ipa-devel). These images
 contains preinstalled development dependencies, which makes it unfortunately
 quite large. However, it is suitable for use when coding on SSSD. You can use it
 by overriding docker-compose values in `docker-compose.override.yml` file:
@@ -143,6 +145,8 @@ by overriding docker-compose values in `docker-compose.override.yml` file:
 services:
   client:
     image: ${REGISTRY}/ci-client-devel:${TAG}
+  ipa:
+    image: ${REGISTRY}/ci-ipa-devel:${TAG}
 ```
 
 ## Using real Active Directory instance
@@ -285,6 +289,7 @@ are:
     base-ldap --> ldap
 
     base-ipa --> ipa
+    ipa --> ipa-devel
 
     base-client --> client
     client --> client-devel

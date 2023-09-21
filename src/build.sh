@@ -143,3 +143,4 @@ compose down
 
 # Create development images with additional packages
 build_base_image "ci-client:${TAG}" client-devel
+build_base_image "ci-ipa:${TAG}" ipa-devel
