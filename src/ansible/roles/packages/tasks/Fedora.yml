@@ -114,13 +114,13 @@
     dnf:
       state: present
       name:
+      - autofs
+      - krb5-workstation
       - ldb-tools
       - net-tools
       - nss-pam-ldapd
-      - wireshark-cli
       - tcpdump
-      - autofs
-      - krb5-workstation
+      - wireshark-cli
       disable_gpg_check: yes
   when: "'base_client' in group_names or 'client' in group_names"
 
