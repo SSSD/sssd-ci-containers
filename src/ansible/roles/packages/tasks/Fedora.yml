@@ -122,8 +122,6 @@
       - autofs
       - krb5-workstation
       disable_gpg_check: yes
-    when:
-    - 'not extended_packageset'
   when: "'base_client' in group_names or 'client' in group_names"
 
 - name: Install packages for LDAP base image
