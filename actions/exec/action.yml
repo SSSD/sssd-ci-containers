@@ -4,7 +4,7 @@ inputs:
     description: Script to run.
     required: true
   where:
-    description: Which container will run the script.
+    description: Which container(s) will run the script.
     required: false
     default: client
   user:
@@ -35,24 +35,33 @@ runs:
     shell: bash
     env:
       path: ${{ steps.script.outputs.path }}
-      container: ${{ inputs.where }}
+      where: ${{ inputs.where }}
     run: |
-      sudo podman cp "$path" "$container:$path"
-      sudo podman exec "$container" chmod a=rx "$path"
+      for container in $where; do
+        echo -e ::group::Preparing container: $container
+        sudo podman cp "$path" "$container:$path"
+        sudo podman exec "$container" chmod a=rx "$path"
+        echo ::endgroup::
+      done
 
   - name: Execute command
     shell: bash
     env:
       path: ${{ steps.script.outputs.path }}
       user: ${{ inputs.user }}
-      container: ${{ inputs.where }}
+      where: ${{ inputs.where }}
       log: ${{ inputs.log-file }}
       workdir: ${{ inputs.working-directory }}
     run: |
       set -ex -o pipefail
       [[ ! -z $log ]] && log=\"$log\"
-      sudo podman exec                                 \
-        --user "$user"                                 \
-        --env "USER=$user"                             \
-        --workdir "$workdir"                           \
-        "$container" /bin/bash -c "$path" |& tee $log
+
+      for container in $where; do
+        echo -e ::group::Executing on: $container
+        sudo podman exec                                 \
+          --user "$user"                                 \
+          --env "USER=$user"                             \
+          --workdir "$workdir"                           \
+          "$container" /bin/bash -c "$path" |& tee $log.$container
+        echo ::endgroup::
+      done

@@ -30,3 +30,12 @@ jobs:
       with:
         working-directory: /
         script: ls
+
+    - name: Exec in containers
+      uses: ./actions/exec
+      with:
+        working-directory: /
+        script: ls
+        where: |
+          client
+          ipa
