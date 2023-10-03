@@ -78,7 +78,7 @@ jobs:
         image: [
           { base: 'quay.io/centos/centos:stream8', tag: 'centos-8', extra: '', unavailable: 'samba' },
           { base: 'quay.io/centos/centos:stream9', tag: 'centos-9', extra: 'centos-latest', unavailable: 'samba' },
-          { base: 'docker.io/debian:11', tag: 'debian-11', extra: 'debian-latest', unavailable: 'ipa ldap samba' },
+          { base: 'docker.io/debian:12', tag: 'debian-12', extra: 'debian-latest', unavailable: 'ipa ldap samba' },
           { base: 'docker.io/ubuntu:latest', tag: 'ubuntu-latest', extra: '', unavailable: 'ipa ldap samba' },
           { base: 'docker.io/ubuntu:rolling', tag: 'ubuntu-rolling', extra: '', unavailable: 'ipa ldap samba' },
         ]
