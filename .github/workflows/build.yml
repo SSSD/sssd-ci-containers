@@ -4,11 +4,13 @@ on:
     branches:
     - master
     paths:
+    - '.github/workflows/build.yml'
     - 'src/**'
     - 'data/**'
     - 'docker-compose.yml'
   pull_request:
     paths:
+    - '.github/workflows/build.yml'
     - 'src/**'
     - 'data/**'
     - 'docker-compose.yml'
