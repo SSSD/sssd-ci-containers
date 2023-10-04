@@ -22,6 +22,8 @@
       - bind-utils
       - expect
       - firewalld
+      - iproute
+      - iproute-tc
       - net-tools
       - openldap-clients
       - openssh-clients
