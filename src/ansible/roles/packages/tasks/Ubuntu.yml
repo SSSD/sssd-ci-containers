@@ -171,7 +171,7 @@
       - make
       - nslcd
       - packagekit
-      - pep8
+      - pycodestyle
       - python3-dbus
       - python3-dev
       - python3-dev
