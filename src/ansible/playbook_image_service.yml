@@ -4,6 +4,7 @@
   roles:
   - facts
   - firewall
+  - no_nscd
 
 - hosts: master.ldap.test
   gather_facts: no

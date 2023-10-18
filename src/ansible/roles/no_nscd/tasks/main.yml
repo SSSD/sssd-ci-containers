@@ -1,0 +1,17 @@
+- name: Populate service facts
+  service_facts:
+
+- name: Disable nscd.service
+  service:
+    name: nscd.service
+    enabled: no
+    state: stopped
+  when: "ansible_facts.services['nscd.service'] is defined"
+
+- name: Disable nscd.socket
+  service:
+    name: nscd.socket
+    enabled: no
+    state: stopped
+  when: "ansible_facts.services['nscd.socket'] is defined"
+
