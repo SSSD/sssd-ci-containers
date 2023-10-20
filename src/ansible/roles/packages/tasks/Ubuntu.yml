@@ -47,8 +47,10 @@
       - adcli
       - freeipa-client
       - nfs-common
+      - nslcd
       - packagekit
       - realmd
+      - slapd
       - sssd
       - sssd-*
   - name: Install packages required for passkey testing
@@ -169,7 +171,6 @@
       - libxml2-utils
       - lsb-release
       - make
-      - nslcd
       - packagekit
       - pycodestyle
       - python3-dbus
@@ -181,7 +182,6 @@
       - python3-pytest
       - python3-requests
       - samba-dev
-      - slapd
       - softhsm2
       - uuid-dev
       - valgrind

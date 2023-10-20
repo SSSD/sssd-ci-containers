@@ -57,8 +57,10 @@
       - adcli
       - freeipa-client
       - nfs-common
+      - nslcd
       - packagekit
       - realmd
+      - slapd
       - sssd
       - sssd-*
   when: "'base_client' in group_names or 'client' in group_names"
@@ -178,7 +180,6 @@
       - libxml2-utils
       - lsb-release
       - make
-      - nslcd
       - packagekit
       - python3-dbus
       - python3-dev
@@ -189,7 +190,6 @@
       - python3-pytest
       - python3-requests
       - samba-dev
-      - slapd
       - softhsm2
       - uuid-dev
       - valgrind
