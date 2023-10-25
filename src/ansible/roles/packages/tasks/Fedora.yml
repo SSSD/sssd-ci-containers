@@ -117,6 +117,7 @@
       state: present
       name:
       - autofs
+      - augeas
       - krb5-workstation
       - ldb-tools
       - net-tools

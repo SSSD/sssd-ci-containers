@@ -54,6 +54,12 @@
       - slapd
       - sssd
       - sssd-*
+  - name: Install test dependencies on client
+    apt:
+      state: present
+      update_cache: yes
+      name:
+      - augeas-tools
   - name: Install packages required for passkey testing
     apt:
       state: present
