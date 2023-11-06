@@ -33,7 +33,8 @@ runs:
       sudo dpkg -i containernetworking-plugins_1.1.1+ds1-3_amd64.deb
       rm --force containernetworking-plugins_1.1.1+ds1-3_amd64.deb
 
-      sudo systemctl enable --now podman.socket
+      sudo systemctl enable podman.socket
+      sudo systemctl restart podman.socket
 
   - name: Checkout sssd-ci-containers repository
     uses: actions/checkout@v3
