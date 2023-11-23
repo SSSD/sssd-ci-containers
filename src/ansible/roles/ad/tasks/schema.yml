@@ -7,7 +7,7 @@
 
 - name: Install additional schemas
   win_shell: |
-    ldifde -i -f C:\{{ item }}.schema -c dc=X {{ service.ad.suffix }} -b "Administrator" "{{ service.ad.domain }}" "{{ ansible_password }}"
+    ldifde -i -f C:\{{ item }}.schema -c dc=X {{ ad_suffix }} -b "Administrator" "{{ ad_domain }}" "{{ ansible_password }}"
   register: schema
   failed_when: schema.rc != 0 and schema.stdout is not search('ENTRY_EXISTS')
   changed_when: schema.rc == 0

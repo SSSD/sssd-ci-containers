@@ -1,10 +1,9 @@
 # This config is specific to downstream ci and does not
 # handle multiple AD DCs and other setups yet.
-# TODO: Add all AD servers
-# TODO: Remove meta_ip dependency (from  idm-ci).
-# TODO: Generalize this for all machines.
+# TODO: Add group DNS_SERVER that will contain all machines running dns to add them
+# as servers here like master.ipa.test dc.samba.test and ad.
 # dnsmasq config
-listen-address=::1,127.0.0.53,127.0.0.1,{{ hostvars['dns.test']['meta_ip'] }}
+listen-address=::1,127.0.0.53,127.0.0.1,{{ hostvars['dns.test']['ansible_facts']['default_ipv4']['address'] }}
 log-queries
 log-facility=-
 local=/test/
@@ -15,38 +14,17 @@ cache-size=0
 
 # These zones have their own DNS server
 {% if 'master.ipa.test' in hostvars %}
-server=/ipa.test/{{ hostvars['master.ipa.test']['meta_ip'] }}
+server=/ipa.test/{{ hostvars['master.ipa.test']['ansible_facts']['default_ipv4']['address'] }}
 {% endif %}
 {% if 'dc.samba.test' in hostvars %}
-server=/samba.test/{{ hostvars['dc.samba.test']['meta_ip'] }}
+server=/samba.test/{{ hostvars['dc.samba.test']['ansible_facts']['default_ipv4']['address'] }}
 {% endif %}
 {% if 'dc.ad.test' in hostvars %}
-server=/ad.test/{{ hostvars['dc.ad.test']['meta_ip'] }}
-{% endif %}
-
-
-#{% for host in vars['hostvars'] %}
-#address=/{{ host }}/{{ hostvars[host]['meta_ip'] }}
-#{% endfor %}
-
-
-# Add A records for LDAP, client and other machines without own DNS server
-{% if 'master.ldap.test' in hostvars %}
-address=/master.ldap.test/{{ hostvars['master.ldap.test']['meta_ip'] }}
-{% endif %}
-{% if 'client.test' in hostvars %}
-address=/client.test/{{ hostvars['client.test']['meta_ip'] }}
-{% endif %}
-{# For nfs and kdc we plan to put them alternatively on the ldap machine to save resources. #}
-{% if 'nfs.test' in hostvars %}
-address=/nfs.test/{{ hostvars['nfs.test']['meta_ip'] }}
-{% elif 'master.ldap.test' in hostvars %}
-address=/nfs.test/{{ hostvars['master.ldap.test']['meta_ip'] }}
-{% endif %}
-{% if 'kdc.test' in hostvars %}
-address=/kdc.test/{{ hostvars['kdc.test']['meta_ip'] }}
-{% elif 'master.ldap.test' in hostvars %}
-address=/kdc.test/{{ hostvars['master.ldap.test']['meta_ip'] }}
+server=/ad.test/{{ hostvars['dc.ad.test']['ansible_facts']['ip_addresses'][0] }}
+{% elif 'ad' in groups and groups['ad'] %}
+{% for ad in groups['ad'] %}
+server=/{{ hostvars[ad]['ansible_facts']['windows_domain'] }}/{{ hostvars[ad]['ansible_facts']['ip_addresses'][0] }}
+{% endfor %}
 {% endif %}
 
 # Add SRV record for LDAP
@@ -54,25 +32,20 @@ address=/kdc.test/{{ hostvars['master.ldap.test']['meta_ip'] }}
 srv-host=_ldap._tcp.ldap.test,master.ldap.test,389
 {% endif %}
 
-# Add PTR records for all machines
-{% if 'master.ipa.test' in hostvars %}
-ptr-record={{ hostvars['master.ipa.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,master.ipa.test
+# All hosts A record
+{% for host in groups['all'] %}
+{% if hostvars[host].ansible_system == 'Linux' %}
+address=/{{ host }}/{{ hostvars[host]['ansible_facts']['default_ipv4']['address'] }}
+{% elif hostvars[host].ansible_system == 'Win32NT' %}
+address=/{{ host }}/{{ hostvars[host]['ansible_facts']['ip_addresses'][0] }}
 {% endif %}
-{% if 'master.ldap.test' in hostvars %}
-ptr-record={{ hostvars['master.ldap.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,master.ldap.test
+{% endfor %}
+
+# All hosts PTR records
+{% for host in groups['all'] %}
+{% if hostvars[host].ansible_system == 'Linux' %}
+ptr-record={{ hostvars[host]['ansible_facts']['default_ipv4']['address'].split('.') | reverse | join(".") }}.in-addr.arpa,{{ host }}
+{% elif hostvars[host].ansible_system == 'Win32NT' %}
+ptr-record={{ hostvars[host]['ansible_facts']['ip_addresses'][0].split('.') | reverse | join(".") }}.in-addr.arpa,{{ host }}
 {% endif %}
-{% if 'dc.samba.test' in hostvars %}
-ptr-record={{ hostvars['dc.samba.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,dc.samba.test
-{% endif %}
-{% if 'client.test' in hostvars %}
-ptr-record={{ hostvars['client.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,client.test
-{% endif %}
-{% if 'dc.ad.test' in hostvars %}
-ptr-record={{ hostvars['dc.ad.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,dc.ad.test
-{% endif %}
-{% if 'kdc.test' in hostvars %}
-ptr-record={{ hostvars['kdc.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,kdc.test
-{% endif %}
-{% if 'nfs.test' in hostvars %}
-ptr-record={{ hostvars['nfs.test']['meta_ip'].split('.') | reverse | join(".") }}.in-addr.arpa,nfs.test
-{% endif %}
+{% endfor %}

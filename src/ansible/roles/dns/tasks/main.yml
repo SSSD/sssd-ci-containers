@@ -1,30 +1,41 @@
-- name: Install dnsmasq package
-  package:
-    name:
-    - dnsmasq
-    state: present
+- name: Gather facts
+  ansible.builtin.setup:
 
-- name: Place dnsmasq config
-  template:
-    src: etc.dnsmasq.conf.j2
-    dest: /etc/dnsmasq.conf
-    owner: root
-    group: root
-    mode: 0600
-  register: config
+- name: Setup dns (on dns machine)
+  block:
+  - name: Install dnsmasq package
+    ansible.builtin.package:
+      name:
+      - dnsmasq
+      state: present
 
-- name: Gather the package facts
-  package_facts:
+  - name: Place dnsmasq config
+    ansible.builtin.template:
+      src: etc.dnsmasq.conf.j2
+      dest: /etc/dnsmasq.conf
+      owner: root
+      group: root
+      mode: 0600
+    register: config
 
-- name: Disable systemd-resolved (if present)
-  service:
-    name: systemd-resolved
-    enabled: false
-    state: stopped
-  when: "'systemd-resolved' in ansible_facts.packages"
+  - name: Show dnsmasq templating results
+    ansible.builtin.debug:
+      msg: "{{ lookup('ansible.builtin.template', 'etc.dnsmasq.conf.j2') }}"
 
-- name: Restart dnsmasq service
-  service:
-    name: dnsmasq
-    enabled: true
-    state: restarted
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+
+  - name: Disable systemd-resolved (if present)
+    ansible.builtin.service:
+      name: systemd-resolved
+      enabled: false
+      state: stopped
+    when: "'systemd-resolved' in ansible_facts.packages"
+
+  - name: Restart dnsmasq service
+    ansible.builtin.service:
+      name: dnsmasq
+      enabled: true
+      state: restarted
+  when: "'dns' in group_names"
+  become: true

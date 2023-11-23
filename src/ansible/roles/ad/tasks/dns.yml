@@ -20,6 +20,6 @@
 
 - name: Remove vagrant IP address from DNS
   win_shell: |
-    Get-DnsServerResourceRecord -ZoneName "{{ service.ad.domain }}" -RRType A \
+    Get-DnsServerResourceRecord -ZoneName "{{ ad_domain }}" -RRType A \
       | Where-Object {$_.RecordData.ipv4address -ne "172.16.200.10"}          \
-      | Remove-DnsServerResourceRecord -ZoneName "{{ service.ad.domain }}" -Force
+      | Remove-DnsServerResourceRecord -ZoneName "{{ ad_domain }}" -Force

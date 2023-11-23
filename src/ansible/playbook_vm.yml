@@ -1,7 +1,6 @@
 ---
-- hosts: dns
+- hosts: all
   gather_facts: yes
-  become: yes
   roles:
   - dns
 
@@ -25,6 +24,7 @@
     join_ipa: "{{ override_join_ipa | default('yes') | bool }}"
     trust_ipa_samba: "{{ override_trust_ipa_samba | default('yes') | bool }}"
     trust_ipa_ad: "{{ override_trust_ipa_ad | default('yes') | bool }}"
+    trust_ipa_ad_two_way: "{{ override_trust_ipa_ad_two_way | default('no') | bool }}"
     extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
 
 - hosts: ad

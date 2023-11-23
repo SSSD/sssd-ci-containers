@@ -8,21 +8,20 @@
   - AD-Domain-Services
   - DNS
 
-- name: 'Create new AD forest {{ service.ad.domain }}'
+- name: 'Create new AD forest {{ ad_domain }}'
   win_shell: |
     Import-Module ADDSDeployment
 
     Install-ADDSForest                                                        \
-      -DomainName "{{ service.ad.domain }}"                                   \
+      -DomainName "{{ ad_domain }}"                                           \
       -CreateDnsDelegation:$false                                             \
-      -DomainNetbiosName "{{ service.ad.netbios }}"                           \
       -ForestMode "WinThreshold"                                              \
       -DomainMode "WinThreshold"                                              \
       -Force:$true                                                            \
       -InstallDns:$true                                                       \
       -NoRebootOnCompletion:$true                                             \
       -SafeModeAdministratorPassword                                          \
-        (ConvertTo-SecureString '{{ service.ad.safe_password }}' -AsPlainText -Force)
+        (ConvertTo-SecureString '{{ ad_password }}' -AsPlainText -Force)
   register: installation
   args:
     creates: 'C:\Windows\NTDS'
