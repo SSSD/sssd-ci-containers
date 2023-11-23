@@ -8,16 +8,27 @@
     ipa_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
   when: '"meta_ip" not in hostvars[inventory_hostname]'
 
+- name: Prepare IPA facts
+  set_fact:
+    ipa_domain: "{{ '.'.join(inventory_hostname.split('.')[1:]) }}"
+    ipa_netbios: "{{ inventory_hostname.split('.')[0].upper() }}"
+    ipa_suffix: "{{ inventory_hostname.split('.')[1:] | map('regex_replace', '^(.*)$', 'dc=\\1') | join(',') }}"
+    ipa_password: "{{ ansible_password | default(service.ipa.password)  }}"
+
+- name: Debug IPA facts
+  debug:
+    msg: 'IPA domain: "{{ ipa_domain }}", IPA netbios: "{{ ipa_netbios }}", IPA suffix: "{{ ipa_suffix }}"'
+
 - name: Install IPA server
   shell: |
     set -e
 
     alias install-ipa="/usr/sbin/ipa-server-install --unattended \
-      --realm={{ service.ipa.domain | upper | quote }}           \
-      --domain={{ service.ipa.domain | quote }}                  \
-      --netbios-name={{ service.ipa.netbios | quote }}           \
-      --ds-password={{ service.ipa.password | quote }}           \
-      --admin-password={{ service.ipa.password | quote }}        \
+      --realm={{ ipa_domain | upper | quote }}                   \
+      --domain={{ ipa_domain | quote }}                          \
+      --netbios-name={{ ipa_netbios| quote }}                    \
+      --ds-password={{ ipa_password | quote }}                   \
+      --admin-password={{ ipa_password | quote }}                \
       --setup-dns                                                \
       --ip-address={{ ipa_ip | quote }}                          \
       --setup-adtrust                                            \
@@ -49,7 +60,7 @@
     ipa automountmap-del default auto.master
     ipa automountmap-del default auto.direct
   args:
-    stdin: '{{ service.ipa.password }}'
+    stdin: '{{ ipa_password }}'
   register: automountmapdel
   failed_when:
   - 'automountmapdel.rc != 0 and "automount map not found" not in automountmapdel.stderr'
@@ -59,7 +70,7 @@
     kinit admin
     ipa group-add pw-never-expires
   args:
-    stdin: '{{ service.ipa.password }}'
+    stdin: '{{ ipa_password }}'
   register: pwneverexpires
   failed_when:
   - 'pwneverexpires.rc != 0 and "already exists" not in pwneverexpires.stderr'
@@ -69,7 +80,7 @@
     kinit admin
     ipa pwpolicy-add pw-never-expires --maxlife=0 --minlife=0 --priority=0
   args:
-    stdin: '{{ service.ipa.password }}'
+    stdin: '{{ ipa_password }}'
   register: policy
   failed_when:
   - 'policy.rc != 0 and "already used by pw-never-expires" not in policy.stderr'
@@ -79,7 +90,7 @@
     kinit admin
     ipa group-add-member pw-never-expires --users=admin
   args:
-    stdin: '{{ service.ipa.password }}'
+    stdin: '{{ ipa_password }}'
   register: member
   failed_when:
   - 'member.rc != 0 and "This entry is already a member" not in member.stdout'
@@ -90,8 +101,8 @@
     ipa user-mod admin --password
   args:
     stdin: |
-      {{ service.ipa.password }}
-      {{ service.ipa.password }}
+      {{ ipa_password }}
+      {{ ipa_password }}
 
 - name: 'Check trust with other domains'
   shell: |
@@ -99,32 +110,68 @@
     ipa trust-find
   args:
     stdin: |
-      {{ service.ipa.password }}
+      {{ ipa_password }}
   register: trust
   failed_when: False
 
-- name: 'Setup trust with {{ service.samba.domain }}'
-  shell: |
-    kinit admin
-    ipa trust-add {{ service.samba.domain | quote }} --admin Administrator --password
-  args:
-    stdin: |
-      {{ service.ipa.password }}
-      {{ service.samba.password }}
+- name: 'Setup trust with samba'
+  block:
+  - name: Set Samba facts (IPA)
+    set_fact:
+      samba_domain: "{{ '.'.join(hostvars[groups.samba.0].inventory_hostname.split('.')[1:]) }}"
+      samba_password: "{{ hostvars[groups.samba.0].ansible_password | default(service.ipa.password) }}"
+  - name: Debug Samba facts (IPA)
+    debug:
+      msg: 'Samba domain: "{{ samba_domain }}"'
+  - name: Run ipa trust-add
+    shell: |
+      kinit admin
+      ipa trust-add {{ samba_domain | quote }} --admin Administrator --password
+    args:
+      stdin: |
+        {{ ipa_password }}
+        {{ samba_password }}
+    when:
+    - 'samba_domain not in trust.stdout'
   when:
-  - 'service.samba.domain not in trust.stdout'
+  - '"samba" in groups and groups["samba"]'
   - join_samba
   - trust_ipa_samba
 
-- name: 'Setup trust with {{ service.ad.domain }}'
-  shell: |
-    kinit admin
-    ipa trust-add {{ service.ad.domain | quote }} --admin Administrator --password
-  args:
-    stdin: |
-      {{ service.ad.safe_password }}
-      {{ service.ad.safe_password }}
+- name: 'Setup trust with AD'
+  block:
+  - name: Set AD facts (IPA)
+    set_fact:
+      ad_domain: "{{ '.'.join(hostvars[groups.ad.0].inventory_hostname.split('.')[1:]) }}"
+      safe_password: "{{ service.ad.safe_password }}"
+      # TODO: range-type can be configurable ipa-ad-trust or ipa-ad-trust-posix
+      range_type: "--range-type=ipa-ad-trust"
+  - name: Debug AD facts (IPA)
+    debug:
+      msg: 'AD domain: "{{ ad_domain }}"'
+  - name: Run ipa trust-add
+    shell: |
+      kinit admin
+      ipa trust-add --type=ad {{ ad_domain | quote }} --admin Administrator --password {{ range_type }}
+    args:
+      stdin: |
+        {{ ipa_password }}
+        {{ safe_password }}
+    when:
+    - 'ad_domain not in trust.stdout'
+    - not trust_ipa_ad_two_way
+  - name: Run ipa trust-add (two-way)
+    shell: |
+      kinit admin
+      ipa trust-add --type=ad --two-way=true {{ ad_domain | quote }} --admin Administrator --password {{ range_type }}
+    args:
+      stdin: |
+        {{ ipa_password }}
+        {{ safe_password }}
+    when:
+    - 'ad_domain not in trust.stdout'
+    - trust_ipa_ad_two_way
   when:
-  - 'service.ad.domain not in trust.stdout'
+  - '"ad" in groups and groups["ad"]'
   - join_ad
   - trust_ipa_ad

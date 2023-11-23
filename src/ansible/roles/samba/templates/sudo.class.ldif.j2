@@ -1,4 +1,4 @@
-dn: CN=sudoRole,CN=Schema,CN=Configuration,dc=samba,dc=test
+dn: CN=sudoRole,CN=Schema,CN=Configuration,{{ samba_suffix }}
 objectClass: top
 objectClass: classSchema
 governsID: 1.3.6.1.4.1.15953.9.2.1
@@ -22,5 +22,5 @@ mayContain: sudoNotBefore
 mayContain: sudoNotAfter
 mayContain: description
 possSuperiors: top
-defaultObjectCategory: CN=sudoRole,CN=Schema,CN=Configuration,dc=samba,dc=test
+defaultObjectCategory: CN=sudoRole,CN=Schema,CN=Configuration,{{ samba_suffix }}
 defaultSecurityDescriptor: D:(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;SY)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;DA)(OA;;CCDC;bf967a86-0de6-11d0-a285-00aa003049e2;;AO)(OA;;CCDC;bf967aba-0de6-11d0-a285-00aa003049e2;;AO)(OA;;CCDC;bf967a9c-0de6-11d0-a285-00aa003049e2;;AO)(OA;;CCDC;bf967aa8-0de6-11d0-a285-00aa003049e2;;PO)(A;;RPLCLORC;;;AU)(A;;LCRPLORC;;;ED)(OA;;CCDC;4828CC14-1437-45bc-9B07-AD6F015E5F28;;AO)

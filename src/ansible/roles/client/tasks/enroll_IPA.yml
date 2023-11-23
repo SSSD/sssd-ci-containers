@@ -1,0 +1,41 @@
+---
+- name: Set ipa facts
+  set_fact:
+    ipa_domain: "{{ hostvars[groups.ipa.0]['ipa_domain'] }}"
+    ipa_password: "{{ hostvars[groups.ipa.0].ansible_password | default(service.ipa.password) }}"
+    ipa_keytab: /enrollment/{{ hostvars[groups.ipa.0]['ipa_domain'] }}.keytab
+
+- name: Run ipa-client-install
+  shell: |
+    /usr/sbin/ipa-client-install --unattended --no-ntp \
+      --domain {{ ipa_domain | quote }}                \
+      --principal admin                                \
+      --password {{ ipa_password | quote }}
+  args:
+    creates: /etc/ipa/ca.crt
+
+- name: Stat {{ ipa_keytab }}
+  stat:
+    path: "{{ ipa_keytab }}"
+  register: enrollment_ipa
+
+- name: Copy IPA keytab to {{ ipa_keytab }}
+  copy:
+    src: /etc/krb5.keytab
+    dest: "{{ ipa_keytab }}"
+    mode: 0600
+    remote_src: yes
+  when: not enrollment_ipa.stat.exists
+
+- name: Cleanup after joining the IPA domain
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items:
+  - /etc/krb5.conf
+  - /etc/krb5.keytab
+  - /etc/sssd/sssd.conf
+
+- name: Add ipa to domains
+  set_fact:
+    domains: "{{ domains + [ipa_domain] }}"

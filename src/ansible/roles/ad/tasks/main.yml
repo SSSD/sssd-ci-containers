@@ -31,6 +31,17 @@
   win_reboot:
   when: configured_cygwin.changed and skip_addc_install
 
+- name: Prepare AD facts
+  set_fact:
+    ad_domain: "{{ '.'.join(inventory_hostname.split('.')[1:]) }}"
+    ad_netbios: "{{ inventory_hostname.split('.')[0].upper() }}"
+    ad_suffix: "{{ inventory_hostname.split('.')[1:] | map('regex_replace', '^(.*)$', 'dc=\\1') | join(',') }}"
+    ad_password: "{{ service.ad.safe_password }}"
+
+- name: Debug AD facts
+  debug:
+    msg: 'AD domain: "{{ ad_domain }}", AD netbios: "{{ ad_netbios }}", AD suffix: "{{ ad_suffix }}"'
+
 - name: 'Install AD server'
   include_tasks: 'install.yml'
   when: not skip_addc_install
@@ -56,13 +67,13 @@
   win_shell: |
     Import-Module ActiveDirectory
 
-    $user = Get-ADUser -Server {{ service.ad.domain }} -Identity {{ item }}   \
+    $user = Get-ADUser -Server {{ ad_domain }} -Identity {{ item }}   \
       -Properties PasswordNeverExpires
     if ($user.PasswordNeverExpires -eq $true) {
       exit 255
     }
 
-    Set-ADUser -Server {{ service.ad.domain }} -Identity {{ item }}           \
+    Set-ADUser -Server {{ ad_domain }} -Identity {{ item }}           \
       -PasswordNeverExpires $true
   register: result
   failed_when: "result.rc != 255 and result.rc != 0"

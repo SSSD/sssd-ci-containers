@@ -3,20 +3,86 @@
     path: /etc/samba/smb.conf
     state: absent
 
-- name: Disable systemd-resolved to clear DNS port
-  service:
-    name: systemd-resolved.service
-    enabled: no
-    state: stopped
+- name: Prepare Samba facts
+  set_fact:
+    samba_domain: "{{ '.'.join(inventory_hostname.split('.')[1:]) }}"
+    samba_netbios: "{{ inventory_hostname.split('.')[0].upper() }}"
+    samba_workgroup: "{{ inventory_hostname.split('.')[1].upper() }}"
+    samba_suffix: "{{ inventory_hostname.split('.')[1:] | map('regex_replace', '^(.*)$', 'dc=\\1') | join(',') }}"
+    samba_password: "{{ hostvars[inventory_hostname].ansible_password | default(service.samba.password) }}"
+
+- name: Debug Samba facts
+  debug:
+    msg: |
+      Samba domain: "{{ samba_domain }}"
+      Samba workgroup: "{{ samba_workgroup }}"
+      Samba suffix: "{{ samba_suffix }}"
+      Samba netbios: "{{ samba_netbios }}"
+
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+
+- name: Get rid of systemd-resolved
+  block:
+  - name: List mounts
+    ansible.builtin.command: mount
+    register: mounts
+  - name: Disable systemd-resolved to clear DNS port
+    ansible.builtin.service:
+      name: systemd-resolved.service
+      enabled: no
+      state: stopped
+  # In VMs we want to use network manager resolv conf instead
+  # of systemd-resolved stub.
+  - name: Replace /etc/resolv.conf with network manager
+    ansible.builtin.file:
+      src: /run/NetworkManager/resolv.conf
+      dest: /etc/resolv.conf
+      state: link
+      force: yes
+      owner: root
+      group: root
+      mode: '0660'
+    when: '"resolv.conf" not in mounts.stdout'
+  - name: Create NetworkManager dns override
+    ansible.builtin.copy:
+      content: |
+        [main]
+        dns=none
+      dest: /etc/NetworkManager/conf.d/90-dns-none.conf
+    register: NetworkManager_configured
+    when: '"resolv.conf" not in mounts.stdout'
+  - name: Restart NetworkManager
+    ansible.builtin.service:
+      name: NetworkManager
+      state: restarted
+    when:
+    - '"resolv.conf" not in mounts.stdout'
+    - NetworkManager_configured.changed
+  # In containers the file is a mounted from outside so
+  # we change the content.
+  - name: Change resolv.conf
+    lineinfile:
+      path: /etc/resolv.conf
+      insertbefore: BOF
+      line: "nameserver {{ hostvars[groups.dns.0]['ansible_facts']['default_ipv4']['address'] }}"
+    when:
+    - '"resolv.conf" in mounts.stdout'
+    - '"dns" in groups and groups["dns"]'
+  - name: Remove systemd-resolved package
+    ansible.builtin.package:
+      name: systemd-resolved
+      state: absent
+  when: "'systemd-resolved' in ansible_facts.packages"
 
 - name: Install Samba domain
   shell: |
-    /usr/bin/samba-tool domain provision                        \
-      --realm={{ service.samba.domain | upper | quote }}        \
-      --domain={{ service.samba.netbios | quote }}              \
-      --adminpass={{ service.samba.password | quote }}          \
-      --krbtgtpass={{ service.samba.password | quote }}         \
-      --dnspass={{ service.samba.password | quote }}            \
+    /usr/bin/samba-tool domain provision               \
+      --realm={{ samba_domain | upper | quote }}       \
+      --domain={{ samba_workgroup | quote }}           \
+      --adminpass={{ samba_password | quote }}          \
+      --krbtgtpass={{ samba_password | quote }}         \
+      --dnspass={{ samba_password | quote }}            \
       --use-rfc2307
   args:
     creates: /etc/samba/smb.conf
@@ -29,6 +95,8 @@
     force: yes
     remote_src: yes
 
+# TODO: The hardcoded certs should be replaced
+# by ones based on real based on hostnames
 - name: Replace TLS certificates
   ini_file:
     path: /etc/samba/smb.conf
@@ -59,9 +127,12 @@
     backup: no
 
 - name: Copy sudo schema
-  copy:
-    src: '{{ item }}'
+  template:
+    src: '{{ item }}.j2'
     dest: '/etc/samba/{{ item }}'
+    owner: root
+    group: root
+    mode: 0644
   with_items:
   - sudo.attrs.ldif
   - sudo.class.ldif
