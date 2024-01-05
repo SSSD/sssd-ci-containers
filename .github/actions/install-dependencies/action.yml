@@ -18,4 +18,5 @@ runs:
   - name: Enable podman socket
     shell: bash
     run: |
-      sudo systemctl enable --now podman.socket
+      sudo systemctl enable podman.socket
+      sudo systemctl restart podman.socket
