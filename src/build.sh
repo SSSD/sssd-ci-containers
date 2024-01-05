@@ -92,7 +92,7 @@ function build_base_image {
   done
 
   echo "Building $name from $from"
-  ${DOCKER} run --name sssd-wip-base --detach -i "$from"
+  ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
     base_install_python
   fi
