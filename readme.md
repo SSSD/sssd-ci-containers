@@ -33,6 +33,7 @@ Then you can run the following `make` targets in order to start, stop and
 destroy the containers.
 
 * `sudo make up` reads `docker-compose.yml` and starts all services in containers
+* `sudo make up-passkey` reads `docker-compose.yml` and `docker-compose.passkey.yml` to add passkey support and start all services in containers
 * `sudo make stop` stops the containers, keeps theirs content
 * `sudo make down` destroys and removes the containers
 * `sudo make update` update images
