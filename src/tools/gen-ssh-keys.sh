@@ -16,7 +16,8 @@ set -xe
 mkdir -p $OUT
 mkdir -p $OUT/hosts
 
-for name in client ldap ipa samba nfs kdc dns master.keycloak.test; do
+for name in client.test dc.samba.test dns.test kdc.test \
+            master.ipa.test master.keycloak.test master.ldap.test nfs.test; do
     for type in ecdsa ed25519 rsa; do
         ssh-keygen -C "Well known key for sssd-ci." -t $type -f "$OUT/hosts/$name.${type}_key" -N "" <<< y
     done
