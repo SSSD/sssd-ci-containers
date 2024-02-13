@@ -126,6 +126,15 @@
     mode: '0600'
     backup: no
 
+- name: Enable debug
+  ini_file:
+    path: /etc/samba/smb.conf
+    section: global
+    option: "log level"
+    value: 10
+    mode: '0600'
+    backup: no
+
 - name: Copy sudo schema
   template:
     src: '{{ item }}.j2'
