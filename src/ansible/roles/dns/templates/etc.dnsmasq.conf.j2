@@ -27,6 +27,9 @@ server=/{{ hostvars[ad]['ansible_facts']['windows_domain'] }}/{{ hostvars[ad]['a
 {% endfor %}
 {% endif %}
 
+# Add reverse zones for artificial hosts in IPA domain
+server=/251.255.10.in-addr.arpa/{{ hostvars['master.ipa.test']['ansible_facts']['default_ipv4']['address'] }}
+
 # Add SRV record for LDAP
 {% if 'master.ldap.test' in hostvars %}
 srv-host=_ldap._tcp.ldap.test,master.ldap.test,389
