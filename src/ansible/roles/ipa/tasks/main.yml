@@ -104,6 +104,13 @@
       {{ ipa_password }}
       {{ ipa_password }}
 
+- name: Add reverse zone for artificial hosts
+  shell: |
+    kinit admin
+    ipa --no-prompt dnszone-add --name-from-ip 10.255.251.0/24
+  args:
+    stdin: '{{ ipa_password }}'
+
 - name: 'Check trust with other domains'
   shell: |
     kinit admin
