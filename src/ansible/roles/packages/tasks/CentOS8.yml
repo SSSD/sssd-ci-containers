@@ -6,15 +6,10 @@
       name:
       - dnf-plugins-core
 
-  - name: Install buildroot
-    template:
-      src: repo
-      dest: '/etc/yum.repos.d/{{ item.name }}.repo'
-      owner: root
-      group: root
-      mode: 0644
-    with_items:
-    - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c8s-build/latest/$basearch'}
+  - name: Ensure the powertools repository is enabled
+    community.general.dnf_config_manager:
+      name: powertools
+      state: enabled
     when: buildroot
 
   - name: Install EPEL repository
