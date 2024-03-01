@@ -8,3 +8,7 @@
 - hosts: base_ground
   roles:
   - common
+
+- hosts: base
+  roles:
+  - cleanup
