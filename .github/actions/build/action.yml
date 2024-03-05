@@ -14,11 +14,16 @@ runs:
   using: "composite"
   steps:
   - name: Build containers
-    shell: bash
-    run: |
-      sudo --preserve-env=ANSIBLE_FORCE_COLOR,DOCKER_HOST \
-        make build                                        \
-          BASE_IMAGE="${{ inputs.base_image }}"           \
-          TAG="${{ inputs.tag }}"                         \
-          UNAVAILABLE="${{ inputs.unavailable }}"         \
-          XDG_RUNTIME_DIR=
+    uses: nick-fields/retry@v2
+    with:
+      shell: bash
+      max_attempts: 3
+      timeout_minutes: 120
+      retry_on: error
+      command: |
+        sudo --preserve-env=ANSIBLE_FORCE_COLOR,DOCKER_HOST \
+          make build                                        \
+            BASE_IMAGE="${{ inputs.base_image }}"           \
+            TAG="${{ inputs.tag }}"                         \
+            UNAVAILABLE="${{ inputs.unavailable }}"         \
+            XDG_RUNTIME_DIR=
