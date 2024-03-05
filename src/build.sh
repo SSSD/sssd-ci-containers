@@ -62,7 +62,7 @@ function base_install_python {
   # Install python3 if not available
   if base_exec '[ ! -f /usr/bin/python3 ]'; then
     if base_exec '[ -f /usr/bin/apt ]'; then
-      base_exec 'apt update && apt install -y python3 && rm -rf /var/lib/apt/lists/*'
+      base_exec 'apt update && apt install -y python3 python3-apt && rm -rf /var/lib/apt/lists/*'
     else
       base_exec 'dnf install -y python3 && dnf clean all'
     fi
