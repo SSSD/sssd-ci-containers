@@ -151,6 +151,8 @@
     export LDB_MODULES_PATH=/usr/lib64/samba/ldb
     ldbadd -H /var/lib/samba/private/sam.ldb /etc/samba/sudo.attrs.ldif
     ldbadd -H /var/lib/samba/private/sam.ldb /etc/samba/sudo.class.ldif
+  retries: 5
+  delay: 5
 
 - name: Start Samba DC
   service:
