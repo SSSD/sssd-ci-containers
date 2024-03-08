@@ -131,7 +131,7 @@
     path: /etc/samba/smb.conf
     section: global
     option: "log level"
-    value: 10
+    value: "1 auth:7 rpc_srv:7 sam:7 winbind:7"
     mode: '0600'
     backup: no
 
