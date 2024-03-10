@@ -60,6 +60,10 @@
       update_cache: yes
       name:
       - augeas-tools
+  when: "'base_client' in group_names or 'client' in group_names"
+
+- name: Install packages that are shared with IPA and client base images
+  block:
   - name: Install packages required for passkey testing
     apt:
       state: present
