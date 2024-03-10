@@ -41,6 +41,9 @@ echo "Storing in: $REGISTRY"
 if [ "$CLEANUP" == "no" ]; then
   trap - EXIT
 fi
+if [ "$SKIP_BASE" == "yes" ]; then
+  unset BASE_IMAGE
+fi
 
 set -xe
 
@@ -53,6 +56,12 @@ function compose {
   docker-compose -f "../docker-compose.yml" -f "../docker-compose.keycloak.yml" -f "./docker-compose.build.yml" $@
 }
 
+function base_run {
+  local image="${BASE_IMAGE:-ci-base-ground:${TAG}}"
+
+  ${DOCKER} run --rm "$image" /bin/bash -c "$1"
+}
+
 function base_exec {
   ${DOCKER} exec sssd-wip-base /bin/bash -c "$1"
 }
@@ -60,13 +69,14 @@ function base_exec {
 # Make sure that Ansible dependencies are installed so we can run playbooks
 function base_install_python {
   # Install python3 if not available
-  if base_exec '[ ! -f /usr/bin/python3 ]'; then
-    if base_exec '[ -f /usr/bin/apt ]'; then
-      base_exec 'apt update && apt install -y python3 python3-apt && rm -rf /var/lib/apt/lists/*'
-    else
-      base_exec 'dnf install -y python3 && dnf clean all'
-    fi
-  fi
+  case "${PACKAGE_MANAGER}" in
+    */apt)
+      base_exec 'command -v python3 || (apt update && DEBIAN_FRONTEND=noninteractive apt install -y python3 python3-apt)'
+      ;;
+    */dnf)
+      base_exec 'command -v python3 || dnf install -y python3'
+      ;;
+  esac
 }
 
 # We use commit instead of build so we can provision the images with Ansible.
@@ -114,6 +124,8 @@ function build_service_image {
   echo "Commiting $from as $name"
   ${DOCKER} commit "$from" "${REGISTRY}/ci-$name:${TAG}"
 }
+
+PACKAGE_MANAGER=$(base_run 'command -v apt || command -v dnf')
 
 if [ "$SKIP_BASE" == 'no' ]; then
   # Create base images
