@@ -67,11 +67,6 @@ function base_install_python {
       base_exec 'dnf install -y python3 && dnf clean all'
     fi
   fi
-
-  # Remove dnf-5 to workaround many issues that yet needs to be fixed
-  if base_exec '[ -f /usr/bin/dnf5 ]'; then
-    base_exec 'dnf install -y python3-dnf && dnf remove -y dnf5 && ln -s /usr/bin/dnf-3 /usr/bin/dnf && ln -s /usr/bin/dnf-3 /usr/bin/yum && dnf clean all'
-  fi
 }
 
 # We use commit instead of build so we can provision the images with Ansible.
