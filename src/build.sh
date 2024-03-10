@@ -36,7 +36,6 @@ export SKIP_BASE=${SKIP_BASE:-no}
 
 echo "Building from: $BASE_IMAGE"
 echo "Building with tag: $TAG"
-echo "Building in priviledged mode: $PRIVILEDGED"
 echo "Storing in: $REGISTRY"
 
 if [ "$CLEANUP" == "no" ]; then
