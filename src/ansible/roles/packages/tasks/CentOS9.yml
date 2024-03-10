@@ -1,14 +1,11 @@
 - name: Install additional repositories
   block:
   - name: Install buildroot repository
-    template:
-      src: repo
-      dest: '/etc/yum.repos.d/{{ item.name }}.repo'
-      owner: root
-      group: root
-      mode: 0644
-    with_items:
-    - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c9s-build/latest/$basearch'}
+    yum_repository:
+      name: buildroot
+      description: "CentOS Stream $releasever - Buildroot"
+      baseurl: "https://kojihub.stream.centos.org/kojifiles/repos/c{{ ansible_distribution_major_version }}s-build/latest/$basearch"
+      gpgcheck: false
     when: buildroot
 
   - name: Install EPEL repository
