@@ -28,6 +28,7 @@ export UNAVAILABLE="${UNAVAILABLE:-}"
 export ANSIBLE_CONFIG=./ansible/ansible.cfg
 export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
 export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
+export SHARED_CACHE_ROOT="$(mktemp -d)"
 
 # Debugging options
 export CLEANUP=${CLEANUP:-yes}
@@ -49,6 +50,7 @@ set -xe
 
 function cleanup {
   ${DOCKER} rm sssd-wip-base --force || :
+  rm --recursive --force "$SHARED_CACHE_ROOT"
   compose down
 }
 
@@ -83,6 +85,7 @@ function base_install_python {
 function build_base_image {
   local from=$1
   local name=$2
+  local -a volume_opts
 
   for svc in $UNAVAILABLE; do
     if [ "base-$svc" != $name ]; then
@@ -96,8 +99,13 @@ function build_base_image {
     return 0
   done
 
+  for target in $SHARED_CACHE_TARGETS; do
+    mkdir --parents "$SHARED_CACHE_ROOT/$target"
+    volume_opts+=("--volume" "$SHARED_CACHE_ROOT/$target:$target:z")
+  done
+
   echo "Building $name from $from"
-  ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
+  ${DOCKER} run ${volume_opts[@]} --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
     base_install_python
   fi
@@ -126,6 +134,14 @@ function build_service_image {
 }
 
 PACKAGE_MANAGER=$(base_run 'command -v apt || command -v dnf')
+case "$PACKAGE_MANAGER" in
+  */apt)
+    SHARED_CACHE_TARGETS="/var/cache/apt /var/lib/apt/lists"
+    ;;
+  */dnf)
+    SHARED_CACHE_TARGETS="/var/cache/dnf"
+    ;;
+esac
 
 if [ "$SKIP_BASE" == 'no' ]; then
   # Create base images
@@ -156,3 +172,5 @@ compose down
 # Create development images with additional packages
 build_base_image "ci-client:${TAG}" client-devel
 build_base_image "ci-ipa:${TAG}" ipa-devel
+
+rm --recursive --force "$SHARED_CACHE_ROOT"

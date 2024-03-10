@@ -1,11 +1,2 @@
 - name: 'Include distribution specific package tasks [{{ ansible_distribution }}]'
   include_tasks: '{{ ansible_distribution }}.yml'
-
-- name: 'Clear package manager cache'
-  shell: |
-    if [ -f /usr/bin/apt ]; then
-      rm -rf /var/lib/apt/lists/*
-    fi
-    if [ -f /usr/bin/dnf ]; then
-      dnf clean all
-    fi
