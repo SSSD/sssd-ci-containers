@@ -5,4 +5,4 @@
   set_fact:
     buildroot: no
     debuginfo: no
-    ipa: '{{ ipa_packages }}'
+    ipa_package: ipa

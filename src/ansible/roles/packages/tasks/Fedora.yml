@@ -84,10 +84,10 @@
 
 - name: Install packages for client base image
   block:
-  - name: Install ipa client
+  - name: Install IPA client
     dnf:
       state: present
-      name: '{{ ipa.client }}'
+      name: "{{ ipa_package }}-client"
 
   - name: Install SSSD
     dnf:
@@ -138,10 +138,13 @@
 
 - name: Install packages for IPA base image
   block:
-  - name: Install IPA
+  - name: Install IPA server
     dnf:
       state: present
-      name: '{{ ipa.server }}'
+      name:
+      - "{{ ipa_package }}-server"
+      - "{{ ipa_package }}-server-dns"
+      - "{{ ipa_package }}-server-trust-ad"
   when: "'base_ipa' in group_names"
 
 - name: Install packages for Samba base image
