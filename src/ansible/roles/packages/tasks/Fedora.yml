@@ -48,7 +48,6 @@
       - python3-pip
       - sudo
       - systemd
-      disable_gpg_check: yes
   when: "'base_ground' in group_names"
 
 - name: Install extended set of packages
@@ -91,7 +90,6 @@
       - tmate
       - tmux
       - vim
-      disable_gpg_check: yes
   when:
   - "'base_ground' in group_names"
   - extended_packageset
@@ -138,7 +136,6 @@
       - realmd
       - tcpdump
       - wireshark-cli
-      disable_gpg_check: yes
   when: "'base_client' in group_names"
 
 - name: Install packages for LDAP base image
