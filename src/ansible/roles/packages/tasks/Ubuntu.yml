@@ -3,7 +3,7 @@
   - name: Install systemd and common tools
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - bash-completion
       - bind9utils
@@ -43,19 +43,19 @@
   - name: Install IPA client
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name: freeipa-client
   - name: Install SSSD
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - sssd
       - sssd-*
   - name: Install test dependencies on client
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - adcli
       - augeas-tools
@@ -83,7 +83,7 @@
   - name: Install NFS
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - nfs-kernel-server
   when: "'base_nfs' in group_names"
@@ -93,7 +93,7 @@
   - name: Install KDC
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - krb5-admin-server
       - krb5-config
@@ -105,7 +105,7 @@
   - name: Install Keycloak dependencies
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - openjdk-17-jre-headless
       - openssl
@@ -120,7 +120,7 @@
   - name: Install packages required for integration tests
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - adcli
       - autoconf
@@ -205,7 +205,7 @@
   - name: Install additional python packages
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - python3-flaky
   when: "'client_devel' in group_names"
