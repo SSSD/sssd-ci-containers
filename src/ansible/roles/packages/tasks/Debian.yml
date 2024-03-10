@@ -39,14 +39,11 @@
   when: "'base_ground' in group_names"
 
 - name: Enable backports repo to install freeipa
-  block:
-  - name: Enable backports repo
-    copy:
-      dest: /etc/apt/sources.list.d/backports.list
-      content: "deb http://deb.debian.org/debian bullseye-backports main"
-      owner: root
-      group: root
-      mode: '0644'
+  apt_repository:
+    repo: deb http://deb.debian.org/debian bullseye-backports main
+    state: present
+  when:
+  - ansible_distribution_major_version == '11'
 
 - name: Install packages for client base image
   block:
