@@ -103,12 +103,10 @@
       state: present
       name: '{{ ipa.client }}'
 
-  - name: Install SSSD and its dependencies
+  - name: Install SSSD
     dnf:
       state: present
       name:
-      - nfs-utils
-      - realmd
       - sssd
       - sssd-*
 
@@ -135,7 +133,9 @@
       - krb5-workstation
       - ldb-tools
       - net-tools
+      - nfs-utils
       - nss-pam-ldapd
+      - realmd
       - tcpdump
       - wireshark-cli
       disable_gpg_check: yes

@@ -40,18 +40,16 @@
 
 - name: Install packages for client base image
   block:
-  - name: Install SSSD and its dependencies
+  - name: Install IPA client
+    apt:
+      state: present
+      update_cache: yes
+      name: freeipa-client
+  - name: Install SSSD
     apt:
       state: present
       update_cache: yes
       name:
-      - adcli
-      - freeipa-client
-      - nfs-common
-      - nslcd
-      - packagekit
-      - realmd
-      - slapd
       - sssd
       - sssd-*
   - name: Install test dependencies on client
@@ -59,7 +57,13 @@
       state: present
       update_cache: yes
       name:
+      - adcli
       - augeas-tools
+      - nfs-common
+      - nslcd
+      - packagekit
+      - realmd
+      - slapd
   when: "'base_client' in group_names"
 
 - name: Install packages that are shared with IPA and client base images
