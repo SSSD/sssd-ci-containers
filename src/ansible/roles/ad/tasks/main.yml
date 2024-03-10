@@ -53,6 +53,12 @@
     include_sub_features: yes
     include_management_tools: yes
 
+- name: Install powershell modules
+  win_shell: |
+    Get-PackageProvider NuGet -ForceBootstrap
+    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+    Install-Module PSIni -Confirm:$False
+
 - name: Make sure Active Directory Web Services is running
   win_service:
     name: adws
