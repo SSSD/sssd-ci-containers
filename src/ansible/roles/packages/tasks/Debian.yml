@@ -121,7 +121,7 @@
 
 - name: Install additional packages for client development image
   block:
-  - name: Install SSSD build and integration tests dependencies
+  - name: Install packages required for integration tests
     apt:
       state: present
       update_cache: yes
@@ -178,7 +178,6 @@
       - libselinux1-dev
       - libsemanage-dev
       - libsmbclient-dev
-      - libssl-dev
       - libssl-dev
       - libsystemd-dev
       - libtalloc-dev

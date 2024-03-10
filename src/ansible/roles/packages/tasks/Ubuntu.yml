@@ -117,7 +117,7 @@
 
 - name: Install additional packages for client development image
   block:
-  - name: Install SSSD build and integration tests dependencies
+  - name: Install packages required for integration tests
     apt:
       state: present
       update_cache: yes
@@ -187,13 +187,12 @@
       - lsb-release
       - make
       - packagekit
-      - pycodestyle
       - python3-dbus
-      - python3-dev
       - python3-dev
       - python3-ldap
       - python3-ldb
       - python3-psutil
+      - python3-pycodestyle
       - python3-pytest
       - python3-requests
       - samba-dev
