@@ -1,10 +1,6 @@
+- name: 'Facts are the same as in Debian'
+  include_tasks: 'Debian.yml'
+
 - name: Set distribution specific facts
   set_fact:
-    systemd:
-      services:
-        kadmin: krb5-admin-server.service
-        krb5kdc: krb5-kdc.service
-        sshd: ssh.service
     passkey_support: Yes
-    ca_trust_dir: /etc/ssl/certs
-    ca_trust_update: update-ca-certificates
