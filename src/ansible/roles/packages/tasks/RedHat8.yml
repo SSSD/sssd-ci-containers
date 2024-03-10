@@ -1,13 +1,16 @@
-- name: Enable idm module
-  command: yum module enable idm:DL1 -y
-  when: ansible_distribution_major_version == '8'
+- name: Install additional repositories
+  block:
+  - name: Enable IdM module
+    command: dnf -y module enable idm:DL1
+    when: "ansible_distribution_major_version == '8'"
 
-- name: Install EPEL repository
-  dnf:
-    state: present
-    name: 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm'
-    disable_gpg_check: yes
-  when: extended_packageset
+  - name: Install EPEL repository
+    dnf:
+      state: present
+      name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+      disable_gpg_check: yes
+    when: extended_packageset
+  when: "'base_ground' in group_names"
 
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'

@@ -1,6 +1,6 @@
-- name: Install buildroot repository
+- name: Install additional repositories
   block:
-  - name: Install buildroot
+  - name: Install buildroot repository
     template:
       src: repo
       dest: '/etc/yum.repos.d/{{ item.name }}.repo'
@@ -11,11 +11,12 @@
     - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c9s-build/latest/$basearch'}
     when: buildroot
 
-  - name: Install EPEL and @sssd/ci-deps repositories
-    shell: |
-      set -ex
-      rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9
-      dnf install --setopt=install_weak_deps=False -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+  - name: Install EPEL repository
+    dnf:
+      state: present
+      name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+      disable_gpg_check: yes
+    when: extended_packageset
   when: "'base_ground' in group_names"
 
 - name: 'Packages are the same as in Fedora'
