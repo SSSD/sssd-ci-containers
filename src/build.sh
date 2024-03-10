@@ -93,7 +93,12 @@ function build_base_image {
   fi
 
   ansible-playbook --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
-  ${DOCKER} stop sssd-wip-base
+
+  if [ $name == 'base-ground' ]; then
+    ${DOCKER} attach --no-stdin sssd-wip-base
+  else
+    ${DOCKER} stop sssd-wip-base
+  fi
   ${DOCKER} commit                     \
     --change 'CMD ["/sbin/init"]'      \
     --change 'STOPSIGNAL SIGRTMIN+3'   \
