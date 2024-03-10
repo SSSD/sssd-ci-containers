@@ -8,6 +8,10 @@
       gpgcheck: false
     when: buildroot
 
+  - name: Enable IdM module
+    command: dnf -y module enable idm:DL1
+    when: "ansible_distribution_major_version == '8'"
+
   - name: Install EPEL repository
     dnf:
       state: present
