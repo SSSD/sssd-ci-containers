@@ -1,11 +1,5 @@
 - name: Install buildroot repository
   block:
-  - name: Install dnf plugins
-    dnf:
-      state: present
-      name:
-      - dnf-plugins-core
-
   - name: Install buildroot
     template:
       src: repo
