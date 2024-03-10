@@ -1,13 +1,11 @@
-- name: Enable docs installation by default
+- name: Install packages for ground base image
   block:
-  - name: Patch dnf.conf
+  - name: Enable docs installation by default
     replace:
       path: /etc/dnf/dnf.conf
       regexp: 'nodocs'
       replace: ''
 
-- name: Install packages for ground base image
-  block:
   - name: Install dnf plugins
     dnf:
       state: present
