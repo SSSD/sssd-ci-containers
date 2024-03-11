@@ -195,6 +195,7 @@
     dnf:
       state: present
       name:
+      - acl
       - ci-sssd-random
       - umockdev
     when: passkey_support
