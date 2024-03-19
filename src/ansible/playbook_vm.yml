@@ -11,6 +11,7 @@
     user_regular_uid: 1024
     ansible_become: yes
     extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
+    virt_smarcard: "{{ override_virt_smarcard | default('no') | bool }}"
 
 - name: Include services
   ansible.builtin.import_playbook: playbook_image_service.yml
@@ -27,6 +28,7 @@
     trust_ipa_ad_two_way: "{{ override_trust_ipa_ad_two_way | default('no') | bool }}"
     extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
     skip_cleanup: true
+    virt_smarcard: "{{ override_virt_smarcard | default('no') | bool }}"
 
 - hosts: ad
   gather_facts: yes

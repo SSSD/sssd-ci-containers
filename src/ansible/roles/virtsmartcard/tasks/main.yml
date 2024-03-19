@@ -1,0 +1,102 @@
+- name: Create virtual card dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ virt_smartcard_dir }}"
+    - "{{ virt_smartcard_dir }}/db"
+    - "{{ virt_smartcard_dir }}/tokens"
+
+- name: Create softhsm2 config
+  template:
+    dest: "{{ virt_smartcard_dir }}/softhsm2.conf"
+    src: softhsm2.conf.j2
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Initialize softhsm2 token
+  shell: |
+    softhsm2-util --init-token --slot 0 --label "SC test" \
+      --so-pin={{ virt_smartcard_sopin }} --pin={{ virt_smartcard_pin }}
+  environment:
+    SOFTHSM2_CONF: "{{ virt_smartcard_dir }}/softhsm2.conf"
+  args:
+    chdir: "{{ virt_smartcard_dir }}"
+
+- name: Create NSSDB with modutil
+  command:
+    cmd: "modutil -create -dbdir sql:{{ virt_smartcard_dir }}/db -force"
+  args:
+    creates: "{{ virt_smartcard_dir }}/db/pkcs11.txt"
+
+- name: Check if p11-kit-proxy is configured
+  shell: |
+    modutil -list -dbdir sql:{{ virt_smartcard_dir }}/db -libfile \
+    {{ virt_smartcard_libsofthsm }} | grep 'library name: p11-kit-proxy.so'
+  ignore_errors: true
+  register: check_p11_kit_proxy
+
+- name: Add SoftHSM if p11-kit-proxy is configured
+  shell: |
+    modutil -force -add 'SoftHSM PKCS#11' -dbdir \
+    sql:{{ virt_smartcard_dir }}/db -libfile {{ virt_smartcard_libsofthsm }}
+  when: check_p11_kit_proxy.rc == 1
+
+- name: Create custom pcscd semodule file
+  copy:
+    dest: "{{ virt_smartcard_dir }}/virtcacard.te"
+    content: |
+      policy_module(virtcacard, 1.0)
+      gen_require(`
+        type pcscd_t;
+        type node_t;
+      ')
+      allow pcscd_t node_t:tcp_socket node_bind;
+
+- name: Install custom semodule
+  shell: |
+    set -e
+    make -f /usr/share/selinux/devel/Makefile virtcacard.pp
+    semodule -i {{ virt_smartcard_dir }}/virtcacard.pp
+    touch {{ virt_smartcard_dir }}/virtcacard.cil.done
+  args:
+    chdir: "{{ virt_smartcard_dir }}"
+    creates: "{{ virt_smartcard_dir }}/virtcacard.cil.done"
+
+- name: Copy pcscd service config file
+  copy:
+    src: /usr/lib/systemd/system/pcscd.service
+    dest: /etc/systemd/system/pcscd.service
+    remote_src: true
+
+- name: Remove --auto-exit from pcscd service
+  replace:
+    path: /etc/systemd/system/pcscd.service
+    regexp: ' --auto-exit'
+
+- name: Copy virt_cacard.service template
+  template:
+    dest: /etc/systemd/system/virt_cacard.service
+    src: virt_cacard.service.j2
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Disable virt_cacard in p11-kit opensc module
+  lineinfile:
+    path: /usr/share/p11-kit/modules/opensc.module
+    line: "disable-in: virt_cacard"
+
+- name: Restart pcscd
+  systemd_service:
+    name: pcscd
+    daemon_reload: true
+    state: restarted
+
+- name: Start and enable virt_cacard service
+  systemd_service:
+    name: virt_cacard
+    daemon_reload: true
+    state: started
+    enabled: true

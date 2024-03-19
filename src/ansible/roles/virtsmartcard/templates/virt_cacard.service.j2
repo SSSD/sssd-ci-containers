@@ -1,0 +1,13 @@
+[Unit]
+Description=virt_cacard Service
+Requires=pcscd.service
+
+[Service]
+Environment=SOFTHSM2_CONF="{{ virt_smartcard_dir }}/softhsm2.conf"
+WorkingDirectory={{ virt_smartcard_dir }}
+ExecStart=/usr/bin/virt_cacard >> /var/log/virt_cacard.debug 2>&1
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
