@@ -27,6 +27,7 @@
   roles:
   - client
   - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
+  - { role: virtsmartcard, when: ansible_distribution != "Ubuntu" and ansible_distribution != "Debian" and virt_smartcard }
 
 - hosts: nfs.test
   gather_facts: no
