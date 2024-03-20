@@ -183,3 +183,6 @@
     name: samba-sysvolreset.service
     enabled: yes
     state: started
+
+- name: Disable account expiration for Administrator
+  command: samba-tool user setexpiry Administrator --noexpiry
