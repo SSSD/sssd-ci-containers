@@ -87,8 +87,6 @@
       - gh
       - git
       - mc
-      - tig
-      - tmate
       - tmux
       - vim
       disable_gpg_check: yes
@@ -135,7 +133,6 @@
       - krb5-workstation
       - ldb-tools
       - net-tools
-      - nss-pam-ldapd
       - tcpdump
       - wireshark-cli
       disable_gpg_check: yes
@@ -231,23 +228,32 @@
       - http-parser-devel
       - krb5-server
       - krb5-workstation
-      - lcov
       - libcmocka-devel
-      - libfaketime
       - mock
       - nss_wrapper
       - openldap-clients
-      - openldap-servers
       - pam_wrapper
       - python3-ldap
       - python3-ldb
       - python3-psutil
-      - python3-pycodestyle
       - python3-pytest
       - python3-requests
       - rpm-build
       - uid_wrapper
       - valgrind
+
+  - name: Install packages from sssd/ci-deps
+    dnf:
+      state: present
+      name:
+      - libfaketime
+      - lcov
+      - nss-pam-ldapd
+      - openldap-servers
+      - python3-pycodestyle
+      - tig
+      - tmate
+    when: passkey_support
 
   - name: Install additional python packages
     pip:
