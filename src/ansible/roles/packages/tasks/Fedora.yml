@@ -26,7 +26,13 @@
 
   - name: Install @sssd/ci-deps repositories
     shell: |
-      dnf copr enable -y @sssd/ci-deps
+      if grep -q "CentOS Stream release 10" /etc/redhat-release
+      then
+        # 'dnf copr' defaults to 'epel' on centos-stream but there is no epel-10
+        dnf copr enable -y @sssd/ci-deps centos-stream-10-x86_64
+      else
+        dnf copr enable -y @sssd/ci-deps
+      fi
 
   # Legacy repo containing the virtualsmartcard, virt_cacard, vpcd that was replaced by ci-deps
   # Keeping it here in case we need to return to it for some reason.
@@ -160,7 +166,7 @@
         - selinux-policy-devel
         - make
     when: virt_smartcard
- 
+
   - name: Install virtual smartcard packages from copr
     dnf:
       state: present
