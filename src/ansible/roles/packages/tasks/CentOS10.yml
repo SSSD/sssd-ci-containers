@@ -1,0 +1,21 @@
+- name: Install buildroot repository
+  block:
+  - name: Install dnf plugins
+    dnf:
+      state: present
+      name:
+      - dnf-plugins-core
+
+  - name: Install buildroot
+    template:
+      src: repo
+      dest: '/etc/yum.repos.d/{{ item.name }}.repo'
+      owner: root
+      group: root
+      mode: 0644
+    with_items:
+    - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c10s-build/latest/$basearch'}
+    when: buildroot
+
+- name: 'Packages are the same as in Fedora'
+  include_tasks: 'Fedora.yml'
