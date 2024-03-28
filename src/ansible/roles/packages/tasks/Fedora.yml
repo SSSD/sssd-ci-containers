@@ -28,6 +28,13 @@
     shell: |
       dnf copr enable -y @sssd/ci-deps
 
+  # TODO: Delete when vsmartcard is migrated to ci-deps
+  - name: Install virt_smartcard copr repositories
+    command: dnf copr enable -y jjelen/vsmartcard
+    args:
+      creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:jjelen:vsmartcard.repo
+    when: virt_smartcard
+
   - name: Install systemd and minimal set of packages
     dnf:
       state: present
@@ -139,6 +146,29 @@
       - tcpdump
       - wireshark-cli
       disable_gpg_check: yes
+
+  - name: Install packages for virtual smartcard from general repos
+    dnf:
+      state: present
+      name:
+        - opensc
+        - openssl
+        - gnutls-utils
+        - softhsm
+        - nss-tools
+        - selinux-policy-devel
+        - make
+    when: virt_smartcard
+ 
+  - name: Install virtual smartcard packages from copr
+    dnf:
+      state: present
+      name:
+        - virtualsmartcard
+        - virt_cacard
+        - vpcd
+      disable_gpg_check: yes
+    when: virt_smartcard
   when: "'base_client' in group_names or 'client' in group_names"
 
 - name: Install packages for LDAP base image
