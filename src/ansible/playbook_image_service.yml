@@ -47,4 +47,9 @@
   gather_facts: no
   roles:
   - ssh_server
-  - cleanup
+
+- hosts: services
+  gather_facts: no
+  roles:
+  - role: cleanup
+    when: skip_cleanup is undefined or not skip_cleanup
