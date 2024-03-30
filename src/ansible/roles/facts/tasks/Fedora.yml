@@ -8,6 +8,6 @@
     buildroot: yes
     debuginfo: yes
     passkey_support: Yes
-    ipa: '{{ freeipa_packages }}'
+    ipa_package: freeipa
     ca_trust_dir: /etc/pki/ca-trust/source/anchors/
     ca_trust_update: update-ca-trust

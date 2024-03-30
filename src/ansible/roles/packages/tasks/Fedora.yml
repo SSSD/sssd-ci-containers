@@ -1,23 +1,11 @@
-- name: Enable docs installation by default
+- name: Install packages for ground base image
   block:
-  - name: Check dnf.conf exists
-    stat:
-      path: /etc/dnf/dnf.conf
-    register: dnf_stat_result
-
-  - name: Patch dnf.conf
+  - name: Enable docs installation by default
     replace:
       path: /etc/dnf/dnf.conf
       regexp: 'nodocs'
       replace: ''
-    when: dnf_stat_result.stat.exists
 
-- name: Select packageset
-  set_fact:
-    extended_packageset: "{{ extended_packageset | default('no') }}"
-
-- name: Install packages for ground base image
-  block:
   - name: Install dnf plugins
     dnf:
       state: present
@@ -48,7 +36,6 @@
       - python3-pip
       - sudo
       - systemd
-      disable_gpg_check: yes
   when: "'base_ground' in group_names"
 
 - name: Install extended set of packages
@@ -91,24 +78,21 @@
       - tmate
       - tmux
       - vim
-      disable_gpg_check: yes
   when:
   - "'base_ground' in group_names"
   - extended_packageset
 
 - name: Install packages for client base image
   block:
-  - name: Install ipa client
+  - name: Install IPA client
     dnf:
       state: present
-      name: '{{ ipa.client }}'
+      name: "{{ ipa_package }}-client"
 
-  - name: Install SSSD and its dependencies
+  - name: Install SSSD
     dnf:
       state: present
       name:
-      - nfs-utils
-      - realmd
       - sssd
       - sssd-*
 
@@ -135,11 +119,12 @@
       - krb5-workstation
       - ldb-tools
       - net-tools
+      - nfs-utils
       - nss-pam-ldapd
+      - realmd
       - tcpdump
       - wireshark-cli
-      disable_gpg_check: yes
-  when: "'base_client' in group_names or 'client' in group_names"
+  when: "'base_client' in group_names"
 
 - name: Install packages for LDAP base image
   block:
@@ -149,15 +134,18 @@
       name:
       - acl
       - 389-ds-base
-  when: "'base_ldap' in group_names or 'ldap' in group_names or 'ipa' in group_names"
+  when: "'base_ldap' in group_names"
 
 - name: Install packages for IPA base image
   block:
-  - name: Install IPA
+  - name: Install IPA server
     dnf:
       state: present
-      name: '{{ ipa.server }}'
-  when: "'base_ipa' in group_names or 'ipa' in group_names"
+      name:
+      - "{{ ipa_package }}-server"
+      - "{{ ipa_package }}-server-dns"
+      - "{{ ipa_package }}-server-trust-ad"
+  when: "'base_ipa' in group_names"
 
 - name: Install packages for Samba base image
   block:
@@ -167,7 +155,7 @@
       name:
       - samba-dc
       - samba-winbind-clients
-  when: "'base_samba' in group_names or 'samba' in group_names"
+  when: "'base_samba' in group_names"
 
 - name: Install packages for NFS base image
   block:
@@ -176,7 +164,7 @@
       state: present
       name:
       - nfs-utils
-  when: "'base_nfs' in group_names or 'nfs' in group_names"
+  when: "'base_nfs' in group_names"
 
 - name: Install packages for KDC base image
   block:
@@ -187,7 +175,7 @@
       - krb5-libs
       - krb5-server
       - krb5-workstation
-  when: "'base_kdc' in group_names or 'kdc' in group_names"
+  when: "'base_kdc' in group_names"
 
 - name: Install packages that are shared with IPA and client base images
   block:
@@ -199,7 +187,7 @@
       - ci-sssd-random
       - umockdev
     when: passkey_support
-  when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
+  when: "'base_client' in group_names or 'base_ipa' in group_names"
 
 - name: Install packages for Keycloak base image
   block:

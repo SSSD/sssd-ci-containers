@@ -3,7 +3,7 @@
   - name: Install systemd and common tools
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - bash-completion
       - bind9utils
@@ -39,73 +39,75 @@
   when: "'base_ground' in group_names"
 
 - name: Enable backports repo to install freeipa
-  block:
-  - name: Enable backports repo
-    copy:
-      dest: /etc/apt/sources.list.d/backports.list
-      content: "deb http://deb.debian.org/debian bullseye-backports main"
-      owner: root
-      group: root
-      mode: '0644'
+  apt_repository:
+    repo: deb http://deb.debian.org/debian bullseye-backports main
+    state: present
+  when:
+  - ansible_distribution == 'Debian'
+  - ansible_distribution_major_version == '11'
 
 - name: Install packages for client base image
   block:
-  - name: Install SSSD and its dependencies
+  - name: Install IPA client
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
+      name: freeipa-client
+  - name: Install SSSD
+    apt:
+      state: present
+      cache_valid_time: 3600
       name:
-      - adcli
-      - freeipa-client
-      - nfs-common
-      - nslcd
-      - packagekit
-      - realmd
-      - slapd
       - sssd
       - sssd-*
   - name: Install test dependencies on client
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
+      - adcli
       - augeas-tools
-  when: "'base_client' in group_names or 'client' in group_names"
+      - nfs-common
+      - nslcd
+      - packagekit
+      - realmd
+      - slapd
+  when: "'base_client' in group_names"
 
 - name: Install packages for NFS base image
   block:
   - name: Install NFS
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - nfs-kernel-server
-  when: "'base_nfs' in group_names or 'nfs' in group_names"
+  when: "'base_nfs' in group_names"
 
 - name: Install packages for KDC base image
   block:
   - name: Install KDC
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - krb5-admin-server
       - krb5-config
       - krb5-kdc
-  when: "'base_kdc' in group_names or 'kdc' in group_names"
+  when: "'base_kdc' in group_names"
 
 - name: Install packages for Keycloak base image
   block:
   - name: Install ca-certificates-java first to avoid dep issues
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - ca-certificates-java
   - name: Install Keycloak dependencies
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - openssl
       - unzip
@@ -117,10 +119,10 @@
 
 - name: Install additional packages for client development image
   block:
-  - name: Install SSSD build and integration tests dependencies
+  - name: Install packages required for integration tests
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - adcli
       - autoconf
@@ -175,7 +177,6 @@
       - libsemanage-dev
       - libsmbclient-dev
       - libssl-dev
-      - libssl-dev
       - libsystemd-dev
       - libtalloc-dev
       - libtdb-dev
@@ -206,7 +207,7 @@
   - name: Install additional python packages
     apt:
       state: present
-      update_cache: yes
+      cache_valid_time: 3600
       name:
       - python3-flaky
   when: "'client_devel' in group_names"

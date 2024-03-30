@@ -1,0 +1,2 @@
+- name: 'Packages are the same as in CentOS'
+  include_tasks: 'CentOS.yml'

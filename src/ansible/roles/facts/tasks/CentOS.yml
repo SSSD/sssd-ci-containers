@@ -1,6 +1,7 @@
 - name: 'Facts are the same as in Fedora'
   include_tasks: 'Fedora.yml'
 
-- name: Set distribution specific facts
+- name: Set distribution specific facts for CentOS 8
   set_fact:
     passkey_support: No
+  when: ansible_distribution_major_version < '9'

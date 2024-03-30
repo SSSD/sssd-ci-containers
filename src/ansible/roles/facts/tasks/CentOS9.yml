@@ -1,6 +1,0 @@
-- name: 'Facts are the same as in Fedora'
-  include_tasks: 'Fedora.yml'
-
-- name: Set distribution specific facts
-  set_fact:
-    passkey_support: Yes

@@ -13,8 +13,8 @@
 # |  base-ipa  |        |               |              |            |                 |            |
 # |------------|        |               |              |            |                 |            |
 # |    ipa     |  ldap  |    client     |     samba    |    nfs     |    keycloak     |     kdc    |
-# |            |        |---------------|              |            |                 |            |
-# |            |        |  client-dev   |              |            |                 |            |
+# |------------|        |---------------|              |            |                 |            |
+# | ipa-devel  |        | client-devel  |              |            |                 |            |
 # |------------|--------|---------------|--------------|------------|-----------------|------------|
 
 trap "cleanup &> /dev/null || :" EXIT
@@ -28,6 +28,7 @@ export UNAVAILABLE="${UNAVAILABLE:-}"
 export ANSIBLE_CONFIG=./ansible/ansible.cfg
 export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
 export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
+export SHARED_CACHE_ROOT="$(mktemp -d)"
 
 # Debugging options
 export CLEANUP=${CLEANUP:-yes}
@@ -35,22 +36,31 @@ export SKIP_BASE=${SKIP_BASE:-no}
 
 echo "Building from: $BASE_IMAGE"
 echo "Building with tag: $TAG"
-echo "Building in priviledged mode: $PRIVILEDGED"
 echo "Storing in: $REGISTRY"
 
 if [ "$CLEANUP" == "no" ]; then
   trap - EXIT
+fi
+if [ "$SKIP_BASE" == "yes" ]; then
+  unset BASE_IMAGE
 fi
 
 set -xe
 
 function cleanup {
   ${DOCKER} rm sssd-wip-base --force || :
+  rm --recursive --force "$SHARED_CACHE_ROOT"
   compose down
 }
 
 function compose {
   docker-compose -f "../docker-compose.yml" -f "../docker-compose.keycloak.yml" -f "./docker-compose.build.yml" $@
+}
+
+function base_run {
+  local image="${BASE_IMAGE:-ci-base-ground:${TAG}}"
+
+  ${DOCKER} run --rm "$image" /bin/bash -c "$1"
 }
 
 function base_exec {
@@ -60,24 +70,21 @@ function base_exec {
 # Make sure that Ansible dependencies are installed so we can run playbooks
 function base_install_python {
   # Install python3 if not available
-  if base_exec '[ ! -f /usr/bin/python3 ]'; then
-    if base_exec '[ -f /usr/bin/apt ]'; then
-      base_exec 'apt update && apt install -y python3 python3-apt && rm -rf /var/lib/apt/lists/*'
-    else
-      base_exec 'dnf install -y python3 && dnf clean all'
-    fi
-  fi
-
-  # Remove dnf-5 to workaround many issues that yet needs to be fixed
-  if base_exec '[ -f /usr/bin/dnf5 ]'; then
-    base_exec 'dnf install -y python3-dnf && dnf remove -y dnf5 && ln -s /usr/bin/dnf-3 /usr/bin/dnf && ln -s /usr/bin/dnf-3 /usr/bin/yum && dnf clean all'
-  fi
+  case "${PACKAGE_MANAGER}" in
+    */apt)
+      base_exec 'command -v python3 || (apt update && DEBIAN_FRONTEND=noninteractive apt install -y python3 python3-apt)'
+      ;;
+    */dnf)
+      base_exec 'command -v python3 || dnf install -y python3'
+      ;;
+  esac
 }
 
 # We use commit instead of build so we can provision the images with Ansible.
 function build_base_image {
   local from=$1
   local name=$2
+  local -a volume_opts
 
   for svc in $UNAVAILABLE; do
     if [ "base-$svc" != $name ]; then
@@ -91,14 +98,24 @@ function build_base_image {
     return 0
   done
 
+  for target in $SHARED_CACHE_TARGETS; do
+    mkdir --parents "$SHARED_CACHE_ROOT/$target"
+    volume_opts+=("--volume" "$SHARED_CACHE_ROOT/$target:$target:z")
+  done
+
   echo "Building $name from $from"
-  ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
+  ${DOCKER} run ${volume_opts[@]} --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
     base_install_python
   fi
 
   ansible-playbook --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
-  ${DOCKER} stop sssd-wip-base
+
+  if [ $name == 'base-ground' ]; then
+    ${DOCKER} attach --no-stdin sssd-wip-base
+  else
+    ${DOCKER} stop sssd-wip-base
+  fi
   ${DOCKER} commit                     \
     --change 'CMD ["/sbin/init"]'      \
     --change 'STOPSIGNAL SIGRTMIN+3'   \
@@ -114,6 +131,16 @@ function build_service_image {
   echo "Commiting $from as $name"
   ${DOCKER} commit "$from" "${REGISTRY}/ci-$name:${TAG}"
 }
+
+PACKAGE_MANAGER=$(base_run 'command -v apt || command -v dnf')
+case "$PACKAGE_MANAGER" in
+  */apt)
+    SHARED_CACHE_TARGETS="/var/cache/apt /var/lib/apt/lists"
+    ;;
+  */dnf)
+    SHARED_CACHE_TARGETS="/var/cache/dnf"
+    ;;
+esac
 
 if [ "$SKIP_BASE" == 'no' ]; then
   # Create base images
@@ -144,3 +171,5 @@ compose down
 # Create development images with additional packages
 build_base_image "ci-client:${TAG}" client-devel
 build_base_image "ci-ipa:${TAG}" ipa-devel
+
+rm --recursive --force "$SHARED_CACHE_ROOT"
