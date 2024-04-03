@@ -28,12 +28,13 @@
     shell: |
       dnf copr enable -y @sssd/ci-deps
 
-  # TODO: Delete when vsmartcard is migrated to ci-deps
-  - name: Install virt_smartcard copr repositories
-    command: dnf copr enable -y jjelen/vsmartcard
-    args:
-      creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:jjelen:vsmartcard.repo
-    when: virt_smartcard
+  # Legacy repo containing the virtualsmartcard, virt_cacard, vpcd that was replaced by ci-deps
+  # Keeping it here in case we need to return to it for some reason.
+  #- name: Install virt_smartcard copr repositories
+  #  command: dnf copr enable -y jjelen/vsmartcard
+  #  args:
+  #    creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:jjelen:vsmartcard.repo
+  #  when: virt_smartcard
 
   - name: Install systemd and minimal set of packages
     dnf:
