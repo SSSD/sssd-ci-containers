@@ -3,3 +3,8 @@
   gather_facts: yes
   roles:
   - { role: ad, enable_firewall: yes }
+
+- hosts: dc1.ad.test
+  gather_facts: yes
+  roles:
+  - { role: ad, enable_firewall: yes, join_domain: yes }

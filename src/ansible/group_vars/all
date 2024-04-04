@@ -43,6 +43,13 @@ service: {
     safe_password: Secret123,
     suffix: 'dc=ad,dc=test'
   }
+  ad1: {
+    domain: ad.test,
+    hostname: 'dc1',
+    netbios: AD1,
+    safe_password: Secret123,
+    suffix: 'dc=ad,dc=test'
+  }
 }
 
 user_regular_uid: 1000
