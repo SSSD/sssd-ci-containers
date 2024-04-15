@@ -27,7 +27,7 @@ export TAG="${TAG:-latest}"
 export UNAVAILABLE="${UNAVAILABLE:-}"
 export ANSIBLE_CONFIG=./ansible/ansible.cfg
 export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
-export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
+export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-1}
 
 # Debugging options
 export CLEANUP=${CLEANUP:-yes}
