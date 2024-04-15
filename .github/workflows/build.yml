@@ -24,51 +24,8 @@ env:
   ANSIBLE_FORCE_COLOR: 1
   DOCKER_HOST: unix:///run/podman/podman.sock
 jobs:
-  get-matrix:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-    steps:
-    - uses: actions/checkout@v3
-    - name: Get build matrix
-      id: matrix
-      uses: ./.github/actions/get-build-matrix
-
-  fedora:
-    runs-on: ubuntu-latest
-    needs: 'get-matrix'
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        image: ${{ fromJson(needs.get-matrix.outputs.matrix) }}
-    steps:
-    - name: Checkout sources
-      uses: actions/checkout@v3
-
-    - name: Install dependencies
-      uses: ./.github/actions/install-dependencies
-
-    - name: Build images
-      uses: ./.github/actions/build
-      with:
-        base_image: ${{ matrix.image.base }}
-        tag: ${{ matrix.image.tag }}
-
-    - name: Publish images
-      if: github.event_name != 'pull_request'
-      uses: ./.github/actions/publish
-      with:
-        credentials: ${{ secrets.QUAY_IO_CREDENTIALS }}
-        tag: ${{ matrix.image.tag }}
-        extra_tags: ${{ matrix.image.extra }}
-
   other:
     runs-on: ubuntu-latest
-    needs: 'fedora'
     if: ${{ !cancelled() }}
     permissions:
       contents: read
@@ -77,10 +34,6 @@ jobs:
       matrix:
         image: [
           { base: 'quay.io/centos/centos:stream8', tag: 'centos-8', extra: '', unavailable: 'samba' },
-          { base: 'quay.io/centos/centos:stream9', tag: 'centos-9', extra: 'centos-latest', unavailable: 'samba' },
-          { base: 'docker.io/debian:12', tag: 'debian-12', extra: 'debian-latest', unavailable: 'ipa ldap samba' },
-          { base: 'docker.io/ubuntu:latest', tag: 'ubuntu-latest', extra: '', unavailable: 'ipa ldap samba' },
-          { base: 'docker.io/ubuntu:rolling', tag: 'ubuntu-rolling', extra: '', unavailable: 'ipa ldap samba' },
         ]
     steps:
     - name: Checkout sources

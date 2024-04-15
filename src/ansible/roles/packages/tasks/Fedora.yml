@@ -160,7 +160,7 @@
         - selinux-policy-devel
         - make
     when: virt_smartcard
- 
+
   - name: Install virtual smartcard packages from copr
     dnf:
       state: present
@@ -185,9 +185,7 @@
 - name: Install packages for IPA base image
   block:
   - name: Install IPA
-    dnf:
-      state: present
-      name: '{{ ipa.server }}'
+    command: 'dnf install -y freeipa-server freeipa-server-dns freeipa-server-trust-ad'
   when: "'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Samba base image
