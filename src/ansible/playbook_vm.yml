@@ -19,12 +19,12 @@
     passkey_support: "{{ override_passkey_support | default('no') | bool }}"
     user_regular_uid: 1024
     ansible_become: yes
-    join_ad: "{{ override_join_ad | default('yes') | bool }}"
-    join_ldap: "{{ override_join_ldap | default('yes') | bool }}"
-    join_samba: "{{ override_join_samba | default('yes') | bool }}"
-    join_ipa: "{{ override_join_ipa | default('yes') | bool }}"
-    trust_ipa_samba: "{{ override_trust_ipa_samba | default('yes') | bool }}"
-    trust_ipa_ad: "{{ override_trust_ipa_ad | default('yes') | bool }}"
+    join_ad: "{{ override_join_ad | default('no') | bool }}"
+    join_ldap: "{{ override_join_ldap | default('no') | bool }}"
+    join_samba: "{{ override_join_samba | default('no') | bool }}"
+    join_ipa: "{{ override_join_ipa | default('no') | bool }}"
+    trust_ipa_samba: "{{ override_trust_ipa_samba | default('no') | bool }}"
+    trust_ipa_ad: "{{ override_trust_ipa_ad | default('no') | bool }}"
     trust_ipa_ad_two_way: "{{ override_trust_ipa_ad_two_way | default('no') | bool }}"
     extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
     skip_cleanup: true
