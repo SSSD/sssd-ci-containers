@@ -26,10 +26,10 @@
 
   - name: Install @sssd/ci-deps repositories
     shell: |
-      if grep -q "CentOS Stream release 10" /etc/redhat-release
+      if grep -qE "CentOS Stream release 10|Red Hat Enterprise Linux release 10" /etc/redhat-release
       then
-        # 'dnf copr' defaults to 'epel' on centos-stream but there is no epel-10
-        dnf copr enable -y @sssd/ci-deps centos-stream-10-x86_64
+        # 'dnf copr' defaults to 'epel' on centos-stream and rhel-10 but there is no epel-10
+        dnf copr enable -y @sssd/ci-deps centos-stream-10-$basearch
       else
         dnf copr enable -y @sssd/ci-deps
       fi
