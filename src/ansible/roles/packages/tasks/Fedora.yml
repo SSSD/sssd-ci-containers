@@ -194,6 +194,11 @@
     dnf:
       state: present
       name: '{{ ipa.server }}'
+
+  - name: Install sssd-kcm
+    dnf:
+      state: present
+      name: sssd-kcm
   when: "'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Samba base image
