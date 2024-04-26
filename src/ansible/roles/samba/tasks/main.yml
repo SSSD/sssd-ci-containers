@@ -135,6 +135,15 @@
     mode: '0600'
     backup: no
 
+- name: Set idmap range
+  ini_file:
+    path: /etc/samba/smb.conf
+    section: global
+    option: "idmap config * : range"
+    value: "1000000-1999999"
+    mode: '0600'
+    backup: no
+
 - name: Copy sudo schema
   template:
     src: '{{ item }}.j2'
