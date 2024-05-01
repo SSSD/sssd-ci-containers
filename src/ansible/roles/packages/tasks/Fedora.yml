@@ -193,7 +193,9 @@
   - name: Install IPA
     dnf:
       state: present
-      name: '{{ ipa.server }}'
+      name: 
+      - '{{ ipa.server }}'
+      - sssd-ldap*
   when: "'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Samba base image

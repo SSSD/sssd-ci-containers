@@ -72,6 +72,13 @@
       - augeas-tools
   when: "'base_client' in group_names or 'client' in group_names"
 
+  - name: Install test dependencies on IPA server
+    apt:
+      state: present
+      name:
+      - sssd-ldap*
+  when: "'base_ipa' in group_names or 'ipa' in group_names"
+
 - name: Install packages for NFS base image
   block:
   - name: Install NFS
