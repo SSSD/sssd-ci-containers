@@ -176,6 +176,11 @@
         - vpcd
       disable_gpg_check: yes
     when: virt_smartcard
+  - name: Install 389ds
+    dnf:
+      state: present
+      name:
+      - 389-ds-base
   when: "'base_client' in group_names or 'client' in group_names"
 
 - name: Install packages for LDAP base image
@@ -195,7 +200,6 @@
       state: present
       name: 
       - '{{ ipa.server }}'
-      - sssd-ldap*
   when: "'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Samba base image
