@@ -141,7 +141,6 @@
       - libdbus-1-dev
       - libdhash-dev
       - libglib2.0-dev
-      - libhttp-parser-dev
       - libini-config-dev
       - libjansson-dev
       - libkeyutils-dev

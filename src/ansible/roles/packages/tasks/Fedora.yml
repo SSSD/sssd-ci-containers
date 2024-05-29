@@ -270,7 +270,6 @@
       - curl-devel
       - dbus-daemon
       - fakeroot
-      - http-parser-devel
       - krb5-server
       - krb5-workstation
       - libcmocka-devel
