@@ -1,6 +1,14 @@
 - name: Gather facts
   ansible.builtin.setup:
 
+- name: Add fqdn and short hostname to /etc/hosts
+  ansible.builtin.lineinfile:
+    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} \
+      {{ inventory_hostname }} {{ inventory_hostname.split('.')[0] }}"
+    path: /etc/hosts
+  when: ansible_os_family != "Windows"
+  become: true
+
 - name: Setup dns (on dns machine)
   block:
   - name: Install dnsmasq package
@@ -25,17 +33,41 @@
   - name: Gather the package facts
     ansible.builtin.package_facts:
 
-  - name: Disable systemd-resolved (if present)
-    ansible.builtin.service:
+  - name: Create dnsmasq.service.d if needed
+    ansible.builtin.file:
+      path: /etc/systemd/system/dnsmasq.service.d/
+      state: directory
+      recurse: yes
+      owner: root
+      group: root
+
+  - name: Force dnsmasq before systemd-resolved
+    copy:
+      content: |
+        [Unit]
+        After=systemd-resolved.service
+        [Service]
+        ExecStartPre=/usr/bin/systemctl stop systemd-resolved.service
+        ExecStartPost=/usr/bin/systemctl start systemd-resolved.service
+      dest: /etc/systemd/system/dnsmasq.service.d/resolved-fix.conf
+      owner: root
+      group: root
+      mode: '0644'
+    when: "'systemd-resolved' in ansible_facts.packages"
+
+  - name: Restart systemd-resolved (if present)
+    ansible.builtin.systemd_service:
       name: systemd-resolved
-      enabled: false
-      state: stopped
+      daemon_reload: true
+      state: restarted
     when: "'systemd-resolved' in ansible_facts.packages"
 
   - name: Restart dnsmasq service
-    ansible.builtin.service:
+    ansible.builtin.systemd_service:
       name: dnsmasq
       enabled: true
+      daemon_reload: true
       state: restarted
+
   when: "'dns' in group_names"
   become: true
