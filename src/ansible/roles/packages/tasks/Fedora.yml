@@ -67,11 +67,12 @@
 
 - name: Install extended set of packages
   block:
-  - name: Install additional repositories
-    shell: |
-      dnf config-manager --add-repo {{ item }}
-    with_items:
-    - https://cli.github.com/packages/rpm/gh-cli.repo
+  - name: Add gh-cli.repo repo
+    ansible.builtin.get_url:
+      url: https://cli.github.com/packages/rpm/gh-cli.repo
+      dest: /etc/yum.repos.d/gh-cli.repo
+      mode: '0644'
+
   - name: Install additional packages
     dnf:
       state: present
@@ -123,11 +124,32 @@
       name:
       - nfs-utils
       - realmd
+      - oddjob
+      - oddjob-mkhomedir
+      - adcli
       - sssd
-      - sssd-*
+      - 'sssd-*'
+    register: pkg_install
+
+  - name: Check installed packages
+    ansible.builtin.package_facts:
+
+  # ansible dnf5 seems to have a regression with wildcard *
+  # https://github.com/ansible/ansible/issues/83373
+  - name: Install sssd subpackages
+    command: yum install -y 'sssd-*'
+    register: sssd_install
+    when: "'sssd-ad' not in ansible_facts.packages"
+
+  - name: Show installed sssd packages
+    ansible.builtin.debug:
+      var: pkg_install
 
   - name: Install debug information for selected packages
-    command: dnf debuginfo-install  -y  {{ item }}
+    dnf:
+      enablerepo: '*-debug*'
+      name: '{{ item }}-debuginfo'
+      state: present
     with_items:
       - dbus
       - glibc
@@ -260,7 +282,7 @@
 - name: Install additional packages for client development image
   block:
   - name: Install SSSD build dependencies
-    command: dnf build-dep -y sssd
+    command: dnf builddep -y sssd
 
   - name: Install packages required for integration tests
     dnf:
