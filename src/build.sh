@@ -28,6 +28,7 @@ export UNAVAILABLE="${UNAVAILABLE:-}"
 export ANSIBLE_CONFIG=./ansible/ansible.cfg
 export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
 export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
+export ANSIBLE_PYTHON_INTERPRETER=/usr/bin/python3
 
 # Debugging options
 export CLEANUP=${CLEANUP:-yes}
@@ -55,6 +56,12 @@ function compose {
 
 function base_exec {
   ${DOCKER} exec sssd-wip-base /bin/bash -c "$1"
+}
+
+function c8s_repo {
+   ${DOCKER} exec sssd-wip-base /bin/bash -c 'sed -i "s/mirrorlist/#mirrorlist/g" /etc/yum.repos.d/CentOS-* || true'
+   ${DOCKER} exec sssd-wip-base /bin/bash -c 'sed -i "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-* || true'
+   ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && dnf install -y python3.12-pip || true'
 }
 
 # Make sure that Ansible dependencies are installed so we can run playbooks
@@ -94,10 +101,11 @@ function build_base_image {
   echo "Building $name from $from"
   ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
+    c8s_repo
     base_install_python
   fi
 
-  ansible-playbook --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
+  ansible-playbook -e 'ansible_python_interpreter=/usr/bin/python3' -vvv --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
   ${DOCKER} stop sssd-wip-base
   ${DOCKER} commit                     \
     --change 'CMD ["/sbin/init"]'      \
@@ -130,7 +138,7 @@ fi
 
 # Create services
 compose up --detach
-ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
+ansible-playbook -e 'ansible_python_interpreter=/usr/bin/python3' -vvv $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 compose stop
 build_service_image sssd-wip-client client
 build_service_image sssd-wip-ipa ipa
