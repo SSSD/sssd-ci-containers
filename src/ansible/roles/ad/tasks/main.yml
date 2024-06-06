@@ -84,7 +84,7 @@
   register: result
   failed_when: "result.rc != 255 and result.rc != 0"
   changed_when: "result.rc == 0"
-  until: "result.rc == 0"
+  until: "result.rc == 255 or result.rc == 0"
   # The AD is sometimes not ready to proccess requests so we retry
   # to make it stable.
   retries: 5
