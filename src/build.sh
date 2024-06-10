@@ -28,7 +28,7 @@ export UNAVAILABLE="${UNAVAILABLE:-}"
 export ANSIBLE_CONFIG=./ansible/ansible.cfg
 export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
 export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
-export ANSIBLE_PYTHON_INTERPRETER=/usr/bin/python3
+#export ANSIBLE_PYTHON_INTERPRETER=/usr/bin/python3
 
 # Debugging options
 export CLEANUP=${CLEANUP:-yes}
@@ -104,8 +104,12 @@ function build_base_image {
     c8s_repo
     base_install_python
   fi
-
-  ansible-playbook -e 'ansible_python_interpreter=/usr/bin/python3' -vvv --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
+  if base_exec 'grep -q "CentOS Stream 8" /etc/os-release'; then
+    echo "using: ansible_python_interpreter=/usr/bin/python3.12 for centos 8"
+    ansible-playbook -e ansible_python_interpreter=/usr/bin/python3.12 -vvv --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
+  else
+    ansible-playbook -vvv --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
+  fi 
   ${DOCKER} stop sssd-wip-base
   ${DOCKER} commit                     \
     --change 'CMD ["/sbin/init"]'      \
@@ -138,7 +142,7 @@ fi
 
 # Create services
 compose up --detach
-ansible-playbook -e 'ansible_python_interpreter=/usr/bin/python3' -vvv $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
+ansible-playbook -vvv $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 compose stop
 build_service_image sssd-wip-client client
 build_service_image sssd-wip-ipa ipa
