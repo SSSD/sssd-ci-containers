@@ -139,7 +139,7 @@
   - name: Install sssd subpackages
     command: yum install -y 'sssd-*'
     register: sssd_install
-    when: "'sssd-ad' not in ansible_facts.packages"
+    when: "'sssd-ad' not in ansible_facts.packages or 'sssd-kcm' not in ansible_facts.packages"
 
   - name: Show installed sssd packages
     ansible.builtin.debug:
