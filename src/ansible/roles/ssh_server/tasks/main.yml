@@ -1,10 +1,26 @@
-- name: Configure SSH daemon
+- name: Check if we have pre-generated key
+  ansible.builtin.stat:
+    path: "/data/ssh-keys/hosts/{{ inventory_hostname }}.ecdsa_key"
+  register: stat_ecdsa_key
+
+- name: Configure SSH daemon with pre-generated hostkey
   template:
     src: sshd.conf
     dest: /etc/ssh/sshd_config.d
     owner: root
     group: root
     mode: 0600
+  when: stat_ecdsa_key.stat.exists
+
+- name: Configure SSH daemon without pre-generated hostkey
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/sshd.conf
+    owner: root
+    group: root
+    mode: 0600
+    content: |
+      PermitRootLogin yes
+  when: not stat_ecdsa_key.stat.exists
 
 - name: Start SSH daemon
   service:
