@@ -44,6 +44,33 @@ services:
     networks:
       sssd:
         ipv4_address: 172.16.100.10
+  ipa2:
+    image: ${REGISTRY}/ci-ipa2:${TAG}
+    container_name: ipa2
+    hostname: master.ipa2.test
+    dns: 172.16.100.2
+    env_file: ./env.containers
+    volumes:
+    - ./shared:/shared:rw
+    cap_add:
+    - SYS_ADMIN
+    - SYS_PTRACE
+    - AUDIT_WRITE
+    - AUDIT_CONTROL
+    - SYS_CHROOT
+    - NET_ADMIN
+    - CAP_CHOWN
+    - CAP_DAC_OVERRIDE
+    - CAP_SETGID
+    - CAP_SETUID
+    - CAP_DAC_READ_SEARCH
+    security_opt:
+    - apparmor=unconfined
+    - label=disable
+    - seccomp=unconfined
+    networks:
+      sssd:
+        ipv4_address: 172.16.100.11
   ldap:
     image: ${REGISTRY}/ci-ldap:${TAG}
     container_name: ldap
