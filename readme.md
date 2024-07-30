@@ -81,6 +81,7 @@ perfoming an `ldapsearch`).
 | nfs          | `172.16.100.50` | `nfs.test`                 | NFS server                          |
 | kdc          | `172.16.100.60` | `kdc.test`                 | Kerberos KDC                        |
 | keycloak     | `172.16.100.70` | `master.keycloak.test`     | Keycloak IdP                        |
+| ipa2         | `172.16.100.11` | `master.ipa2.test`         | IPA server in different realm       |
 
 ## Available user accounts
 
