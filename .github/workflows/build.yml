@@ -51,6 +51,8 @@ jobs:
 
     - name: Install dependencies
       uses: ./.github/actions/install-dependencies
+      with:
+        tag: ${{ matrix.image.tag }}
 
     - name: Build images
       uses: ./.github/actions/build
@@ -89,6 +91,8 @@ jobs:
 
     - name: Install dependencies
       uses: ./.github/actions/install-dependencies
+      with:
+        tag: ${{ matrix.image.tag }}
 
     - name: Build images
       uses: ./.github/actions/build
