@@ -53,6 +53,8 @@ all:
           hosts:
             master.ipa.test:
               ansible_host: sssd-wip-ipa
+            master2.ipa2.test:
+              ansible_host: sssd-wip-ipa2
         ldap:
           hosts:
             master.ldap.test:
