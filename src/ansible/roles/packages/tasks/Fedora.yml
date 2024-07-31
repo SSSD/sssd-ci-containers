@@ -186,6 +186,7 @@
         - softhsm
         - nss-tools
         - selinux-policy-devel
+        - selinux-policy-targeted
         - make
     when: virt_smartcard
 
