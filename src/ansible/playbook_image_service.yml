@@ -6,40 +6,40 @@
   - firewall
   - no_nscd
 
-- hosts: master.ldap.test
+- hosts: ldap
   gather_facts: no
   roles:
   - ldap
 
-- hosts: dc.samba.test
+- hosts: samba
   gather_facts: no
   roles:
   - samba
 
-- hosts: master.ipa.test
+- hosts: ipa
   gather_facts: no
   roles:
   - ipa
   - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
 
-- hosts: client.test
+- hosts: client
   gather_facts: no
   roles:
   - client
   - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
   - { role: virtsmartcard, when: ansible_distribution != "Ubuntu" and ansible_distribution != "Debian" and virt_smartcard }
 
-- hosts: nfs.test
+- hosts: nfs
   gather_facts: no
   roles:
   - nfs
 
-- hosts: kdc.test
+- hosts: kdc
   gather_facts: no
   roles:
   - kdc
 
-- hosts: master.keycloak.test
+- hosts: keycloak
   gather_facts: no
   roles:
   - keycloak
