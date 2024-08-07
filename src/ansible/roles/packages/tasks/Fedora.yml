@@ -222,7 +222,7 @@
     dnf:
       state: present
       name: sssd-kcm
-  when: "'base_ipa' in group_names or 'ipa' in group_names"
+  when: "'base_ipa' in group_names or 'base_ipa2' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Samba base image
   block:
@@ -264,7 +264,7 @@
       - ci-sssd-random
       - umockdev
     when: passkey_support
-  when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
+  when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'base_ipa2' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Keycloak base image
   block:

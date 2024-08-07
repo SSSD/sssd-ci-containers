@@ -18,13 +18,18 @@ up-keycloak:
 	docker-compose -f docker-compose.yml -f docker-compose.keycloak.yml up \
 	--no-recreate --detach ${LIMIT}
 
+up-ipaipatrust:
+	docker-compose -f docker-compose.yml -f docker-compose.ipaipatrust.yml up \
+	--no-recreate --detach ${LIMIT}
+
 stop:
 	docker-compose stop
 
 down:
 	docker-compose -f docker-compose.yml \
 	-f docker-compose.keycloak.yml \
-	-f docker-compose.passkey.yml down
+	-f docker-compose.passkey.yml \
+	-f docker-compose.ipaipatrust.yml down
 
 update:
 	docker-compose pull

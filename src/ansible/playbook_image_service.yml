@@ -16,7 +16,9 @@
   roles:
   - samba
 
-- hosts: master.ipa.test
+- hosts:
+    - master.ipa.test
+    - master2.ipa2.test
   gather_facts: no
   roles:
   - ipa
