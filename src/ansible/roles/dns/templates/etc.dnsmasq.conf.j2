@@ -3,7 +3,7 @@
 # TODO: Add group DNS_SERVER that will contain all machines running dns to add them
 # as servers here like master.ipa.test dc.samba.test and ad.
 # dnsmasq config
-listen-address=::1,127.0.0.53,127.0.0.1,{{ hostvars['dns.test']['ansible_facts']['default_ipv4']['address'] }}
+listen-address=::1,127.0.0.1,127.0.0.53,{{ hostvars['dns.test']['ansible_facts']['default_ipv4']['address'] }}
 log-queries
 log-facility=-
 local=/test/
