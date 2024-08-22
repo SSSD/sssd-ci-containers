@@ -1,10 +1,25 @@
 - name: Get Keycloak latest version info
-  shell: curl -L https://api.github.com/repos/keycloak/keycloak/releases/latest | jq -r '.tag_name'
+  shell: curl -sL https://api.github.com/repos/keycloak/keycloak/releases/latest | jq -r '.tag_name'
   register: result
+  until: result.stdout.find("null") == -1
+  retries: 10
+  delay: 20
+  ignore_errors: true
+
+- name: Set Keycloak version with validation and fallback
+  set_fact:
+    kc_ver: >-
+      {{
+        result.stdout
+        if (result.stdout is defined and
+            result.stdout != 'null' and
+            result.stdout is match('^\d+\.\d+\.\d+$'))
+        else kc_ver_fallback
+      }}
 
 - name: Set keycloak_url fact
   set_fact:
-    keycloak_url: "{{ base_url }}/{{ result.stdout }}/keycloak-{{ result.stdout }}.tar.gz"
+    keycloak_url: "{{ base_url }}/{{ kc_ver }}/keycloak-{{ kc_ver }}.tar.gz"
 
 - name: Print keycloak_url
   debug:
@@ -111,3 +126,4 @@
   systemd:
     name: keycloak
     enabled: yes
+    state: started
