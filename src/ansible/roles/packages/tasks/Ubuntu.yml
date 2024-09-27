@@ -60,6 +60,7 @@
       update_cache: yes
       name:
       - augeas-tools
+      - binutils
   - name: Install packages required for passkey testing
     apt:
       state: present

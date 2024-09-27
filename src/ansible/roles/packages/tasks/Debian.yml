@@ -70,6 +70,7 @@
       update_cache: yes
       name:
       - augeas-tools
+      - binutils
   when: "'base_client' in group_names or 'client' in group_names"
 
 - name: Install packages for NFS base image
