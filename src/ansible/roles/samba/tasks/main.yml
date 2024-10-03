@@ -62,12 +62,13 @@
   # In containers the file is a mounted from outside so
   # we change the content.
   - name: Change resolv.conf
-    lineinfile:
+    blockinfile:
       path: /etc/resolv.conf
       insertbefore: BOF
-      line: "nameserver {{ hostvars[groups.dns.0]['ansible_facts']['default_ipv4']['address'] }}"
+      block: |
+        nameserver 127.0.0.1
+        nameserver {{ hostvars[groups.dns.0]['ansible_facts']['default_ipv4']['address'] }}
     when:
-    - '"resolv.conf" in mounts.stdout'
     - '"dns" in groups and groups["dns"]'
   - name: Remove systemd-resolved package
     ansible.builtin.package:
@@ -86,6 +87,17 @@
       --use-rfc2307
   args:
     creates: /etc/samba/smb.conf
+
+- name: Set forwarder to dns server
+  ini_file:
+    path: /etc/samba/smb.conf
+    section: global
+    option: "dns forwarder"
+    value: "{{ hostvars[groups.dns.0]['ansible_facts']['default_ipv4']['address'] }}"
+    mode: '0600'
+    backup: no
+  when:
+  - '"dns" in groups and groups["dns"]'
 
 - name: Setup Kerberos
   copy:
