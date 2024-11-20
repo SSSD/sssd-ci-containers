@@ -274,7 +274,7 @@
       state: present
       allowerasing: true
       name:
-      - java-17-openjdk-headless
+      - java-21-openjdk-headless
       - openssl
       - unzip
       - curl
