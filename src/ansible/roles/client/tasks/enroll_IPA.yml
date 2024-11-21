@@ -11,8 +11,19 @@
       --domain {{ ipa_domain | quote }}                \
       --principal admin                                \
       --password {{ ipa_password | quote }}
+  ignore_errors: true
   args:
     creates: /etc/ipa/ca.crt
+
+- name: Print log
+  shell: cat /var/log/ipaclient-install.log
+  register: out
+
+- debug: var=out.stdout_lines
+
+- name: Pause for a long time, debug here
+  pause:
+    seconds: 3600
 
 - name: Stat {{ ipa_keytab }}
   stat:
