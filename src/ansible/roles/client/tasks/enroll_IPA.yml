@@ -11,6 +11,10 @@
       --domain {{ ipa_domain | quote }}                \
       --principal admin                                \
       --password {{ ipa_password | quote }}
+  # Retry to workaround "Unable to find IPA Server to join" failure (fedora-42)
+  # in PRCI fedora build workflow
+  retries: 2
+  delay: 10
   args:
     creates: /etc/ipa/ca.crt
 
