@@ -63,6 +63,7 @@
     export KC_HTTPS_CERTIFICATE_KEY_FILE=/data/certs/master.keycloak.test.key
     export KC_HTTPS_TRUST_STORE_FILE=/data/certs/master.keycloak.test.keystore
     export KC_HTTPS_TRUST_STORE_PASSWORD={{ service.keycloak.admin_password }}
+    export KC_HTTPS_TRUST_STORE_TYPE=JKS
     export KC_HTTP_RELATIVE_PATH=/auth
     /opt/keycloak/bin/kc.sh build
     '''
@@ -77,6 +78,7 @@
       KC_HTTPS_CERTIFICATE_KEY_FILE=/data/certs/master.keycloak.test.key
       KC_HTTPS_TRUST_STORE_FILE=/data/certs/master.keycloak.test.keystore
       KC_HTTPS_TRUST_STORE_PASSWORD={{ service.keycloak.admin_password }}
+      KC_HTTPS_TRUST_STORE_TYPE=JKS
       KC_HTTP_RELATIVE_PATH=/auth
     dest: /etc/keycloak.env
 
