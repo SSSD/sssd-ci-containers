@@ -110,7 +110,7 @@ runs:
       # for unclear reason (CAP_DAC_* are granted)
       for svc in `sudo podman container ls --format "{{ .Names }}"`; do
         if [ $svc != "dns" ]; then
-          sudo podman exec "$svc" chmod u+x /etc/shadow &
+          sudo podman exec "$svc" chmod u+r /etc/shadow &
         fi
       done
 
