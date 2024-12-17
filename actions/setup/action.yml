@@ -102,6 +102,18 @@ runs:
           REGISTRY="${{ inputs.registry }}"          \
           TAG="${{ inputs.tag }}"
 
+  - name: Workaround failing sudo
+    shell: bash
+    run: |
+      # 'sudo' calls 'unix_chkpwd' and this fails with
+      # openat(AT_FDCWD</>, "/etc/shadow", O_RDONLY|O_CLOEXEC) = -1 EACCES
+      # for unclear reason (CAP_DAC_* are granted)
+      for svc in `sudo podman container ls --format "{{ .Names }}"`; do
+        if [ $svc != "dns" ]; then
+          sudo podman exec "$svc" chmod u+x /etc/shadow &
+        fi
+      done
+
   - name: Change regular user uid to 1001
     shell: bash
     run: |
