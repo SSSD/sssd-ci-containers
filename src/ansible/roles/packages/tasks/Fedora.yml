@@ -129,6 +129,7 @@
       - adcli
       - sssd
       - 'sssd-*'
+      disablerepo: 'beaker-tasks'
     register: pkg_install
 
   - name: Check installed packages
@@ -137,7 +138,7 @@
   # ansible dnf5 seems to have a regression with wildcard *
   # https://github.com/ansible/ansible/issues/83373
   - name: Install sssd subpackages
-    command: yum install -y 'sssd-*'
+    command: yum install -y 'sssd-*' --disablerepo=beaker-tasks
     register: sssd_install
     when: "'sssd-ad' not in ansible_facts.packages or 'sssd-kcm' not in ansible_facts.packages"
 
