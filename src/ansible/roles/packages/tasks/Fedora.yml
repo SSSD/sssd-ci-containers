@@ -62,6 +62,7 @@
       - python3-pip
       - sudo
       - systemd
+      - rsync
       disable_gpg_check: yes
   when: "'base_ground' in group_names"
 
