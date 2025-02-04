@@ -1,3 +1,12 @@
+- name: Check if we are running in image mode
+  stat:
+    path: /usr/bin/rpm-ostree
+  register: rpm_ostree
+
+- name: End play for host on rpm-ostree with ro /opt
+  meta: end_host
+  when: rpm_ostree.stat.exists
+
 - name: Create virtual card dirs
   file:
     path: "{{ item }}"
