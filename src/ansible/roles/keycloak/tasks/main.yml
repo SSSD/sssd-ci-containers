@@ -30,26 +30,26 @@
     extra_opts:
     - --strip-components=1
 
-- name: Change ownership of files in /data/certs
+- name: Change ownership of files in /var/data/certs
   file:
-    path: /data/certs/master.keycloak.test.key
+    path: /var/data/certs/master.keycloak.test.key
     mode: 0644
 
 - name: Add CA certificate to keystore
   shell: |
     keytool -noprompt -import \
-      -keystore /data/certs/master.keycloak.test.keystore \
-      -file /data/certs/ca.crt \
+      -keystore /var/data/certs/master.keycloak.test.keystore \
+      -file /var/data/certs/ca.crt \
       -alias ca.crt \
       -trustcacerts -storepass {{ service.keycloak.admin_password }}
   args:
-    creates: /data/certs/master.keycloak.test.keystore
+    creates: /var/data/certs/master.keycloak.test.keystore
 
 - name: Add Keycloak certificate to keystore
   shell: |
     keytool -noprompt -import \
-      -keystore /data/certs/master.keycloak.test.keystore \
-      -file /data/certs/master.keycloak.test.crt \
+      -keystore /var/data/certs/master.keycloak.test.keystore \
+      -file /var/data/certs/master.keycloak.test.crt \
       -alias master.keycloak.test.crt \
       -trustcacerts -storepass {{ service.keycloak.admin_password }}
 
@@ -59,9 +59,9 @@
     export KEYCLOAK_ADMIN=admin
     export KEYCLOAK_ADMIN_PASSWORD={{ service.keycloak.admin_password }}
     export KC_HOSTNAME=$(hostname):8443
-    export KC_HTTPS_CERTIFICATE_FILE=/data/certs/master.keycloak.test.crt
-    export KC_HTTPS_CERTIFICATE_KEY_FILE=/data/certs/master.keycloak.test.key
-    export KC_HTTPS_TRUST_STORE_FILE=/data/certs/master.keycloak.test.keystore
+    export KC_HTTPS_CERTIFICATE_FILE=/var/data/certs/master.keycloak.test.crt
+    export KC_HTTPS_CERTIFICATE_KEY_FILE=/var/data/certs/master.keycloak.test.key
+    export KC_HTTPS_TRUST_STORE_FILE=/var/data/certs/master.keycloak.test.keystore
     export KC_HTTPS_TRUST_STORE_PASSWORD={{ service.keycloak.admin_password }}
     export KC_HTTPS_TRUST_STORE_TYPE=JKS
     export KC_HTTP_RELATIVE_PATH=/auth
@@ -74,9 +74,9 @@
       KEYCLOAK_ADMIN=admin
       KEYCLOAK_ADMIN_PASSWORD={{ service.keycloak.admin_password }}
       KC_HOSTNAME={{ inventory_hostname }}
-      KC_HTTPS_CERTIFICATE_FILE=/data/certs/master.keycloak.test.crt
-      KC_HTTPS_CERTIFICATE_KEY_FILE=/data/certs/master.keycloak.test.key
-      KC_HTTPS_TRUST_STORE_FILE=/data/certs/master.keycloak.test.keystore
+      KC_HTTPS_CERTIFICATE_FILE=/var/data/certs/master.keycloak.test.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE=/var/data/certs/master.keycloak.test.key
+      KC_HTTPS_TRUST_STORE_FILE=/var/data/certs/master.keycloak.test.keystore
       KC_HTTPS_TRUST_STORE_PASSWORD={{ service.keycloak.admin_password }}
       KC_HTTPS_TRUST_STORE_TYPE=JKS
       KC_HTTP_RELATIVE_PATH=/auth

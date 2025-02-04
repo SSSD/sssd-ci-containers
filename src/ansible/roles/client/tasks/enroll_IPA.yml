@@ -3,7 +3,7 @@
   set_fact:
     ipa_domain: "{{ hostvars[groups.ipa.0]['ipa_domain'] }}"
     ipa_password: "{{ hostvars[groups.ipa.0].ansible_password | default(service.ipa.password) }}"
-    ipa_keytab: /enrollment/{{ hostvars[groups.ipa.0]['ipa_domain'] }}.keytab
+    ipa_keytab: /var/enrollment/{{ hostvars[groups.ipa.0]['ipa_domain'] }}.keytab
 
 - name: Run ipa-client-install
   shell: |
