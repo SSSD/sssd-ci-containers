@@ -4,7 +4,7 @@ class FilterModule(object):
             'distro_includes': self.distro_includes
         }
 
-    def distro_includes(self, distro, version):
+    def distro_includes(self, distro, version, extra=""):
         """ Create list of distribution specific include files. """
         min_version = 1
         if distro.lower() == 'fedora':
@@ -12,8 +12,8 @@ class FilterModule(object):
         elif distro.lower() == 'centos':
             min_version = 8
 
-        out = [f'{distro}.yml']
-        out.extend([ f'{distro}{x}.yml' for x in range(min_version, int(version) + 1) ])
+        out = [f'{distro}{extra}.yml']
+        out.extend([ f'{distro}{x}{extra}.yml' for x in range(min_version, int(version) + 1) ])
         out.reverse()
 
         return out

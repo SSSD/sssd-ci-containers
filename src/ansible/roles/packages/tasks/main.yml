@@ -1,15 +1,31 @@
-- name: 'Include distribution specific package tasks [{{ ansible_distribution }} {{ ansible_distribution_major_version }}]'
-  include_tasks: '{{ include_file }}'
-  loop_control:
-    loop_var: include_file
-  with_first_found:
-  - files: '{{ ansible_distribution | distro_includes(ansible_distribution_major_version) }}'
+- name: Package mode installations
+  block:
+    - name: 'Include distribution specific package tasks [{{ ansible_distribution }} {{ ansible_distribution_major_version }}]'
+      include_tasks: '{{ include_file }}'
+      loop_control:
+        loop_var: include_file
+      with_first_found:
+      - files: '{{ ansible_distribution | distro_includes(ansible_distribution_major_version) }}'
 
-- name: 'Clear package manager cache'
-  shell: |
-    if [ -f /usr/bin/apt ]; then
-      rm -rf /var/lib/apt/lists/*
-    fi
-    if [ -f /usr/bin/dnf ]; then
-      dnf clean all
-    fi
+    - name: 'Clear package manager cache'
+      shell: |
+        if [ -f /usr/bin/apt ]; then
+          rm -rf /var/lib/apt/lists/*
+        fi
+        if [ -f /usr/bin/dnf ]; then
+          dnf clean all
+        fi
+  when: ansible_facts['pkg_mgr'] != "atomic_container"
+
+
+# This is bandaid to run tests in image mode until dnf can take over and install test dependencies.
+- name: Image mode rpm-ostree installations
+  block:
+    - name: 'Include distribution specific tasks (rpm-ostree) [{{ ansible_distribution }} {{ ansible_distribution_major_version }}]'
+      include_tasks: '{{ include_file }}'
+      loop_control:
+        loop_var: include_file
+      with_first_found:
+      - files: '{{ ansible_distribution | distro_includes(ansible_distribution_major_version, "-rpm-ostree") }}'
+        skip: True
+  when: ansible_facts['pkg_mgr'] == "atomic_container"
