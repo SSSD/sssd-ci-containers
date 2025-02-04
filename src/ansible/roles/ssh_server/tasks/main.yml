@@ -1,6 +1,6 @@
 - name: Check if we have pre-generated key
   ansible.builtin.stat:
-    path: "/data/ssh-keys/hosts/{{ inventory_hostname }}.ecdsa_key"
+    path: "/var/data/ssh-keys/hosts/{{ inventory_hostname }}.ecdsa_key"
   register: stat_ecdsa_key
 
 - name: Configure SSH daemon with pre-generated hostkey
