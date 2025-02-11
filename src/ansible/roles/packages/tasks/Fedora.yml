@@ -42,7 +42,16 @@
   #    creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:jjelen:vsmartcard.repo
   #  when: virt_smartcard
 
-  - name: Install systemd and minimal set of packages
+  # 'systemd' requires '--allowerasing' on F42+ - see RHBZ 2344333
+  - name: Install systemd
+    dnf:
+      state: present
+      allowerasing: true
+      name:
+      - systemd
+      disable_gpg_check: yes
+
+  - name: Install minimal set of packages
     dnf:
       state: present
       name:
@@ -61,7 +70,6 @@
       - policycoreutils-python-utils
       - python3-pip
       - sudo
-      - systemd
       - rsync
       disable_gpg_check: yes
   when: "'base_ground' in group_names"
