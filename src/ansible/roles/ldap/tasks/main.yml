@@ -14,9 +14,9 @@
 
 - name: Install ldap certificate
   shell: |
-    dsconf localhost security ca-certificate add --file /data/certs/ca.crt --name "sssd-ca"
+    dsconf localhost security ca-certificate add --file /var/data/certs/ca.crt --name "sssd-ca"
     dsconf localhost security ca-certificate set-trust-flags "sssd-ca" --flags "CT,,"
-    dsctl localhost tls import-server-key-cert /data/certs/master.ldap.test.crt /data/certs/master.ldap.test.key
+    dsctl localhost tls import-server-key-cert /var/data/certs/master.ldap.test.crt /var/data/certs/master.ldap.test.key
 
 - name: Grant read-only anonymous access
   shell: |

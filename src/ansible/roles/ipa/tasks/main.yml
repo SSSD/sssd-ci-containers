@@ -41,16 +41,16 @@
     install-ipa --external-ca
 
     openssl x509 -days 7200 -req                                 \
-      -extfile /data/configs/openssl_sign_ca.ext                 \
-      -CA "/data/certs/ca.crt"                                   \
-      -CAkey "/data/certs/ca.key"                                \
+      -extfile /var/data/configs/openssl_sign_ca.ext                 \
+      -CA "/var/data/certs/ca.crt"                                   \
+      -CAkey "/var/data/certs/ca.key"                                \
       --CAcreateserial                                           \
       -in "/root/ipa.csr"                                        \
       -out "/root/ipa.crt"
 
     install-ipa                                                  \
       --external-cert-file=/root/ipa.crt                         \
-      --external-cert-file=/data/certs/ca.crt
+      --external-cert-file=/var/data/certs/ca.crt
   args:
     creates: /etc/ipa/default.conf
 

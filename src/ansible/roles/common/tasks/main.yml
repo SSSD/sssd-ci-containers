@@ -2,11 +2,18 @@
   set_fact:
     data_path: '{{ role_path }}/../../../../data'
 
+- name: Check if we are running in image mode
+  stat:
+    path: /usr/bin/rpm-ostree
+  register: rpm_ostree
+
 - name: Set /usr/bin/python to python3
   alternatives:
     name: python
     link: /usr/bin/python
     path: /usr/bin/python3
+  when:
+  - not rpm_ostree.stat.exists
 
 - name: Create /etc/sudoers
   template:
@@ -16,30 +23,41 @@
     group: root
     mode: 0600
 
-- name: Create /data
+- name: Create /var/data
   file:
-    path: '/data'
+    path: '/var/data'
     state: directory
     mode: 0700
+
+# Backward compatibility symlink
+- name: Create symlink /data /var/data
+  ansible.builtin.file:
+    src: '/var/data'
+    dest: '/data'
+    state: link
+    owner: root
+    group: root
+  when:
+  - not rpm_ostree.stat.exists
 
 - name: Copy common data
   synchronize:
     src: '{{ data_path }}/'
-    dest: /data/
+    dest: /var/data/
 
 # synchronize rsync option --chown was ignored for some reason
-- name: Set correct permissions on /data
+- name: Set correct permissions on /var/data
   shell: |
-    chown -R root:root /data
-    chmod -R 0755 /data
-    chmod 0600 $(find /data -type f)
-    chmod 0644 /data/certs/*.crt
+    chown -R root:root /var/data
+    chmod -R 0755 /var/data
+    chmod 0600 $(find /var/data -type f)
+    chmod 0644 /var/data/certs/*.crt
 
-- name: Set SELinux label for /data
+- name: Set SELinux label for /var/data
   shell: |
     if selinuxenabled; then
-      semanage fcontext -a -t etc_t "/data(/.*)*"
-      restorecon -R -v /data
+      semanage fcontext -a -t etc_t "/var/data(/.*)*"
+      restorecon -R -v /var/data
     else
       exit 0
     fi
@@ -125,7 +143,7 @@
 
 - name: Copy CA certificate to local pki anchors
   copy:
-    src: /data/certs/ca.crt
+    src: /var/data/certs/ca.crt
     dest: "{{ ca_trust_dir }}"
     remote_src: yes
 

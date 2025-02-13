@@ -1,9 +1,14 @@
+# Workaround for image mode where firewalld is borked after installation
+- name: Reload service httpd, in all cases
+  ansible.builtin.systemd_service:
+    name: dbus
+    state: reloaded
+
 - name: Start firewalld
-  service:
+  ansible.builtin.systemd_service:
     name: firewalld
     enabled: yes
-    state: started
+    state: restarted
 
 - name: Set default firewalld zone to trusted
-  shell: |
-    firewall-cmd --set-default-zone=trusted
+  command: firewall-cmd --set-default-zone=trusted
