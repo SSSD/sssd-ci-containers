@@ -1,3 +1,8 @@
+- name: Check if we are running in image mode
+  stat:
+    path: /usr/bin/rpm-ostree
+  register: rpm_ostree
+
 - name: Enable docs installation by default
   block:
   - name: Check dnf.conf exists
@@ -16,6 +21,10 @@
   set_fact:
     extended_packageset: "{{ extended_packageset | default('no') }}"
 
+- name: 'Install packages via rpm-ostree'
+  include_tasks: 'rpm-ostree.yml'
+  when: rpm_ostree.stat.exists
+
 - name: Install packages for ground base image
   block:
   - name: Install dnf plugins
@@ -23,6 +32,8 @@
       state: present
       name:
       - dnf-plugins-core
+    when:
+    - not rpm_ostree.stat.exists
 
   - name: Install @sssd/ci-deps repositories
     shell: |
@@ -72,7 +83,10 @@
       - sudo
       - rsync
       disable_gpg_check: yes
-  when: "'base_ground' in group_names"
+    when:
+    - not rpm_ostree.stat.exists
+  when:
+  - "'base_ground' in group_names"
 
 - name: Install extended set of packages
   block:
@@ -119,6 +133,7 @@
   when:
   - "'base_ground' in group_names"
   - extended_packageset
+  - not rpm_ostree.stat.exists
 
 - name: Install packages for client base image
   block:
@@ -140,6 +155,8 @@
       - 'sssd-*'
       disablerepo: 'beaker-tasks'
     register: pkg_install
+    when:
+    - not rpm_ostree.stat.exists
 
   - name: Check installed packages
     ansible.builtin.package_facts:
@@ -170,7 +187,8 @@
       - libtalloc
       - libtevent
     ignore_errors: yes
-    when: debuginfo
+    when:
+    - debuginfo
 
   - name: Install test dependencies on client
     dnf:
@@ -210,7 +228,9 @@
         - vpcd
       disable_gpg_check: yes
     when: virt_smartcard
-  when: "'base_client' in group_names or 'client' in group_names"
+  when:
+  - "'base_client' in group_names or 'client' in group_names"
+  - not rpm_ostree.stat.exists
 
 - name: Install packages for LDAP base image
   block:
@@ -274,7 +294,9 @@
       - acl
       - ci-sssd-random
       - umockdev
-    when: passkey_support
+    when:
+    - passkey_support
+    - not rpm_ostree.stat.exists
   when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install packages for Keycloak base image

@@ -3,7 +3,7 @@
   set_fact:
     samba_domain: "{{ hostvars[groups.samba.0]['samba_domain'] }}"
     samba_password: "{{ hostvars[groups.samba.0].ansible_password | default(service.samba.password) }}"
-    samba_keytab: /enrollment/{{ hostvars[groups.samba.0]['samba_domain'] }}.keytab
+    samba_keytab: /var/enrollment/{{ hostvars[groups.samba.0]['samba_domain'] }}.keytab
 
 - name: Stat {{ samba_keytab }} to detect that we are already joined
   stat:

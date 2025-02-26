@@ -3,13 +3,29 @@
     domains: []
     client_fqdn: "{{ inventory_hostname }}"
 
-- name: Create /enrollment directory
+- name: Check if we are running in image mode
+  stat:
+    path: /usr/bin/rpm-ostree
+  register: rpm_ostree
+
+- name: Create /var/enrollment directory
   file:
-    path: /enrollment
+    path: /var/enrollment
     state: directory
     owner: root
     group: root
     mode: '0700'
+
+# Backward compatibility symlink
+- name: Create symlink /enrollment to /var/enrollment
+  ansible.builtin.file:
+    src: '/var/enrollment'
+    dest: '/enrollment'
+    state: link
+    owner: root
+    group: root
+  when:
+  - not rpm_ostree.stat.exists
 
 - name: Join IPA domain
   ansible.builtin.include_tasks:
@@ -63,11 +79,11 @@
     group: root
     mode: 0644
 
-- name: Set SELinux label for /enrollment
+- name: Set SELinux label for /var/enrollment
   shell: |
     if selinuxenabled; then
-      semanage fcontext -a -t etc_t "/enrollment(/.*)*"
-      restorecon -R -v /enrollment
+      semanage fcontext -a -t etc_t "/var/enrollment(/.*)*"
+      restorecon -R -v /var/enrollment
     else
       exit 0
     fi

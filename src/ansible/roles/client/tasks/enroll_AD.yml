@@ -3,7 +3,7 @@
   set_fact:
     ad_domain: "{{ '.'.join(groups.ad.0.split('.')[1:]) }}"
     safe_password: "{{ service.ad.safe_password }}"
-    ad_keytab: /enrollment/{{ '.'.join(groups.ad.0.split('.')[1:]) }}.keytab
+    ad_keytab: /var/enrollment/{{ '.'.join(groups.ad.0.split('.')[1:]) }}.keytab
 
 - name: Stat {{ ad_keytab }} to detect that we are already joined to AD
   stat:

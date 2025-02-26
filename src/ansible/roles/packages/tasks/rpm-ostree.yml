@@ -1,0 +1,78 @@
+- name: Install minimal set of client packages on rpm-ostree
+  command: rpm-ostree install --idempotent --apply-live {{ item }} -y
+  with_items:
+    - bind-utils
+    - expect
+    - firewalld
+    - iproute
+    - iproute-tc
+    - net-tools
+    - openldap-clients
+    - openssh-clients
+    - openssh-server
+    - policycoreutils
+    - policycoreutils-python-utils
+    - python3-pip
+    - sudo
+    - rsync
+    - autofs
+    - augeas
+    - krb5-workstation
+    - '{{ ipa.client }}'
+    - oddjob
+    - oddjob-mkhomedir
+    - ldb-tools
+    - net-tools
+    #- nss-pam-ldapd #TODO!
+    - tcpdump
+    - wireshark-cli
+    - binutils
+  ignore_errors: yes
+  register: inst
+  failed_when:
+  - 'inst.rc != 0 and "is already requested" not in inst.stderr'
+  when:
+  - "'base_client' in group_names or 'client' in group_names"
+
+# The ansible.posix.rhel_rpm_ostree can only check
+# for presence but can not install anything
+- name: Check sssd packages that should be present and fail when they are missing
+  ansible.posix.rhel_rpm_ostree:
+    name:
+    - adcli
+    - authselect
+    - realmd
+    - sssd-idp
+    - sssd-client
+    - sssd-nfs-idmap
+    - sssd-client
+    - sssd-common
+    - sssd-krb5-common
+    - sssd-common-pac
+    - sssd-ad
+    - sssd-ipa
+    - sssd-krb5
+    - sssd-ldap
+    - sssd-dbus
+    - python3-sssdconfig
+    - sssd-proxy
+    - python3-sss
+    - sssd-tools
+    - sssd
+    - sssd-kcm
+    - sssd-idp
+    - sssd-passkey
+    state: present
+
+# If realmd was installed after polkit it needs to be restarted
+- name: Restart polkit
+  ansible.builtin.systemd_service:
+    name: polkit
+    enabled: yes
+    state: restarted
+
+- name: Restart realmd
+  ansible.builtin.systemd_service:
+    name: realmd
+    enabled: yes
+    state: restarted
