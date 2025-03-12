@@ -85,5 +85,5 @@ all:
       vars:
         ansible_connection: winrm
         ansible_port: 5985
-        ansible_user: .\Administrator
+        ansible_user: Administrator
         ansible_password: vagrant
