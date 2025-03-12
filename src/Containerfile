@@ -4,7 +4,7 @@ RUN apk --no-cache add dnsmasq
 ENTRYPOINT ["dnsmasq", "-k"]
 
 # vagrant with preinstalled plugins and ansible
-FROM ubuntu:latest as vagrant-base
+FROM debian:latest as vagrant-base
 ENV VAGRANT_HOME /vagrant
 ENV VAGRANT_DEFAULT_PROVIDER=libvirt
 RUN mkdir /vagrant
@@ -29,7 +29,7 @@ RUN set -e \
 
 FROM vagrant-base as vagrant-plugins
 WORKDIR /build
-RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
+RUN sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/debian.sources
 RUN set -e \
     && apt update && apt build-dep -y vagrant ruby-libvirt \
     && apt install -y --no-install-recommends libxslt-dev libxml2-dev libvirt-dev ruby-bundler ruby-dev zlib1g-dev \
@@ -40,4 +40,4 @@ RUN vagrant plugin install vagrant-sshfs
 FROM vagrant-base as vagrant
 ENTRYPOINT ["/usr/bin/bash"]
 COPY --from=vagrant-plugins /vagrant /vagrant
-RUN pip3 install ansible pywinrm
+RUN pip3 install ansible pywinrm --break-system-packages
