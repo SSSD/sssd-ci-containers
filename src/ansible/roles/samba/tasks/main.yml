@@ -117,9 +117,9 @@
     value: '{{ item.value }}'
     mode: 0600
   with_items:
-  - { name: 'tls keyfile', value: '/data/certs/dc.samba.test.key' }
-  - { name: 'tls certfile', value: '/data/certs/dc.samba.test.crt' }
-  - { name: 'tls cafile', value: '/data/certs/ca.crt' }
+  - { name: 'tls keyfile', value: '/var/data/certs/dc.samba.test.key' }
+  - { name: 'tls certfile', value: '/var/data/certs/dc.samba.test.crt' }
+  - { name: 'tls cafile', value: '/var/data/certs/ca.crt' }
 
 - name: Select authselect winbind profile
   shell: |
