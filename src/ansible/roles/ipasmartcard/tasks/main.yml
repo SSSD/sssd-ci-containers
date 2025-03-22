@@ -1,0 +1,68 @@
+- block:
+  ################# IPA Server ####################
+  - name: Run IPA advise script for server setup for smart cards
+    shell: |
+      kinit admin@IPA.TEST
+      ipa-advise config-server-for-smart-card-auth > /tmp/sc_server.sh
+      sh -x /tmp/sc_server.sh {{ sssd_ca_path }} {{ ipa_ca_path }}
+    args:
+      stdin: '{{ ipa_password }}'
+    register: ipa_advise_sc_server
+
+  - name: Workaround to disable IPA WebUI OCSP checking
+    lineinfile:
+      path: /etc/httpd/conf.d/ssl.conf
+      regexp: 'SSLOCSPEnable on'
+      line: 'SSLOCSPEnable off'
+      backrefs: yes
+
+  - name: Restart httpd service
+    ansible.builtin.systemd_service:
+      name: httpd
+      state: restarted
+
+  when: inventory_hostname == 'master.ipa.test'
+
+- block:
+  ################# IPA Client ####################
+  - name: Get IPA advise script for client setup for smart cards from IPA server
+    shell: |
+      ipa-advise config-client-for-smart-card-auth
+    delegate_to: "master.ipa.test"
+    register: ipa_advise_sc_client_script
+
+  - name: Write advise script to /tmp/sc_client.sh
+    copy:
+      content: "{{ ipa_advise_sc_client_script.stdout }}"
+      dest: /tmp/sc_client.sh
+
+  - name: Get IPA CA certificate from IPA server
+    command: cat /root/ipa.crt
+    delegate_to: "master.ipa.test"
+    register: ipa_ca_cert
+
+  - name: Write IPA CA certificate to /root/ipa.crt
+    copy:
+      content: "{{ ipa_ca_cert.stdout }}"
+      dest: /root/ipa.crt
+
+  - name: Add krb5.keytab link for IPA client
+    file:
+      src: /enrollment/ipa.test.keytab
+      dest: /etc/krb5.keytab
+      state: link
+
+  - name: Run IPA advise script on client
+    shell: |
+      kinit admin@IPA.TEST
+      sh -x /tmp/sc_client.sh {{ sssd_ca_path }} {{ ipa_ca_path }}
+    args:
+      stdin: '{{ ipa_password }}'
+    register: ipa_advise_sc_client
+
+  - name: Remove krb5.keytab link from IPA client
+    file:
+      path: /etc/krb5.keytab
+      state: absent
+
+  when: inventory_hostname == 'client.test'
