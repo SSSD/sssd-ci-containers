@@ -1,0 +1,4 @@
+ipa_ca_path: /root/ipa.crt
+sssd_ca_path: /etc/pki/ca-trust/source/anchors/ca.crt
+ipa_password: "{{ hostvars[groups.ipa.0].ansible_password | default(service.ipa.password) }}"
+ipa_domain: "{{ hostvars[groups.ipa.0].ipa_domain | default(service.ipa.domain) }}"

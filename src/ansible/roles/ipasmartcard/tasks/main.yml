@@ -1,0 +1,75 @@
+- name: Checking DNS resolution first
+  shell: |
+    dig ipa-ca.{{ ipa_domain }} | grep NOERROR
+  register: result
+  until: result.rc == 0
+  retries: 10
+  delay: 2
+
+- name: Make sure virtual smartcard dir exists
+  file:
+    path: "{{ virt_smartcard_dir }}"
+    state: directory
+
+- block:
+  - name: Run IPA advise script for server setup for smart cards
+    shell: |
+      kinit admin@{{ ipa_domain.upper() }}
+      ipa-advise config-server-for-smart-card-auth > {{ virt_smartcard_dir }}/sc_server.sh
+      sh -x {{ virt_smartcard_dir }}/sc_server.sh {{ sssd_ca_path }} {{ ipa_ca_path }}
+    args:
+      stdin: '{{ ipa_password }}'
+    register: ipa_advise_sc_server
+
+  - name: Workaround to disable IPA WebUI OCSP checking
+    lineinfile:
+      path: /etc/httpd/conf.d/ssl.conf
+      regexp: 'SSLOCSPEnable on\s*$'
+      line: 'SSLOCSPEnable on no_ocsp_for_cert_ok'
+
+  - name: Restart httpd service
+    ansible.builtin.systemd_service:
+      name: httpd
+      state: restarted
+  when: inventory_hostname == groups.ipa.0
+
+- block:
+  - name: Get IPA advise script for client setup for smart cards from IPA server
+    command: ipa-advise config-client-for-smart-card-auth
+    delegate_to: "{{ groups.ipa.0 }}"
+    register: ipa_advise_sc_client_script
+
+  - name: Write advise script to sc_client.sh
+    copy:
+      content: "{{ ipa_advise_sc_client_script.stdout }}"
+      dest: "{{ virt_smartcard_dir }}/sc_client.sh"
+
+  - name: Get IPA CA certificate from IPA server
+    command: cat /root/ipa.crt
+    delegate_to: "{{ groups.ipa.0 }}"
+    register: ipa_ca_cert
+
+  - name: Write IPA CA certificate to /root/ipa.crt
+    copy:
+      content: "{{ ipa_ca_cert.stdout }}"
+      dest: /root/ipa.crt
+
+  - name: Add krb5.keytab link for IPA client
+    file:
+      src: /var/enrollment/{{ ipa_domain }}.keytab
+      dest: /etc/krb5.keytab
+      state: link
+
+  - name: Run IPA advise script on client
+    shell: |
+      kinit admin@{{ ipa_domain.upper() }}
+      sh -x {{ virt_smartcard_dir }}/sc_client.sh {{ sssd_ca_path }} {{ ipa_ca_path }}
+    args:
+      stdin: "{{ ipa_password }}"
+    register: ipa_advise_sc_client
+
+  - name: Remove krb5.keytab link from IPA client
+    file:
+      path: /etc/krb5.keytab
+      state: absent
+  when: inventory_hostname == groups.client.0

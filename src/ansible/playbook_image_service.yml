@@ -21,6 +21,7 @@
   roles:
   - ipa
   - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
+  - { role: ipasmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
 
 - hosts: client
   gather_facts: no
@@ -28,6 +29,7 @@
   - client
   - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
   - { role: virtsmartcard, when: ansible_distribution != "Ubuntu" and ansible_distribution != "Debian" and virt_smartcard }
+  - { role: ipasmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
 
 - hosts: nfs
   gather_facts: no
