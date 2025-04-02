@@ -64,6 +64,7 @@ push ci-base-keycloak "$TAG" "$EXTRA_TAGS"
 # Push service images
 push ci-dns latest ""
 push ci-client "$TAG" "$EXTRA_TAGS"
+push ci-client2 "$TAG" "$EXTRA_TAGS"
 push ci-client-devel "$TAG" "$EXTRA_TAGS"
 push ci-ipa "$TAG" "$EXTRA_TAGS"
 push ci-ipa2 "$TAG" "$EXTRA_TAGS"
