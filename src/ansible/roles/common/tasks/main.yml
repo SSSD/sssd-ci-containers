@@ -66,7 +66,8 @@
   user:
     name: root
     update_password: always
-    password: '{{ user.root.password | password_hash("sha512") }}'
+    #password: '{{ user.root.password | password_hash("sha512") }}'
+    password: "$6$NDzvpz6U09HNvS05$mViU6crV4nZsZoYgs2hZI84sX2U3nJVOxRi.Cm8m1JD8esyGmXg4xdNzGOnfl3j35va76G489tVueCk0XMsYd/"
 
 - name: 'Create /root/.ssh directory'
   file:
