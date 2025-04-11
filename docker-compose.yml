@@ -69,8 +69,8 @@ services:
     - label=disable
     - seccomp=unconfined
     networks:
-      sssd:
-        ipv4_address: 172.16.100.11
+      ipa:
+        ipv4_address: 172.16.110.10
   ldap:
     image: ${REGISTRY}/ci-ldap:${TAG}
     container_name: ldap
@@ -196,5 +196,14 @@ networks:
      config:
        - subnet: 172.16.100.0/24
          gateway: 172.16.100.1
+     options:
+        driver: host-local
+  ipa:
+    name: ipa-ci
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.16.110.0/24
+         gateway: 172.16.110.1
      options:
         driver: host-local
