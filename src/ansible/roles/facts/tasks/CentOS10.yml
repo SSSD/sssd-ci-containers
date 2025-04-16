@@ -5,4 +5,4 @@
   set_fact:
     buildroot: Yes
     passkey_support: Yes
-    virt_smartcard: Yes
+    virt_smartcard: No
