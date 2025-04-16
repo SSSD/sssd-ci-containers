@@ -82,6 +82,8 @@ all:
           hosts:
             dc.ad.test:
               ansible_host: 172.16.200.10
+            dc1.ad.test:
+              ansible_host: 172.16.200.11
       vars:
         ansible_connection: winrm
         ansible_port: 5985
