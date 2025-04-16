@@ -82,7 +82,7 @@ trust_ipa_samba: yes
 trust_ipa_ad: no
 trust_ipa_ad_two_way: no
 extended_packageset: yes
-virt_smartcard: yes
+virt_smartcard: no
 virt_smartcard_dir: /opt/test_ca
 virt_smartcard_sopin: 12345678
 virt_smartcard_pin: 123456
