@@ -6,6 +6,13 @@ service: {
     netbios: 'IPA',
     password: 'Secret123'
   },
+  ipa2: {
+    domain: 'ipa2.test',
+    hostname: 'master',
+    fqn: 'master.ipa2.test',
+    netbios: 'IPA2',
+    password: 'Secret123'
+  },
   ldap: {
     domain: 'ldap.test',
     hostname: 'master',

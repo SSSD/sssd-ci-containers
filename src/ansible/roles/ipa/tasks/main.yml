@@ -110,6 +110,7 @@
     ipa --no-prompt dnszone-add --name-from-ip 10.255.251.0/24
   args:
     stdin: '{{ ipa_password }}'
+  when: inventory_hostname == 'master.ipa.test'
 
 - name: 'Check trust with other domains'
   shell: |
@@ -144,6 +145,7 @@
   - '"samba" in groups and groups["samba"]'
   - join_samba
   - trust_ipa_samba
+  - inventory_hostname != 'master.ipa2.test'
 
 - name: 'Setup trust with AD'
   block:
@@ -167,6 +169,8 @@
     when:
     - 'ad_domain not in trust.stdout'
     - not trust_ipa_ad_two_way
+    - inventory_hostname != 'master.ipa2.test'
+
   - name: Run ipa trust-add (two-way)
     shell: |
       kinit admin
@@ -182,3 +186,4 @@
   - '"ad" in groups and groups["ad"]'
   - join_ad
   - trust_ipa_ad
+  - inventory_hostname != 'master.ipa2.test'
