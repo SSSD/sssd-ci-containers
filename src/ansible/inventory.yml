@@ -49,6 +49,8 @@ all:
           hosts:
             client.test:
               ansible_host: sssd-wip-client
+            client2.test:
+              ansible_host: sssd-wip-client2
         ipa:
           hosts:
             master.ipa.test:
