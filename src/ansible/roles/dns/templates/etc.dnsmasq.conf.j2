@@ -29,7 +29,6 @@ server=/{{ hostvars[ad]['ansible_facts']['windows_domain'] }}/{{ hostvars[ad]['a
 
 {% if 'master.ipa.test' in hostvars %}
 # Add reverse zones for artificial hosts in IPA domain
-{% if 'master.ipa.test' in hostvars %}
 server=/251.255.10.in-addr.arpa/{{ hostvars['master.ipa.test']['ansible_facts']['default_ipv4']['address'] }}
 {% endif %}
 
