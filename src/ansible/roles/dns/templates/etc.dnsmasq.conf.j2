@@ -14,7 +14,7 @@ cache-size=0
 
 # These zones have their own DNS server
 {% for host in groups['ipa'] %}
-server=/{{ hostvars[host]['ansible_facts']['domain'] }}/{{ hostvars[host]['ansible_facts']['default_ipv4']['address'] }}
+server=/{{ '.'.join(hostvars[host].inventory_hostname.split('.')[1:]) }}/{{ hostvars[host]['ansible_facts']['default_ipv4']['address'] }}
 {% endfor %}
 {% if 'dc.samba.test' in hostvars %}
 server=/samba.test/{{ hostvars['dc.samba.test']['ansible_facts']['default_ipv4']['address'] }}
