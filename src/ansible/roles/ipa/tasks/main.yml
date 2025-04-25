@@ -112,6 +112,16 @@
     stdin: '{{ ipa_password }}'
   when: inventory_hostname == 'master.ipa.test'
 
+# Workaround to make sure the IPA DNS server starts cleanly after install
+# https://issues.redhat.com/browse/RHEL-63017
+- name: Checking DNS resolution is working
+  shell: |
+    dig ipa-ca.{{ ipa_domain }} | grep NOERROR
+  register: result
+  until: result.rc == 0
+  retries: 60
+  delay: 2
+
 - name: 'Check trust with other domains'
   shell: |
     kinit admin
