@@ -17,6 +17,9 @@ services:
   client:
     image: localhost/sssd/ci-base-client:${TAG}
     container_name: sssd-wip-client
+  client2:
+    image: localhost/sssd/ci-base-client:${TAG}
+    container_name: sssd-wip-client2
   nfs:
     image: localhost/sssd/ci-base-nfs:${TAG}
     container_name: sssd-wip-nfs

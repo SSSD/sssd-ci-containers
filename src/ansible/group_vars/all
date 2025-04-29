@@ -32,6 +32,10 @@ service: {
     domain: 'client.test',
     fqn: 'client.test'
   },
+  client2: {
+    domain: 'client2.test',
+    fqn: 'client2.test'
+  },
   kdc: {
     realm: TEST,
     domain: test,

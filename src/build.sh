@@ -139,6 +139,7 @@ compose up --detach
 ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 compose stop
 build_service_image sssd-wip-client client
+build_service_image sssd-wip-client2 client2
 build_service_image sssd-wip-ipa ipa
 build_service_image sssd-wip-ipa2 ipa2
 build_service_image sssd-wip-ldap ldap
