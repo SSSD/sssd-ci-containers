@@ -44,6 +44,16 @@
       add: objectclasses
       objectclasses: ( 2.16.840.1.113730.3.8.24.9 NAME 'passkeyUser' DESC 'IPA passkey user' AUXILIARY MAY passkey)
 
+- name: 'Enabling memberOf plugin by default'
+  shell: |
+    ldapmodify -D "{{ service.ldap.bind.dn }}" -w "{{ service.ldap.bind.password }}" -H ldap://localhost -x
+  args:
+    stdin: |
+      dn: cn=MemberOf Plugin,cn=plugins,cn=config
+      changetype: modify
+      replace: nsslapd-pluginEnabled
+      nsslapd-pluginEnabled: on
+
 - name: Restart LDAP service
   service:
     name: dirsrv@localhost.service
