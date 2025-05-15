@@ -50,7 +50,8 @@ function cleanup {
 }
 
 function compose {
-  docker-compose -f "../docker-compose.yml" -f "../docker-compose.keycloak.yml" -f "./docker-compose.build.yml" $@
+  # It is important to use podman-compose instead of docker-compose, docker-compose creates additional networks in isolation mode.
+  podman-compose -f "../docker-compose.yml" -f "../docker-compose.keycloak.yml" -f "./docker-compose.build.yml" $@
 }
 
 function base_exec {

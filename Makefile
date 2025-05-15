@@ -7,27 +7,30 @@ push:
 	/bin/bash -c "src/push.sh"
 
 up:
-	docker-compose up --no-recreate --detach ${LIMIT}
+	# It is important to use podman-compose instead of docker-compose now.
+	# docker-compose creates additional networks with isolation = True.
+	# podman-compose creates additional networks with isolation = False
+	podman-compose up --no-recreate --detach ${LIMIT}
 
 up-passkey:
 	export HIDRAW=$(shell fido2-token -L|cut -f1 -d:) \
-	&& docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
+	&& podman-compose -f podman-compose.yml -f podman-compose.passkey.yml up \
 	--no-recreate --detach ${LIMIT}
 
 up-keycloak:
-	docker-compose -f docker-compose.yml -f docker-compose.keycloak.yml up \
+	podman-compose -f podman-compose.yml -f podman-compose.keycloak.yml up \
 	--no-recreate --detach ${LIMIT}
 
 stop:
-	docker-compose stop
+	podman-compose stop
 
 down:
-	docker-compose -f docker-compose.yml \
-	-f docker-compose.keycloak.yml \
-	-f docker-compose.passkey.yml down
+	podman-compose -f podman-compose.yml \
+	-f podman-compose.keycloak.yml \
+	-f podman-compose.passkey.yml down
 
 update:
-	docker-compose pull
+	podman-compose pull
 
 trust-ca:
 	/bin/bash -c "src/tools/trust-ca.sh"
