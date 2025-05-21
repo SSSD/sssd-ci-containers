@@ -47,9 +47,11 @@ set -xe
 function cleanup {
   ${DOCKER} rm sssd-wip-base --force || :
   compose down
+  ./tools/remove-networks.sh
 }
 
 function compose {
+  ./tools/create-networks.sh
   docker-compose -f "../docker-compose.yml" -f "../docker-compose.keycloak.yml" -f "./docker-compose.build.yml" $@
 }
 
