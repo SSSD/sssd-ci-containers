@@ -14,8 +14,9 @@ up-passkey:
 	&& docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
 	--no-recreate --detach ${LIMIT}
 
+# deprecated
 up-keycloak:
-	docker-compose -f docker-compose.yml -f docker-compose.keycloak.yml up \
+	docker-compose -f docker-compose.yml up \
 	--no-recreate --detach ${LIMIT}
 
 stop:
@@ -23,7 +24,6 @@ stop:
 
 down:
 	docker-compose -f docker-compose.yml \
-	-f docker-compose.keycloak.yml \
 	-f docker-compose.passkey.yml down
 
 update:
