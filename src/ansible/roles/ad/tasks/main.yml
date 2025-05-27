@@ -57,7 +57,7 @@
   win_shell: |
     Get-PackageProvider NuGet -ForceBootstrap
     Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
-    Install-Module PSIni -Confirm:$False
+    Install-Module PSIni -RequiredVersion 3.1.4 -Confirm:$False
 
 - name: Make sure Active Directory Web Services is running
   win_service:
