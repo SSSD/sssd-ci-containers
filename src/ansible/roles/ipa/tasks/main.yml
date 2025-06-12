@@ -181,6 +181,30 @@
     - not trust_ipa_ad_two_way
     - inventory_hostname != 'master.ipa2.test'
 
+- name: 'Setup trust with IPA'
+  block:
+  - name: Set IPA-IPA facts
+    set_fact:
+      ##ad_domain: "{{ '.'.join(hostvars[groups.ad.0].inventory_hostname.split('.')[1:]) }}"
+      ipa_domain: "{{ '.'.join(hostvars[groups.ipa2.0].inventory_hostname.split('.')[1:]) }}"
+      safe_password: "{{ service.ad.safe_password }}"
+      range_type: "--range-type=ipa-ad-trust-posix"
+  - name: Debug IPA-IPA facts
+    debug:
+      msg: 'IPA domain: "{{ ipa_domain }}"'
+  - name: Run ipa trust-add
+    shell: |
+      kinit admin
+      ipa trust-add --type=ipa {{ ipa_domain | quote }} --admin admin@{{ ipa_domain }} --password {{ range_type }} --two-way=true
+    args:
+      stdin: |
+        {{ ipa_password }}
+        {{ safe_password }}
+    when:
+    - 'ad_domain not in trust.stdout'
+    - not trust_ipa_ad_two_way
+    - inventory_hostname != 'master.ipa2.test'
+
   - name: Run ipa trust-add (two-way)
     shell: |
       kinit admin
