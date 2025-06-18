@@ -144,10 +144,19 @@
   - name: Check installed packages
     ansible.builtin.package_facts:
 
+  - name: Check if beaker-tasks yum repo exists
+    shell: yum repolist | grep beaker-tasks
+    ignore_errors: true
+    register: beaker_tasks
+
+  - name: Set fact for beaker_tasks repo to be disabled if necessary
+    set_fact:
+      yumopt: "{% if beaker_tasks.rc == 0 %}--disablerepo=beaker-tasks{% else %}{% endif %}"
+
   # ansible dnf5 seems to have a regression with wildcard *
   # https://github.com/ansible/ansible/issues/83373
   - name: Install sssd subpackages
-    command: yum install -y 'sssd-*' --disablerepo=beaker-tasks
+    command: "yum install -y 'sssd-*' {{ yumopt }}"
     register: sssd_install
     when: "'sssd-ad' not in ansible_facts.packages or 'sssd-kcm' not in ansible_facts.packages"
 
