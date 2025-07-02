@@ -36,13 +36,6 @@ runs:
       ansible --version
       ansible-config dump --only-changed -t all
 
-  - name: Workaround https://github.com/actions/runner-images/issues/7753
-    shell: bash
-    run: |
-      curl -O http://archive.ubuntu.com/ubuntu/pool/universe/g/golang-github-containernetworking-plugins/containernetworking-plugins_1.1.1+ds1-3ubuntu0.24.04.2_amd64.deb
-      sudo dpkg -i containernetworking-plugins_1.1.1+ds1-3ubuntu0.24.04.2_amd64.deb
-      rm --force containernetworking-plugins_1.1.1+ds1-3ubuntu0.24.04.2_amd64.deb
-
   - name: Workaround https://github.com/containers/crun/issues/1308
     shell: bash
     run: |
