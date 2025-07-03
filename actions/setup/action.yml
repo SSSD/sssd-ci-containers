@@ -28,14 +28,6 @@ runs:
       sudo apt-get update
       sudo apt-get install -y podman docker-compose
 
-  - name: Workaround https://github.com/containers/crun/issues/1308
-    shell: bash
-    run: |
-      CRUN_VER='1.11.2'
-      sudo curl -L "https://github.com/containers/crun/releases/download/${CRUN_VER}/crun-${CRUN_VER}-linux-amd64" -o "/usr/bin/crun"
-      sudo chmod +x "/usr/bin/crun"
-      crun --version
-
   - name: Start podman socket
     shell: bash
     run: |
