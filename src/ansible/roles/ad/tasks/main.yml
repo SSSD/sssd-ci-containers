@@ -34,7 +34,7 @@
 - name: Prepare AD facts
   set_fact:
     ad_domain: "{{ '.'.join(inventory_hostname.split('.')[1:]) }}"
-    ad_netbios: "{{ inventory_hostname.split('.')[0].upper() }}"
+    ad_netbios: "{{ inventory_hostname.split('.')[1].upper() }}"
     ad_suffix: "{{ inventory_hostname.split('.')[1:] | map('regex_replace', '^(.*)$', 'dc=\\1') | join(',') }}"
     ad_password: "{{ service.ad.safe_password }}"
 
