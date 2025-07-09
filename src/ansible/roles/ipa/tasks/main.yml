@@ -11,7 +11,7 @@
 - name: Prepare IPA facts
   set_fact:
     ipa_domain: "{{ '.'.join(inventory_hostname.split('.')[1:]) }}"
-    ipa_netbios: "{{ inventory_hostname.split('.')[0].upper() }}"
+    ipa_netbios: "{{ inventory_hostname.split('.')[1].upper() }}"
     ipa_suffix: "{{ inventory_hostname.split('.')[1:] | map('regex_replace', '^(.*)$', 'dc=\\1') | join(',') }}"
     ipa_password: "{{ ansible_password | default(service.ipa.password)  }}"
 
