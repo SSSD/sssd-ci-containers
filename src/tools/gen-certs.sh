@@ -20,11 +20,11 @@ set -xe
 mkdir -p $OUT
 
 # Create non-encrypted self-signed root certificate authority
-openssl req -new -x509 -days 7200 -config "$REQ_CONFIG" -subj "$SUBJECT/CN=ca" -keyout "$OUT/ca.key" -out "$OUT/ca.crt"
+openssl req -new -x509 -newkey mldsa65 -days 7200 -config "$REQ_CONFIG" -subj "$SUBJECT/CN=ca" -keyout "$OUT/ca.key" -out "$OUT/ca.crt"
 
 # Create certificates
 for service in master.ldap.test dc.samba.test master.keycloak.test; do
-    openssl req -new -config "$REQ_CONFIG" -subj "$SUBJECT/CN=$service" -keyout "$OUT/$service.key" -out "$OUT/$service.csr"
+    openssl req -new -newkey mldsa65 -config "$REQ_CONFIG" -subj "$SUBJECT/CN=$service" -keyout "$OUT/$service.key" -out "$OUT/$service.csr"
     openssl x509 -req -days 7200 -extfile "$X509_CONFIG" -CA "$OUT/ca.crt" -CAkey "$OUT/ca.key" -CAcreateserial -in "$OUT/$service.csr" -out "$OUT/$service.crt"
     rm -f "$OUT/$service.csr"
 done
