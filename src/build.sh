@@ -127,27 +127,27 @@ if [ "$SKIP_BASE" == 'no' ]; then
   build_base_image "$BASE_IMAGE" base-ground
   build_base_image "ci-base-ground:${TAG}" base-client
   build_base_image "ci-base-ground:${TAG}" base-ldap
-  build_base_image "ci-base-ground:${TAG}" base-samba
+  # build_base_image "ci-base-ground:${TAG}" base-samba
   build_base_image "ci-base-ldap:${TAG}"   base-ipa
-  build_base_image "ci-base-ground:${TAG}" base-nfs
-  build_base_image "ci-base-ground:${TAG}" base-kdc
-  build_base_image "ci-base-ground:${TAG}" base-keycloak
+  # build_base_image "ci-base-ground:${TAG}" base-nfs
+  # build_base_image "ci-base-ground:${TAG}" base-kdc
+  # build_base_image "ci-base-ground:${TAG}" base-keycloak
 fi
 
 # Create services
-compose up --detach
-ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
+compose up --detach client ldap dns
+ansible-playbook $ANSIBLE_OPTS --limit="client.test,master.ldap.test" ./ansible/playbook_image_service.yml
 compose stop
-build_service_image sssd-wip-client client
-build_service_image sssd-wip-ipa ipa
-build_service_image sssd-wip-ipa2 ipa2
-build_service_image sssd-wip-ldap ldap
-build_service_image sssd-wip-samba samba
-build_service_image sssd-wip-nfs nfs
-build_service_image sssd-wip-kdc kdc
-build_service_image sssd-wip-keycloak keycloak
-compose down
+# build_service_image sssd-wip-client client
+# build_service_image sssd-wip-ipa ipa
+# build_service_image sssd-wip-ipa2 ipa2
+# build_service_image sssd-wip-ldap ldap
+# build_service_image sssd-wip-samba samba
+# build_service_image sssd-wip-nfs nfs
+# build_service_image sssd-wip-kdc kdc
+# build_service_image sssd-wip-keycloak keycloak
+# compose down
 
-# Create development images with additional packages
-build_base_image "ci-client:${TAG}" client-devel
-build_base_image "ci-ipa:${TAG}" ipa-devel
+# # Create development images with additional packages
+# build_base_image "ci-client:${TAG}" client-devel
+# build_base_image "ci-ipa:${TAG}" ipa-devel
