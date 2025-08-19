@@ -15,6 +15,12 @@
     type: string
     state: present
 
+- name: Install chocolatey package manager
+  win_shell: |
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
 - name: Detect cygwin
   win_stat:
     path: 'C:\cygwin64\etc'
@@ -58,6 +64,10 @@
     Get-PackageProvider NuGet -ForceBootstrap
     Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
     Install-Module PSIni -RequiredVersion 3.1.4 -Confirm:$False
+
+- name: Install bind-tools via chocolatey
+  win_shell: |
+    choco install -y bind-toolsonly
 
 - name: Make sure Active Directory Web Services is running
   win_service:
