@@ -10,8 +10,14 @@ up:
 	docker-compose up --no-recreate --detach ${LIMIT}
 
 up-passkey:
-	export HIDRAW=$(shell fido2-token -L|cut -f1 -d:) \
-	&& docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
+	$(eval HIDRAW := $(shell fido2-token -L | cut -f1 -d:))
+
+	@if [ -z "${HIDRAW}" ]; then \
+		echo "🛑 Error: FIDO2 token not found."; \
+		exit 1; \
+	fi
+
+	@HIDRAW=${HIDRAW} docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
 	--no-recreate --detach ${LIMIT}
 
 # deprecated
