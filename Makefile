@@ -20,6 +20,9 @@ up-passkey:
 	@HIDRAW=${HIDRAW} docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
 	--no-recreate --detach ${LIMIT}
 
+	@docker-compose -f docker-compose.yml -f docker-compose.passkey.yml exec client \
+	/usr/bin/setfacl -m u:sssd:rw ${HIDRAW}
+
 # deprecated
 up-keycloak:
 	docker-compose -f docker-compose.yml up \
