@@ -65,6 +65,10 @@
     start_mode: auto
     state: started
 
+- name: Disable AD DNS Scavenger
+  win_shell: |
+    Set-DnsServerScavenging $false
+
 - name: 'Add sudo schema and possibly other'
   include_tasks: 'schema.yml'
   when: not skip_schema
