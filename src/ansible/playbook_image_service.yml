@@ -28,8 +28,9 @@
   roles:
   - client
   - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
-  - { role: virtsmartcard, when: ansible_distribution != "Ubuntu" and ansible_distribution != "Debian" and virt_smartcard }
+  - { role: virtsmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
   - { role: ipasmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
+  - { role: selenium, when: ansible_os_family == 'RedHat' and selenium_support }
 
 - hosts: nfs
   gather_facts: no
