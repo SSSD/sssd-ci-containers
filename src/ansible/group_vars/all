@@ -87,3 +87,4 @@ virt_smartcard_dir: /opt/test_ca
 virt_smartcard_sopin: 12345678
 virt_smartcard_pin: 123456
 virt_smartcard_libsofthsm: /usr/lib64/pkcs11/libsofthsm2.so
+selenium_support: no

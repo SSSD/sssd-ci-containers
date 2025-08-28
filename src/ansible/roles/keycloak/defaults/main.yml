@@ -1,1 +1,2 @@
 base_url: https://github.com/keycloak/keycloak/releases/download
+kc_ver_fallback: 26.3.1

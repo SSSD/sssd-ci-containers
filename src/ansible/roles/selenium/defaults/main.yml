@@ -1,0 +1,6 @@
+test_venv: /opt/test_venv
+selenium_version: 4.19.0
+gecko_version: v0.34.0
+gecko_base_url: https://github.com/mozilla/geckodriver/releases/download
+firefox_version: 115.9.0esr
+firefox_base_url: https://download-installer.cdn.mozilla.net/pub/firefox/releases

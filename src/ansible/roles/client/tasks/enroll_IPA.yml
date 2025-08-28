@@ -5,6 +5,15 @@
     ipa_password: "{{ hostvars[groups.ipa.0].ansible_password | default(service.ipa.password) }}"
     ipa_keytab: /var/enrollment/{{ hostvars[groups.ipa.0]['ipa_domain'] }}.keytab
 
+- name: Checking DNS resolution from IPA server
+  shell: |
+    resolvectl flush-caches; sleep 1
+    dig _ldap._tcp.{{ ipa_domain }} srv | grep NOERROR
+  register: result
+  until: result.rc == 0
+  retries: 20
+  delay: 15
+
 - name: Run ipa-client-install
   shell: |
     /usr/sbin/ipa-client-install --unattended --no-ntp \

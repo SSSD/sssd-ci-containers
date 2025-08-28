@@ -1,0 +1,45 @@
+- name: Setup selenium for running test logins against Identity Providers
+  block:
+  - name: Install selenium into the specified (virtualenv), inheriting globally installed modules
+    pip:
+      name: selenium==4.19.0
+      virtualenv: "{{ test_venv }}"
+      virtualenv_site_packages: yes
+
+  - name: Download geckodriver
+    get_url:
+      url: "{{gecko_base_url }}/{{ gecko_version }}/geckodriver-{{ gecko_version }}-linux64.tar.gz"
+      dest: "{{ test_venv }}/bin/"
+
+  - name: Unarchive geckodriver
+    unarchive:
+      src: "{{ test_venv }}/bin/geckodriver-{{ gecko_version }}-linux64.tar.gz"
+      dest: "{{ test_venv }}/bin/"
+      remote_src: yes
+
+  - name: Download firefox
+    get_url:
+      url: "{{ firefox_base_url }}/{{ firefox_version }}/linux-x86_64/en-US/firefox-{{ firefox_version }}.tar.bz2"
+      dest: "{{ test_venv }}/firefox.tar.bz2"
+
+  - name: Unarchive firefox
+    unarchive:
+      src: "{{ test_venv }}/firefox.tar.bz2"
+      dest: "{{ test_venv }}/"
+      remote_src: yes
+
+  - name: Create link to firefox in virtualenv
+    file:
+      state: link
+      src: "{{ test_venv }}/firefox/firefox"
+      dest: "{{ test_venv }}/bin/firefox"
+
+  - name: Copy idp_login_keycloak.py
+    copy:
+      src: idp_login_keycloak.py
+      dest: "{{ test_venv }}/bin/idp_login_keycloak.py"
+      owner: root
+      group: root
+      mode: 0755
+
+  when: selenium_support
