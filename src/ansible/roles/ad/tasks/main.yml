@@ -61,6 +61,7 @@
 
 - name: Install powershell modules
   win_shell: |
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Get-PackageProvider NuGet -ForceBootstrap
     Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
     Install-Module PSIni -RequiredVersion 3.1.4 -Confirm:$False
