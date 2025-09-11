@@ -7,6 +7,7 @@ push:
 	/bin/bash -c "src/push.sh"
 
 up:
+	/bin/bash -c "src/tools/create-networks.sh"
 	docker-compose up --no-recreate --detach ${LIMIT}
 
 up-passkey:
@@ -34,6 +35,7 @@ stop:
 down:
 	docker-compose -f docker-compose.yml \
 	-f docker-compose.passkey.yml down
+	/bin/bash -c "src/tools/remove-networks.sh"
 
 update:
 	docker-compose pull
