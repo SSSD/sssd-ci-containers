@@ -31,14 +31,14 @@
   ansible.builtin.include_tasks:
     file: enroll_IPA.yml
   when:
-  - '"ipa" in groups and groups["ipa"]'
+  - '"ipa" in groups and groups["ipa"] | length > 0'
   - join_ipa
 
 - name: Join Samba domain
   ansible.builtin.include_tasks:
     file: enroll_samba.yml
   when:
-  - '"samba" in groups and groups["samba"]'
+  - '"samba" in groups and groups["samba"] | length > 0'
   - join_samba
 
 - name: Join ldap domain
@@ -47,14 +47,14 @@
     set_fact:
       domains: "{{ domains + [service.ldap.domain] }}"
   when:
-  - '"ldap" in groups and groups["ldap"]'
+  - '"ldap" in groups and groups["ldap"] | length > 0'
   - join_ldap
 
 - name: Join AD
   ansible.builtin.include_tasks:
     file: enroll_AD.yml
   when:
-  - '"ad" in groups and groups["ad"]'
+  - '"ad" in groups and groups["ad"] | length > 0'
   - join_ad
 
 - name: Stop SSSD

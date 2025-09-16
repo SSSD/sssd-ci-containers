@@ -69,7 +69,7 @@
         nameserver 127.0.0.1
         nameserver {{ hostvars[groups.dns.0]['ansible_facts']['default_ipv4']['address'] }}
     when:
-    - '"dns" in groups and groups["dns"]'
+    - '"dns" in groups and groups["dns"] | length > 0'
   - name: Remove systemd-resolved package
     ansible.builtin.package:
       name: systemd-resolved
@@ -97,7 +97,7 @@
     mode: '0600'
     backup: no
   when:
-  - '"dns" in groups and groups["dns"]'
+  - '"dns" in groups and groups["dns"] | length > 0'
 
 - name: Setup Kerberos
   copy:
