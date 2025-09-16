@@ -152,7 +152,7 @@
     when:
     - 'samba_domain not in trust.stdout'
   when:
-  - '"samba" in groups and groups["samba"]'
+  - '"samba" in groups and groups["samba"] | length > 0'
   - join_samba
   - trust_ipa_samba
   - inventory_hostname != 'master.ipa2.test'
@@ -193,7 +193,7 @@
     - 'ad_domain not in trust.stdout'
     - trust_ipa_ad_two_way
   when:
-  - '"ad" in groups and groups["ad"]'
+  - '"ad" in groups and groups["ad"] | length > 0'
   - join_ad
   - trust_ipa_ad
   - inventory_hostname != 'master.ipa2.test'
