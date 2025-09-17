@@ -80,6 +80,7 @@ services:
     volumes:
     - ./shared:/shared:rw
     cap_add:
+    - SYS_ADMIN
     - SYS_PTRACE
     - AUDIT_WRITE
     - AUDIT_CONTROL
