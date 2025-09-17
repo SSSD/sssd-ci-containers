@@ -242,8 +242,13 @@ The images are build and published automatically in GitHub actions in the [build
 workflow](./.github/workflows/build.yml) on each push and automatically every
 Sunday.
 
-If you need to build them manually, you can do it by calling the `build` make
-target. It takes multiple environment variables:
+If you need to build them manually, you need to first install some packages
+
+```console
+$ dnf install ansible python3-passlib
+```
+
+Then run the `build` make target. It takes multiple environment variables:
 
 * `BASE_IMAGE`: base image that should be used, default is
   `registry.fedoraproject.org/fedora:latest`
@@ -252,10 +257,16 @@ target. It takes multiple environment variables:
   (all services are available). If multiple values are provided, you need to
   enclose them in quotation marks, e.g. `"ipa ldap samba"`
 
-The following example builds the CentOS Stream 8 images:
+The following example builds the CentOS Stream 9 images:
 
 ```console
-$ sudo make build BASE_IMAGE=quay.io/centos/centos:stream8 TAG=centos-8 UNAVAILABLE=samba
+$ make build BASE_IMAGE=quay.io/centos/centos:stream9 TAG=centos-9 UNAVAILABLE=samba
+```
+
+When troubleshooting failures, it helps to set the below environment variables when running make build.
+
+```console
+$ make build ANSIBLE_OPTS=-vvv CLEANUP=no
 ```
 
 The images are stored in local `localhost/sssd` image registry.
