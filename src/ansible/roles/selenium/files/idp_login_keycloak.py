@@ -18,6 +18,11 @@ if (len(sys.argv) - 1) != 3:
 verification_uri = sys.argv[1]
 username = sys.argv[2]
 password = sys.argv[3]
+password_new = None
+
+if ":::" in password:
+    password_new = password.split(':::')[1]
+    password = password.split(':::')[0]
 
 options = Options()
 options.binary_location = "/opt/test_venv/bin/firefox"
@@ -39,9 +44,19 @@ try:
     driver.find_element(By.ID, "username").send_keys(username)
     driver.find_element(By.ID, "password").send_keys(password)
     driver.find_element(By.ID, "kc-login").click()
-    element = WebDriverWait(driver, 90).until(
+
+    if password_new is not None:
+        element = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.ID, "password-new")))
+
+        driver.find_element(By.ID, "password-new").send_keys(password_new)
+        driver.find_element(By.ID, "password-confirm").send_keys(password_new)
+        driver.find_element(By.ID, "kc-submit").click()
+
+    element = WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.ID, "kc-login")))
     driver.find_element(By.ID, "kc-login").click()
+
     assert "Device Login Successful" in driver.page_source
 finally:
     now = datetime.now().strftime("%M-%S")
