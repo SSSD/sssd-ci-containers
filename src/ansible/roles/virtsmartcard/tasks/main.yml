@@ -109,3 +109,12 @@
     daemon_reload: true
     state: started
     enabled: true
+
+- name: Install SCAutolib and dependencies
+  pip:
+    virtualenv: "{{ test_venv }}"
+    virtualenv_site_packages: yes
+    virtualenv_command: "{{ ansible_python_interpreter }} -m venv"
+    name:
+      - SCAutolib[graphical]
+      - python-uinput
