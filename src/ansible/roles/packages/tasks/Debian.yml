@@ -43,7 +43,7 @@
   - name: Enable backports repo
     copy:
       dest: /etc/apt/sources.list.d/backports.list
-      content: "deb http://deb.debian.org/debian bullseye-backports main"
+      content: "deb http://deb.debian.org/debian bookworm-backports main"
       owner: root
       group: root
       mode: '0644'
