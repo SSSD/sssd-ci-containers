@@ -17,5 +17,24 @@
     - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c10s-build/latest/$basearch'}
     when: buildroot
 
+
+- name: Enable EPEL repo for virtual smart cards
+  block:
+  - name: Install dependent packages
+    dnf:
+      name: gnupg2
+      state: present
+
+  - name: Import EPEL key from a url
+    rpm_key:
+      state: present
+      key:  https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-10
+
+  - name: Install EPEL repositories
+    dnf:
+      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
+      state: present
+  when: virt_smartcard
+
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'
