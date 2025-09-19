@@ -10,7 +10,7 @@ class FilterModule(object):
         if distro.lower() == 'fedora':
             min_version = 34
         elif distro.lower() == 'centos':
-            min_version = 8
+            min_version = 9
 
         out = [f'{distro}{extra}.yml']
         out.extend([ f'{distro}{x}{extra}.yml' for x in range(min_version, int(version) + 1) ])
