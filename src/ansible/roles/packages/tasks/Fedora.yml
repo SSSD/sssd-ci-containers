@@ -68,6 +68,7 @@
       - policycoreutils
       - policycoreutils-python-utils
       - python3-pip
+      - shadow-utils-subid
       - sudo
       - rsync
       disable_gpg_check: yes
