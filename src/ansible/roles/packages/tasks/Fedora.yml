@@ -87,22 +87,14 @@
       state: present
       name:
       - bash-completion
-      - bind-utils
       - dbus-tools
       - e2fsprogs
-      - expect
       - findutils
-      - firewalld
       - gdb
       - gdb-gdbserver
       - iputils
       - ldb-tools
       - man
-      - net-tools
-      - policycoreutils
-      - policycoreutils-python-utils
-      - python3-pip
-      - rsync
       - tcpdump
       - wget
       - which
