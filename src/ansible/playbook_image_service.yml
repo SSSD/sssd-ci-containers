@@ -20,14 +20,14 @@
   gather_facts: no
   roles:
   - ipa
-  - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
+  - { role: passkey, when: ansible_distribution == "Debian" }
   - { role: ipasmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
 
 - hosts: client
   gather_facts: no
   roles:
   - client
-  - { role: passkey, when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian" }
+  - { role: passkey, when: ansible_distribution == "Debian" }
   - { role: virtsmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
   - { role: ipasmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
   - { role: selenium, when: ansible_os_family == 'RedHat' and selenium_support }
