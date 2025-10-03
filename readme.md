@@ -100,8 +100,6 @@ Please, view the [packages](src/ansible/roles/packages) ansible role to see the
 installed packages:
 
 * [Fedora, CentOS](src/ansible/roles/packages/tasks/Fedora.yml)
-* [Debian](src/ansible/roles/packages/tasks/Debian.yml)
-* [Ubuntu](src/ansible/roles/packages/tasks/Ubuntu.yml)
 
 ## Out of the box use cases
 
@@ -127,10 +125,10 @@ Most notable tags are:
 * `latest` - this is the latest Fedora stable compose
 * `rawhide` - this is the latest Fedora rawhide compose
 
-We currently have full support for Fedora and CentOS Stream and a limited
-support for Debian and Ubuntu. The client is always created from the target
-distribution, but if any service is unavailable on that distribution (like
-samba-dc on CentOS Stream) it is created from `fedora:latest` instead.
+We currently have full support for Fedora and CentOS Stream. The client is
+always created from the target distribution, but if any service is
+unavailable on that distribution (like samba-dc on CentOS Stream) it is
+created from `fedora:latest` instead.
 
 ## Overriding images
 
