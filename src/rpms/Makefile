@@ -5,6 +5,7 @@ prep:
 	mkdir -p $(PWD)/rpmbuild/SPECS
 	mkdir -p $(PWD)/rpmbuild/SRPMS
 	cp random.c $(PWD)/rpmbuild/SOURCES
+	cp sss_pac_responder_client.c $(PWD)/rpmbuild/SOURCES
 	cp ci-sssd.spec $(PWD)/rpmbuild/SPECS
 
 srpm: prep

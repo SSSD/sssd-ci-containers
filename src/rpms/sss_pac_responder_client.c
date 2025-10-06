@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 Red Hat
+    Copyright (C) 2016-2025 Red Hat
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,16 +18,32 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <pthread.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <dlfcn.h>
+#include <nss.h>
 
 #include <sys/syscall.h>
 
-#include "sss_client/sss_cli.h"
-#include "util/util.h"
+/* Originally defined in SSSD src/sss_client/sss_cli.h */
+struct sss_cli_req_data {
+    size_t len;
+    const void *data;
+};
+
+/* Originally defined in SSSD src/sss_client/sss_cli.h */
+enum sss_cli_command {
+SSS_PAC_ADD_PAC_USER  =  0x0101
+};
+
+typedef int (*make_pac_request_with_lock)(enum sss_cli_command cmd,
+                                   struct sss_cli_req_data *rd,
+                                   uint8_t **repbuf, size_t *replen,
+                                   int *errnop);
 
 const uint8_t pac[] = {
 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10,
@@ -87,28 +103,24 @@ const uint8_t pac[] = {
 0x25, 0x32, 0x7c, 0x85, 0x00, 0x32, 0xac, 0x8f, 0x02, 0x2c, 0x10, 0x00, 0x00,
 0x00, 0x6b, 0xe8, 0x51, 0x03, 0x30, 0xed, 0xca, 0x7d, 0xe2, 0x12, 0xa5, 0xde};
 
-enum nss_status _nss_sss_getpwuid_r(uid_t uid, struct passwd *result,
-                                    char *buffer, size_t buflen, int *errnop);
+struct thread_data {
+    const char *name;
+    make_pac_request_with_lock fn;
+};
+
 static void *pac_client(void *arg)
 {
     struct sss_cli_req_data sss_data = { sizeof(pac), pac };
     int errnop = -1;
     int ret;
     size_t c;
+    struct thread_data *td = (struct thread_data *) arg;
 
-    fprintf(stderr, "[%"SPRItime"][%d][%ld][%s] started\n",
-            time(NULL), getpid(), pthread_self(), (char *) arg);
+    fprintf(stderr, "[%ld][%d][%ld][%s] started\n",
+            time(NULL), getpid(), pthread_self(), td->name);
+
     for (c = 0; c < 1000; c++) {
-        /* sss_pac_make_request() does not protect the client's file
-         * descriptor to the PAC responder. With this one thread will miss a
-         * reply for an SSS_GET_VERSION request and will wait until
-         * SSS_CLI_SOCKET_TIMEOUT is passed.
-
-        ret = sss_pac_make_request(SSS_PAC_ADD_PAC_USER, &sss_data,
-                                   NULL, NULL, &errnop);
-         */
-        ret = sss_pac_make_request_with_lock(SSS_PAC_ADD_PAC_USER, &sss_data,
-                                             NULL, NULL, &errnop);
+        ret = td->fn(SSS_PAC_ADD_PAC_USER, &sss_data, NULL, NULL, &errnop);
         if (ret != NSS_STATUS_SUCCESS
                 && !(ret == NSS_STATUS_UNAVAIL && errnop != ECONNREFUSED)) {
                 /* NSS_STATUS_UNAVAIL is returned if the PAC responder rejects
@@ -116,12 +128,12 @@ static void *pac_client(void *arg)
                  * response here as well. Only errnop == ECONNREFUSED should
                  * be treated as error because this means that the PAC
                  * responder is not running. */
-            fprintf(stderr, "pac: [%s][%d][%d]\n", (char *)arg, ret, errnop);
+            fprintf(stderr, "pac: [%s][%d][%d]\n", td->name, ret, errnop);
             return ((void *)((uintptr_t)("X")));
         }
     }
 
-    fprintf(stderr, "[%"SPRItime"][%s] done\n", time(NULL),(char *) arg);
+    fprintf(stderr, "[%ld][%s] done\n", time(NULL), td->name);
     return NULL;
 }
 
@@ -129,13 +141,41 @@ int main(void)
 {
     pthread_t thread1;
     pthread_t thread2;
+    struct thread_data thread_data[] = {{"Thread 1", NULL}, {"Thread 2", NULL}};
     int ret;
     void *t_ret;
+    void *libhandle = NULL;
+    make_pac_request_with_lock fn = NULL;
+    const char *lib_path = "/usr/lib64/krb5/plugins/authdata/sssd_pac_plugin.so";
 
-    pthread_create(&thread1, NULL, pac_client,
-                   ((void *)((uintptr_t)("Thread 1"))));
-    pthread_create(&thread2, NULL, pac_client,
-                   ((void *)((uintptr_t)("Thread 2"))));
+    libhandle = dlopen(lib_path, RTLD_NOW);
+    if (libhandle == NULL) {
+        fprintf(stderr, "Failed to open [%s].\n", lib_path);
+        return EIO;
+    }
+
+    /* sss_pac_make_request() does not protect the client's file
+     * descriptor to the PAC responder. With this one thread will miss a
+     * reply for an SSS_GET_VERSION request and will wait until
+     * SSS_CLI_SOCKET_TIMEOUT is passed.
+     *
+     * Newer versions of the SSSD client code will used dedicated file
+     * descriptors for different threads and even sss_pac_make_request()
+     * should pass the test.
+     *
+     *   fn = (make_pac_request_with_lock)dlsym(libhandle, "sss_pac_make_request");
+     */
+    fn = (make_pac_request_with_lock)dlsym(libhandle, "sss_pac_make_request_with_lock");
+    if (fn == NULL) {
+        fprintf(stderr, "Failed to load sss_pac_make_request_with_lock.\n");
+        return EIO;
+    }
+
+    thread_data[0].fn = fn;
+    thread_data[1].fn = fn;
+
+    pthread_create(&thread1, NULL, pac_client, &thread_data[0]);
+    pthread_create(&thread2, NULL, pac_client, &thread_data[1]);
 
     ret = pthread_join(thread1, &t_ret);
     if (ret != 0 || t_ret != NULL) {
@@ -145,7 +185,7 @@ int main(void)
 
     ret = pthread_join(thread2, &t_ret);
     if (ret != 0 || t_ret != NULL) {
-        fprintf(stderr, "Thread 1 failed.\n");
+        fprintf(stderr, "Thread 2 failed.\n");
         return EIO;
     }
 
