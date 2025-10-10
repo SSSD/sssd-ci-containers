@@ -24,13 +24,13 @@ gcc -fPIC -shared -o random.so %{SOURCE0} -lcrypto
 mkdir -p %{buildroot}/opt
 cp random.so  %{buildroot}/opt/random.so
 
-%package random
+%package test-deps
 Summary: random.so for passkey testing.
 
-%description random
+%description test-deps
 random.so for passkey testing.
 
-%files random
+%files test-deps
 /opt/random.so
 
 %changelog
