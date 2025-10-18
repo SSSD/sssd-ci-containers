@@ -18,3 +18,61 @@
       path: /opt/random.c
       state: absent
   when: passkey_support
+
+- name: Configure vfido wrapper for virtual-fido to support passkeys
+  block:
+  - name: Install vfido.py wrapper for virtual-fido
+    copy:
+      src: vfido.py
+      dest: "{{ test_venv }}/bin"
+      owner: root
+      group: root
+      mode: 755
+
+  - name: Install vfido_ wrapper scripts into /opt/test_venv
+    copy:
+      src: "{{ item }}"
+      dest: "{{ test_venv }}/bin"
+      owner: root
+      group: root
+      mode: 755
+    with_fileglob:
+      - "vfido_*"
+
+  - name: Install vfido systemd service unit file
+    copy:
+      src: vfido.service
+      dest: /etc/systemd/system
+
+  - name: Start vfido service
+    systemd_service:
+      name: vfido
+      daemon_reload: true
+      state: started
+
+  - name: Clone virtual-fido to test_venv
+    git:
+      repo: "https://github.com/bulwarkid/virtual-fido.git"
+      dest: "{{ test_venv }}/virtual-fido"
+      version: 512d8a3fef0e073171a7ef3261f300e8a5e48694
+      clone: yes
+      update: yes
+      depth: 1
+
+  - name: Create local user wayland systemd unit file
+    copy:
+      src: /usr/lib/systemd/user/org.gnome.Shell@wayland.service
+      dest: /etc/systemd/user/org.gnome.Shell@wayland.service
+      owner: root
+      group: root
+      mode: 0644
+      remote_src: yes
+
+  - name: Add debug option to gdm service
+    lineinfile:
+      path: /etc/systemd/user/org.gnome.Shell@wayland.service
+      insertafter: "^\\[Service\\]$"
+      line: "Environment=MUTTER_DEBUG=backend"
+      state: present
+
+  when: passkey_support
