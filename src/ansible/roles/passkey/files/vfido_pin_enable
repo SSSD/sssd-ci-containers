@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pushd /opt/test_venv/virtual-fido
+/usr/bin/go run ./cmd/demo pin enable

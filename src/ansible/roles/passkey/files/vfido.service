@@ -1,0 +1,42 @@
+[Unit]
+Description=vfido Service
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+Environment=VAR=empty
+WorkingDirectory=/opt/test_venv/virtual-fido
+ExecStartPre=+-/usr/bin/modprobe vhci-hcd
+ExecStart=nohup python3 /opt/test_venv/bin/vfido.py
+StandardOutput=append:/tmp/vfido.log
+StandardError=append:/tmp/vfido.log
+
+# Stop process
+KillMode=process
+ExecStopPost=+-/bin/killall demo
+ExecStopPost=+-/bin/rm -rf /root/.cache/go-build
+
+# Runtime directory
+RuntimeDirectory=virtual-fido
+RuntimeDirectoryMode=0755
+
+# State directory for vault
+StateDirectory=virtual-fido
+StateDirectoryMode=0700
+
+# Logs directory
+LogsDirectory=virtual-fido
+LogsDirectoryMode=0755
+
+# Hardening
+ReadWritePaths=/var/lib/virtual-fido /var/log/virtual-fido
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+

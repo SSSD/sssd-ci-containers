@@ -29,6 +29,7 @@
   - { role: virtsmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
   - { role: ipasmartcard, when: ansible_os_family == 'RedHat' and virt_smartcard }
   - { role: selenium, when: ansible_os_family == 'RedHat' and selenium_support }
+  - { role: passkey, when: ansible_os_family == 'RedHat' and passkey_support }
 
 - hosts: nfs
   gather_facts: no

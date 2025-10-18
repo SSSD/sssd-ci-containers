@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+sleep 1
+echo y | nc localhost 9999

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <PIN>"
+    exit 1
+fi
+
+pushd /opt/test_venv/virtual-fido
+/usr/bin/go run ./cmd/demo pin set --pin $1
