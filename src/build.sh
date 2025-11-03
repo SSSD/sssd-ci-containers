@@ -92,7 +92,9 @@ function build_base_image {
   done
 
   echo "Building $name from $from"
-  ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
+  # --privileged is needed to workaround dbus-broker systemd failure when running on Fedora
+  # https://bugzilla.redhat.com/show_bug.cgi?id=2391343
+  ${DOCKER} run --security-opt seccomp=unconfined --privileged --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
     base_install_python
   fi
