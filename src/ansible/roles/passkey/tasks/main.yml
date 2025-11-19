@@ -21,6 +21,11 @@
 
 - name: Configure vfido wrapper for virtual-fido to support passkeys
   block:
+  - name: Create test_venv/bin if missing
+    file:
+      path: "{{ test_venv }}/bin"
+      state: directory
+
   - name: Install vfido.py wrapper for virtual-fido
     copy:
       src: vfido.py
