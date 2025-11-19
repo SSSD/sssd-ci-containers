@@ -291,6 +291,8 @@
       - openssl-devel
       - go
       - nmap-ncat
+      - git
+      - gdm
     when: passkey_support
   when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
