@@ -50,7 +50,15 @@ function cleanup {
 }
 
 function compose {
-  docker-compose -f "../docker-compose.yml" -f "./docker-compose.build.yml" $@
+  if [ $@ == "up" ]; then
+    ./tools/create-networks.sh
+    docker-compose -f "../docker-compose.yml" -f "./docker-compose.build.yml" $@ --detach
+  elif [ "$@" == "down" ]; then
+    docker-compose -f "../docker-compose.yml" -f "./docker-compose.build.yml" $@
+    ./tools/remove-networks.sh
+  else
+    docker-compose -f "../docker-compose.yml" -f "./docker-compose.build.yml" $@
+  fi
 }
 
 function base_exec {
@@ -128,7 +136,7 @@ if [ "$SKIP_BASE" == 'no' ]; then
 fi
 
 # Create services
-compose up --detach
+compose up
 ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 compose stop
 build_service_image sssd-wip-client client
