@@ -185,6 +185,7 @@
       - tcpdump
       - wireshark-cli
       - binutils
+      - shadow-utils-subid
       disable_gpg_check: yes
 
   - name: Install packages for virtual smartcard from general repos
