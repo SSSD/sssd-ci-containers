@@ -42,26 +42,4 @@
       group: root
       mode: 0755
 
-  - name: Create local gdm systemd unit file
-    copy:
-      src: /usr/lib/systemd/system/gdm.service
-      dest: /etc/systemd/system/gdm.service
-      owner: root
-      group: root
-      mode: 0644
-      remote_src: yes
-
-  - name: Add debug option to gdm service
-    lineinfile:
-      path: /etc/systemd/system/gdm.service
-      insertafter: "^\\[Service\\]$"
-      line: "Environment=GDM_DEBUG_JSON_REQUESTS=1"
-      state: present
-
-  - name: Restart GDM service
-    systemd_service:
-      name: gdm.service
-      daemon_reload: true
-      state: restarted
-
   when: selenium_support

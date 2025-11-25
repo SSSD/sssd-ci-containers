@@ -64,20 +64,4 @@
       update: yes
       depth: 1
 
-  - name: Create local user wayland systemd unit file
-    copy:
-      src: /usr/lib/systemd/user/org.gnome.Shell@wayland.service
-      dest: /etc/systemd/user/org.gnome.Shell@wayland.service
-      owner: root
-      group: root
-      mode: 0644
-      remote_src: yes
-
-  - name: Add debug option to gdm service
-    lineinfile:
-      path: /etc/systemd/user/org.gnome.Shell@wayland.service
-      insertafter: "^\\[Service\\]$"
-      line: "Environment=MUTTER_DEBUG=backend"
-      state: present
-
   when: passkey_support
