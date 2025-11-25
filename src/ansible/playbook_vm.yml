@@ -12,6 +12,7 @@
     ansible_become: yes
     extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
     virt_smartcard: "{{ override_virt_smartcard | default('no') | bool }}"
+    gdm_support: "{{ override_gdm_support | default('no') | bool }}"
 
 - name: Include services
   ansible.builtin.import_playbook: playbook_image_service.yml
@@ -30,6 +31,7 @@
     skip_cleanup: true
     virt_smartcard: "{{ override_virt_smartcard | default('no') | bool }}"
     selenium_support: "{{ override_selenium_support | default('no') | bool }}"
+    gdm_support: "{{ override_gdm_support | default('no') | bool }}"
 
 - hosts: ad
   gather_facts: yes

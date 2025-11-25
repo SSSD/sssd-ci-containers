@@ -1,0 +1,51 @@
+- name: Setup GDM for testing with SCAutolib 
+  block:
+
+  - name: Create local gdm systemd unit file
+    copy:
+      src: /usr/lib/systemd/system/gdm.service
+      dest: /etc/systemd/system/gdm.service
+      owner: root
+      group: root
+      mode: 0644
+      remote_src: yes
+
+  - name: Add debug option to gdm service
+    lineinfile:
+      path: /etc/systemd/system/gdm.service
+      insertafter: "^\\[Service\\]$"
+      line: "Environment=GDM_DEBUG_JSON_REQUESTS=1"
+      state: present
+
+  - name: Restart GDM service
+    systemd_service:
+      name: gdm.service
+      daemon_reload: true
+      state: restarted
+
+  - name: Create local user wayland systemd unit file
+    copy:
+      src: /usr/lib/systemd/user/org.gnome.Shell@wayland.service
+      dest: /etc/systemd/user/org.gnome.Shell@wayland.service
+      owner: root
+      group: root
+      mode: 0644
+      remote_src: yes
+
+  - name: Add debug option to gdm service
+    lineinfile:
+      path: /etc/systemd/user/org.gnome.Shell@wayland.service
+      insertafter: "^\\[Service\\]$"
+      line: "Environment=MUTTER_DEBUG=backend"
+      state: present
+
+  - name: Install SCAutolib and dependencies
+    pip:
+      virtualenv: "{{ test_venv }}"
+      virtualenv_site_packages: yes
+      virtualenv_command: "{{ ansible_python_interpreter }} -m venv"
+      name:
+        - SCAutolib[graphical]
+        - python-uinput
+
+  when: gdm_support

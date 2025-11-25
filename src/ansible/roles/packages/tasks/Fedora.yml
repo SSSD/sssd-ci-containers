@@ -201,20 +201,6 @@
         - make
     when: virt_smartcard
 
-  - name: Install packages for SCAutolib from general repos
-    dnf:
-      state: present
-      name:
-        - gcc
-        - gcc-c++
-        - gdm
-        - tesseract
-        - ffmpeg-free
-        - bzip2
-        - dbus-glib
-        - python3-devel
-    when: virt_smartcard
-
   - name: Install virtual smartcard packages from copr
     dnf:
       state: present
@@ -292,7 +278,6 @@
       - go
       - nmap-ncat
       - git
-      - gdm
     when: passkey_support
   when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
@@ -356,4 +341,21 @@
       - python3-virtualenv
       - bzip2
     when: selenium_support
+  when: "'base_client' in group_names or 'client' in group_names"
+
+- name: Install packages for testing GDM
+  block:
+  - name: Install packages for GDM and SCAutolib from general repos
+    dnf:
+      state: present
+      name:
+        - gcc
+        - gcc-c++
+        - gdm
+        - tesseract
+        - ffmpeg-free
+        - bzip2
+        - dbus-glib
+        - python3-devel
+    when: gdm_support
   when: "'base_client' in group_names or 'client' in group_names"
