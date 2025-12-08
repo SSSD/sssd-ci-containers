@@ -182,6 +182,7 @@
       - ldb-tools
       - net-tools
       - nss-pam-ldapd
+      - python3-libsss_nss_idmap
       - tcpdump
       - wireshark-cli
       - binutils
