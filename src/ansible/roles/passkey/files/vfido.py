@@ -31,15 +31,16 @@ def run_demo():
     print(f"Starting virtual-fido demo...")
     print(f"Command: {' '.join(cmd)}")
 
-    demo_process = subprocess.Popen(
-        cmd,
-        cwd="/opt/test_venv/virtual-fido",
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1
-    )
+    with open("/tmp/virtual-fido.out", "w") as f:
+        demo_process = subprocess.Popen(
+            cmd,
+            cwd="/opt/test_venv/virtual-fido",
+            stdin=subprocess.PIPE,
+            stdout=f,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1
+        )
 
     print(f"Demo process started with PID: {demo_process.pid}")
 

@@ -8,7 +8,7 @@ Group=root
 
 Environment=VAR=empty
 WorkingDirectory=/opt/test_venv/virtual-fido
-ExecStartPre=+-/usr/bin/modprobe vhci-hcd
+ExecStartPre=+-/usr/sbin/modprobe vhci-hcd
 ExecStart=nohup python3 /opt/test_venv/bin/vfido.py
 StandardOutput=append:/tmp/vfido.log
 StandardError=append:/tmp/vfido.log
