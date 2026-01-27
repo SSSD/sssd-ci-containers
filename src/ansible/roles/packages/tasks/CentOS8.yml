@@ -1,0 +1,33 @@
+- name: Install buildroot repository
+  block:
+  - name: Install dnf plugins
+    dnf:
+      state: present
+      name:
+      - dnf-plugins-core
+
+  - name: Install additional repos
+    template:
+      src: repo
+      dest: '/etc/yum.repos.d/{{ item.name }}.repo'
+      owner: root
+      group: root
+      mode: 0644
+    with_items:
+    - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c8s-build/latest/$basearch'}
+    - {name: 'crb', url: 'http://vault.centos.org/centos/8-stream/PowerTools/$basearch/os/'}
+    when: buildroot
+
+  - name: Install EPEL repository
+    dnf:
+      state: present
+      name:
+      - epel-release
+
+  - name: Enable IdM module
+    shell: |
+      dnf module enable -y idm:DL1
+  when: "'base_ground' in group_names"
+
+- name: 'Packages are the same as in Fedora'
+  include_tasks: 'Fedora.yml'

@@ -10,7 +10,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+  - name: Install python packages with older ansible for Centos 8
+    if: ${{ inputs.tag == 'centos-8' }}
+    shell: bash
+    run: |
+      sudo pip3 install ansible==9.8 passlib
+
   - name: Install python packages
+    if: ${{ inputs.tag != 'centos-8' }}
     shell: bash
     run: |
       sudo pip3 install ansible passlib

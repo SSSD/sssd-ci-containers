@@ -57,6 +57,12 @@ function base_exec {
   ${DOCKER} exec sssd-wip-base /bin/bash -c "$1"
 }
 
+function c8s_repo {
+    # Update repos to working ones
+    ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s/mirrorlist/#mirrorlist/g" /etc/yum.repos.d/CentOS-* || true'
+    ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-* || true'
+}
+
 # Make sure that Ansible dependencies are installed so we can run playbooks
 function base_install_python {
   # Install python3 if not available
@@ -94,6 +100,7 @@ function build_base_image {
   echo "Building $name from $from"
   ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
+    c8s_repo
     base_install_python
   fi
   ansible-playbook $ANSIBLE_OPTS --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml

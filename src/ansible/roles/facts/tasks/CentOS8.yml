@@ -1,3 +1,5 @@
+# RHEL 8.x and Centos Strem 8 are the same, keep this around for now!
+
 - name: 'Facts are the same as in Fedora'
   include_tasks: 'Fedora.yml'
 
