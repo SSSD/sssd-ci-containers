@@ -11,57 +11,119 @@
 - name: 'Create new AD forest {{ ad_domain }}'
   win_shell: |
     Import-Module ADDSDeployment
-
-    Install-ADDSForest                                                        \
-      -DomainName "{{ ad_domain }}"                                           \
-      -CreateDnsDelegation:$false                                             \
-      -ForestMode "WinThreshold"                                              \
-      -DomainMode "WinThreshold"                                              \
-      -Force:$true                                                            \
-      -InstallDns:$true                                                       \
-      -NoRebootOnCompletion:$true                                             \
-      -SafeModeAdministratorPassword                                          \
+    Install-ADDSForest                                                            \
+      -DomainName "{{ ad_domain }}"                                               \
+      -CreateDnsDelegation:$false                                                 \
+      -ForestMode "WinThreshold"                                                  \
+      -DomainMode "WinThreshold"                                                  \
+      -Force:$true                                                                \
+      -InstallDns:$true                                                           \
+      -NoRebootOnCompletion:$true                                                 \
+      -SafeModeAdministratorPassword                                              \
         (ConvertTo-SecureString '{{ ad_password }}' -AsPlainText -Force)
   register: installation
   args:
     creates: 'C:\Windows\NTDS'
 
-- name: Reboot machine
+- name: Reboot machine (Post-AD Install)
   win_reboot:
   when: installation.changed
 
-- name: Install AD Certificate Services
-  win_feature:
-    name: AD-Certificate
-    include_management_tools: yes
-    include_sub_features: yes
-    state: present
-  register: adcs_feature
-
-- name: Configure Enterprise Root CA
+# ----------------------------------------------------------------
+# FIX 1: DIRECT LDAPS SETUP (Bypasses ADCS Installer Errors)
+# ----------------------------------------------------------------
+- name: Generate Self-Signed Cert for LDAPS
   win_shell: |
-    Import-Module ADCSDeployment
-    Install-AdcsCertificationAuthority \
-      -CAType EnterpriseRootCA \
-      -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" \
-      -KeyLength 2048 \
-      -HashAlgorithmName SHA256 \
-      -Force
-  args:
-    creates: 'C:\Windows\System32\CertSrv'
+    $ErrorActionPreference = "Stop"
 
-- name: Install AD CS Web Enrollment
-  win_feature:
-    name: ADCS-Web-Enrollment
-    include_management_tools: yes
-    state: present
+    # 1. Define the FQDN for the certificate (Must match the DC name)
+    $fqdn = "{{ ansible_hostname }}.{{ ad_domain }}"
+    Write-Host "Generating LDAPS certificate for $fqdn..."
 
-- name: Enable LDAPS (Force Certificate Enrollment)
+    # 2. Check if one already exists to avoid duplicates
+    $existing = Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -eq "CN=$fqdn" }
+    if ($existing) {
+        Write-Host "Certificate already exists."
+        exit 0
+    }
+
+    # 3. Create a Self-Signed Certificate compatible with AD LDAPS
+    # - TextExtension "2.5.29.37" is the OID for 'Enhanced Key Usage'
+    # - Value "1.3.6.1.5.5.7.3.1" is 'Server Authentication' (Required for LDAPS)
+    $cert = New-SelfSignedCertificate `
+        -DnsName $fqdn `
+        -CertStoreLocation "Cert:\LocalMachine\My" `
+        -FriendlyName "LDAPS-Cert" `
+        -KeyAlgorithm RSA `
+        -KeyLength 2048 `
+        -KeyUsage KeyEncipherment,DigitalSignature `
+        -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1") `
+        -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider"
+
+    # 4. Trust the Certificate Locally (So the DC trusts itself)
+    # We move the cert from "Personal" to "Trusted Root" as well
+    $rootStore = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList "Root", "LocalMachine"
+    $rootStore.Open("ReadWrite")
+    $rootStore.Add($cert)
+    $rootStore.Close()
+
+    Write-Host "Certificate created and trusted."
+  register: cert_gen
+  changed_when: "'Certificate created' in cert_gen.stdout"
+
+# ----------------------------------------------------------------
+# FIX 2: DISABLE BAD DNS REGISTRATION (Fixes 192.168 Issues)
+# ----------------------------------------------------------------
+- name: Disable DNS Registration on Management Interface (192.168.*)
   win_shell: |
-    gpupdate /force
+    $ErrorActionPreference = "Stop"
+    $changeMade = $false
 
-    certutil -pulse
-  changed_when: true
+    # 1. Find the Interface Alias that has the 192.168 IP
+    $mgmtIP = Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -like "192.168.*" }
+
+    if ($mgmtIP) {
+        $alias = $mgmtIP.InterfaceAlias
+        
+        # Check current status first (Idempotency)
+        $dnsClient = Get-DnsClient -InterfaceAlias $alias
+        
+        if ($dnsClient.RegisterThisConnectionsAddress -eq $true) {
+            Write-Host "Disabling DNS registration on $alias..."
+            Set-DnsClient -InterfaceAlias $alias -RegisterThisConnectionsAddress $false
+            $changeMade = $true
+        } else {
+            Write-Host "DNS registration already disabled on $alias."
+        }
+        
+        # 2. Force Cleanup of specific bad records (The "Zombie" records)
+        $badIP = $mgmtIP.IPAddress
+        $domain = "{{ ad_domain }}"
+        
+        # We try to remove the records, ignoring errors if they are already gone
+        try {
+            Remove-DnsServerResourceRecord -ZoneName $domain -RRType A -Name "@" -RecordData $badIP -Force -ErrorAction SilentlyContinue
+            Remove-DnsServerResourceRecord -ZoneName $domain -RRType A -Name $env:COMPUTERNAME -RecordData $badIP -Force -ErrorAction SilentlyContinue
+        } catch {}
+        
+        # 3. Refresh DNS if we made changes
+        if ($changeMade) {
+            ipconfig /registerdns
+        }
+    } else {
+        Write-Host "No 192.168.* interface found."
+    }
+  register: dns_fix
+  changed_when: "'Disabling DNS' in dns_fix.stdout"
+
+# ----------------------------------------------------------------
+# FINALIZATION
+# ----------------------------------------------------------------
+- name: Reboot to bind LDAPS and Apply Network Changes
+  win_reboot:
+    reboot_timeout: 300
+  # Reboot if Cert was created OR DNS settings were changed
+  when: cert_gen.changed or dns_fix.changed
 
 - name: Verify LDAPS (Port 636) is Open
   win_wait_for:
@@ -69,18 +131,20 @@
     delay: 10
     timeout: 120
 
-- name: Export Root CA Certificate (PEM Format)
+- name: Export Certificate for Ansible (PEM Format)
   win_shell: |
-    $cert = Get-ChildItem Cert:\LocalMachine\Root | Sort-Object NotBefore -Descending | Select-Object -First 1
+    $fqdn = "{{ ansible_hostname }}.{{ ad_domain }}"
+    $cert = Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -eq "CN=$fqdn" } | Select-Object -First 1
 
     if ($cert) {
+        # Convert DER to Base64 PEM
         $pem = "-----BEGIN CERTIFICATE-----`r`n" + [Convert]::ToBase64String($cert.RawData, "InsertLineBreaks") + "`r`n-----END CERTIFICATE-----"
         $pem | Out-File -FilePath "C:\Windows\Temp\ad-root-ca.crt" -Encoding ascii
     }
   args:
     creates: 'C:\Windows\Temp\ad-root-ca.crt'
 
-- name: Fetch CA Certificate to Ansible Controller
+- name: Fetch Certificate to Ansible Controller
   fetch:
     src: 'C:\Windows\Temp\ad-root-ca.crt'
     dest: './files/'
