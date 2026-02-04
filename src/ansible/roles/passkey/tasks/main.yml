@@ -64,4 +64,10 @@
       update: yes
       depth: 1
 
+  - name: 'Include usbip install if running on non-containers ({{ansible_virtualization_type}})'
+    include_tasks: install_usbip_from_kernel.yml
+    when:
+      - ansible_virtualization_type not in ["podman", "docker"]
+      - ansible_distribution != "Fedora"
+
   when: passkey_support

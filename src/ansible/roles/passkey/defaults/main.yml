@@ -1,1 +1,3 @@
 test_venv: /opt/test_venv
+#kver: "{{ ansible_kernel | regex_replace('\\.[^.]*$', '') }}"
+kver: "{{ ansible_kernel | regex_replace('\\.' + ansible_architecture + '$', '') }}"

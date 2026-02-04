@@ -38,3 +38,18 @@
 
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'
+
+- name: Install packages for usbip needed for virtual passkey testing
+  dnf:
+    state: present
+    name:
+    - gcc
+    - make
+    - automake
+    - autoconf
+    - systemd-devel
+    - libtool
+    - koji
+  when:
+    - passkey_support
+    - "'base_client' in group_names or 'client' in group_names"
