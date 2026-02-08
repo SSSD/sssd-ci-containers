@@ -60,6 +60,29 @@
     Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
     Install-Module PSIni -RequiredVersion 3.1.4 -Confirm:$False
 
+- name: Install chocolatey
+  win_chocolatey:
+    name: chocolatey
+    state: present
+  register: choco_install
+  changed_when: choco_install.changed or choco_install.msg is search('installed')
+
+- name: Update chocolatey
+  win_command: choco upgrade chocolatey -y
+  when: choco_install.changed
+  changed_when: 'False'
+
+- name: Install bind package
+  win_chocolatey:
+    name: bind-toolsonly
+    state: present
+  register: bind_install
+
+- name: Debug bind installation
+  debug:
+    msg: "BIND tools installed: {{ bind_install.changed | default('no change') }}"
+  when: bind_install is defined
+
 - name: Make sure Active Directory Web Services is running
   win_service:
     name: adws
