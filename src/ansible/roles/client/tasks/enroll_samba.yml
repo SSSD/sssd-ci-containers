@@ -18,8 +18,12 @@
     group: root
     mode: 0644
 
+- name: Set hostname to FQDN for samba join
+  ansible.builtin.command: "hostname {{ inventory_hostname }}.{{ samba_domain }}"
+
 - name: Realm join Samba domain
-  command: realm join {{ samba_domain | quote }} --verbose
+  shell: |
+    realm join {{ samba_domain | quote }} --verbose
   args:
     stdin: '{{ samba_password }}'
   when: not enrollment_samba_1.stat.exists
