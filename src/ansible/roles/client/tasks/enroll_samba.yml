@@ -18,6 +18,9 @@
     group: root
     mode: 0644
 
+- name: Set hostname to FQDN for samba join
+  command: "hostname {{ inventory_hostname.split('.')[0] }}.{{ samba_domain }}"
+
 - name: Realm join Samba domain
   command: realm join {{ samba_domain | quote }} --verbose
   args:
