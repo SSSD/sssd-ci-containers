@@ -22,6 +22,24 @@
 - name: Gather the package facts
   ansible.builtin.package_facts:
 
+- name: Get content of resolv.conf as base64
+  slurp:
+    path: /etc/resolv.conf
+  register: resolv_base64
+
+- name: Stat /etc/resolv.conf
+  stat:
+    path: /etc/resolv.conf
+  register: resolv_conf_stat
+
+- name: Decode content of resolv.conf
+  set_fact:
+    resolv:  "{{resolv_base64.content | b64decode}}"
+
+- name: Show content of resolv.conf
+  debug:
+     msg: "resolv.conf:\n {{ resolv }}"
+
 - name: Get rid of systemd-resolved
   block:
   - name: List mounts
@@ -66,8 +84,11 @@
       path: /etc/resolv.conf
       insertbefore: BOF
       block: |
+        {% if inventory_hostname == 'dc.samba.test' %}
         nameserver 127.0.0.1
-        nameserver {{ hostvars[groups.dns.0]['ansible_facts']['default_ipv4']['address'] }}
+        {% else %}
+        nameserver {{ hostvars[groups['dns'][0]]['ansible_facts']['default_ipv4']['address'] }}
+        {% endif %}
     when:
     - '"dns" in groups and groups["dns"] | length > 0'
   - name: Remove systemd-resolved package
@@ -207,3 +228,40 @@
 
 - name: Disable account expiration for Administrator
   command: samba-tool user setexpiry Administrator --noexpiry
+
+- name: Get content of resolv.conf as base64
+  slurp:
+    path: /etc/resolv.conf
+  register: resolv_base64
+
+- name: Stat /etc/resolv.conf
+  stat:
+    path: /etc/resolv.conf
+  register: resolv_conf_stat
+
+- name: Decode content of resolv.conf
+  set_fact:
+    resolv:  "{{resolv_base64.content | b64decode}}"
+
+- name: Show content of resolv.conf
+  debug:
+     msg: "resolv.conf:\n {{ resolv }}"
+
+
+- name: Perform nslookup test for dc.samba.test
+  ansible.builtin.command: nslookup dc.samba.test
+  register: nslookup_result
+  changed_when: false
+  retries: 5
+  delay: 5
+  until: nslookup_result.rc == 0 and "'dc.samba.test' in nslookup_result.stdout"
+  ignore_errors: true   # ← so the play doesn't stop if all retries fail
+
+- name: Show nslookup output
+  ansible.builtin.debug:
+    msg: |
+      nslookup dc.samba.test result (rc={{ nslookup_result.rc }}):
+      {{ nslookup_result.stdout | default('No output') }}
+      ---
+      stderr (if any):
+      {{ nslookup_result.stderr | default('No stderr') }}
