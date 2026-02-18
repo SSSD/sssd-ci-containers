@@ -23,7 +23,7 @@ def get_matrix(image, image_tags, ci_tag, ci_tag_extra):
 
 
 def get_fedora_releases(type, exclude=[], extra=''):
-    r = requests.get(f'https://bodhi.fedoraproject.org/releases?state={type}')
+    r = requests.get('https://bodhi.fedoraproject.org/releases', params={'state': type})
     r.raise_for_status()
 
     versions = [x['version'] for x in r.json()['releases'] if x['id_prefix'] == 'FEDORA']
@@ -33,8 +33,8 @@ def get_fedora_releases(type, exclude=[], extra=''):
     return versions
 
 
-fedora_stable = get_fedora_releases('current')
-fedora_devel = get_fedora_releases('pending', exclude=['eln'])
+fedora_stable = get_fedora_releases(['current', 'frozen'])
+fedora_devel = get_fedora_releases(['pending'], exclude=['eln'])
 
 matrix = []
 matrix.extend(get_matrix('registry.fedoraproject.org/fedora', fedora_stable, 'fedora-{tag}', 'latest fedora-latest'))
