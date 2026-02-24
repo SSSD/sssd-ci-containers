@@ -123,6 +123,12 @@ services:
     env_file: ./env.containers
     volumes:
     - ./shared:/shared:rw
+    - /sys/devices/platform:/sys/devices/platform:rw
+    device_cgroup_rules:
+    - c 240:* rmw
+    - c 241:* rmw
+    - c 242:* rmw
+    - c 243:* rmw
     cap_add:
     - SYS_ADMIN
     - SYS_PTRACE
@@ -136,6 +142,7 @@ services:
     - CAP_SETGID
     - CAP_SETUID
     - CAP_DAC_READ_SEARCH
+    - MKNOD
     security_opt:
     - apparmor=unconfined
     - label=disable
