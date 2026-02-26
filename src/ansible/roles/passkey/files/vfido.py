@@ -12,6 +12,8 @@ import threading
 import sys
 import os
 import signal
+import glob
+import stat
 
 # Configuration
 LISTEN_PORT = 9999
@@ -96,6 +98,80 @@ def listen_for_approvals():
             approval_socket.close()
 
 
+def setup_container_bridge():
+    """
+    Convert virtual-fido device to accessible /dev/hidraw* node.
+    Maps the virtual-fido device to proper /dev/hidraw* with udev metadata.
+    """
+    try:
+        # Find the Virtual FIDO device
+        uevent_pattern = "/sys/class/hidraw/hidraw*/device/uevent"
+        uevent_files = glob.glob(uevent_pattern)
+
+        uevent_path = None
+        for file_path in uevent_files:
+            try:
+                with open(file_path, 'r') as f:
+                    if "Virtual FIDO" in f.read():
+                        uevent_path = file_path
+                        break
+            except (IOError, OSError):
+                continue
+
+        if not uevent_path:
+            raise RuntimeError("ERROR: virtual-fido device not found")
+
+        kernel_name = uevent_path.split('/')[4]
+        node_path = f"/dev/{kernel_name}"
+
+        # Get Major:Minor numbers
+        dev_file = f"/sys/class/hidraw/{kernel_name}/dev"
+        if not os.path.exists(dev_file):
+            print(f"ERROR: {dev_file} does not exist")
+            return None
+
+        with open(dev_file, 'r') as f:
+            maj_min_raw = f.read().strip()
+
+        major, minor = maj_min_raw.split(':')
+
+        # Create the actual /dev/hidraw* node
+        print(f"Creating dynamic node {node_path} ({maj_min_raw})")
+
+        if os.path.exists(node_path):
+            os.unlink(node_path)
+
+        perms = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH | stat.S_IWOTH
+        os.mknod(node_path, stat.S_IFCHR | perms, os.makedev(int(major), int(minor)))
+        os.chmod(node_path, perms)
+
+        # Create udev metadata
+        udev_data_dir = "/run/udev/data"
+        os.makedirs(udev_data_dir, exist_ok=True)
+        udev_record = f"{udev_data_dir}/c{maj_min_raw}"
+
+        print(f"Spoofing udev metadata at {udev_record}")
+
+        udev_data = [
+            "E:ID_FIDO_TOKEN=1",
+            "E:ID_U2F_TOKEN=1",
+            f"E:DEVNAME={node_path}",
+            "E:SUBSYSTEM=hidraw",
+            "E:ID_VENDOR_ID=0000",
+            "E:ID_MODEL_ID=0000"
+        ]
+
+        with open(udev_record, 'w') as f:
+            f.write('\n'.join(udev_data) + '\n')
+
+        print(f"Success: device mapped to {node_path}")
+        return node_path
+
+    except Exception as e:
+        print(f"Error setting up container bridge: {e}")
+        return None
+
+
 def cleanup(signum=None, frame=None):
     """Clean up processes and sockets"""
     print("\nShutting down...")
@@ -126,6 +202,13 @@ def main():
     # Give demo time to start
     import time
     time.sleep(2)
+
+    # Set up container bridge to map virtual device
+    if os.path.exists('/.dockerenv') or os.path.exists('/run/.containerenv'):
+        if setup_container_bridge() is None:
+            print("ERROR: Failed to setup container bridge, exiting...")
+            cleanup()
+            sys.exit(1)
 
     # Listen for approval commands (blocking)
     try:
