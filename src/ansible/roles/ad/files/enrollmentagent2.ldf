@@ -1,0 +1,43 @@
+dn: CN=EnrollmentAgent2,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=ad,DC=test
+changetype: add
+cn: EnrollmentAgent2
+displayName: Enrollment Agent2
+distinguishedName: 
+ CN=EnrollmentAgent2,CN=Certificate Templates,CN=Public Key Services,CN=Service
+ s,CN=Configuration,DC=ad,DC=test
+dSCorePropagationData: 20250909213804.0Z
+dSCorePropagationData: 16010101000000.0Z
+flags: 131616
+instanceType: 4
+msPKI-Cert-Template-OID: 
+ 1.3.6.1.4.1.311.21.8.2691644.5549119.1722763.4809149.3897031.166.8056969.16077
+ 205
+msPKI-Certificate-Application-Policy: 1.3.6.1.4.1.311.20.2.1
+msPKI-Certificate-Name-Flag: -2113929216
+msPKI-Enrollment-Flag: 8488
+msPKI-Minimal-Key-Size: 2048
+msPKI-Private-Key-Flag: 101056768
+msPKI-RA-Signature: 0
+msPKI-Template-Minor-Revision: 2
+msPKI-Template-Schema-Version: 4
+name: EnrollmentAgent2
+objectCategory: 
+ CN=PKI-Certificate-Template,CN=Schema,CN=Configuration,DC=ad,DC=test
+objectClass: top
+objectClass: pKICertificateTemplate
+pKICriticalExtensions: 2.5.29.15
+pKIDefaultCSPs: 2,Microsoft Base Cryptographic Provider v1.0
+pKIDefaultCSPs: 1,Microsoft Enhanced Cryptographic Provider v1.0
+pKIDefaultKeySpec: 2
+pKIExpirationPeriod:: AIByDl3C/f8=
+pKIExtendedKeyUsage: 1.3.6.1.4.1.311.20.2.1
+pKIKeyUsage:: gAA=
+pKIMaxIssuingDepth: 0
+pKIOverlapPeriod:: AICmCv/e//8=
+revision: 100
+showInAdvancedViewOnly: TRUE
+uSNChanged: 13295
+uSNCreated: 13293
+whenChanged: 20250909213804.0Z
+whenCreated: 20250909213804.0Z
+
