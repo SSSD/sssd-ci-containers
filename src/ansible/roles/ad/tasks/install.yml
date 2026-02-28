@@ -38,18 +38,6 @@
     state: present
   register: adcs_feature
 
-- name: Configure Enterprise Root CA
-  win_shell: |
-    Import-Module ADCSDeployment
-    Install-AdcsCertificationAuthority \
-      -CAType EnterpriseRootCA \
-      -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" \
-      -KeyLength 2048 \
-      -HashAlgorithmName SHA256 \
-      -Force
-  args:
-    creates: 'C:\Windows\System32\CertSrv'
-
 - name: Install AD CS Web Enrollment
   win_feature:
     name: ADCS-Web-Enrollment

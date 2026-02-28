@@ -1,0 +1,50 @@
+dn: CN=SmartcardLogon4,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=ad,DC=test
+changetype: add
+cn: SmartcardLogon4
+displayName: Smartcard Logon4
+distinguishedName: 
+ CN=SmartcardLogon4,CN=Certificate Templates,CN=Public Key Services,CN=Services
+ ,CN=Configuration,DC=ad,DC=test
+dSCorePropagationData: 20250910131957.0Z
+dSCorePropagationData: 16010101000000.0Z
+flags: 131584
+instanceType: 4
+msPKI-Cert-Template-OID: 
+ 1.3.6.1.4.1.311.21.8.2691644.5549119.1722763.4809149.3897031.166.2972888.54747
+ 92
+msPKI-Certificate-Application-Policy: 1.3.6.1.4.1.311.20.2.2
+msPKI-Certificate-Application-Policy: 1.3.6.1.5.5.7.3.2
+msPKI-Certificate-Name-Flag: 1
+msPKI-Enrollment-Flag: 8201
+msPKI-Minimal-Key-Size: 2048
+msPKI-Private-Key-Flag: 101056528
+msPKI-RA-Application-Policies: 
+ msPKI-Asymmetric-Algorithm`PZPWSTR`RSA`msPKI-Hash-Algorithm`PZPWSTR`SHA256`msP
+ KI-Key-Usage`DWORD`16777215`msPKI-RA-Application-Policies`PZPWSTR`1.3.6.1.4.1.
+ 311.20.2.1`msPKI-Symmetric-Algorithm`PZPWSTR`3DES`msPKI-Symmetric-Key-Length`D
+ WORD`168`
+msPKI-RA-Signature: 1
+msPKI-Template-Minor-Revision: 2
+msPKI-Template-Schema-Version: 4
+name: SmartcardLogon4
+objectCategory: 
+ CN=PKI-Certificate-Template,CN=Schema,CN=Configuration,DC=ad,DC=test
+objectClass: top
+objectClass: pKICertificateTemplate
+pKICriticalExtensions: 2.5.29.7
+pKICriticalExtensions: 2.5.29.15
+pKIDefaultCSPs: 1,Microsoft Software Key Storage Provider
+pKIDefaultKeySpec: 1
+pKIExpirationPeriod:: AEA5hy7h/v8=
+pKIExtendedKeyUsage: 1.3.6.1.4.1.311.20.2.2
+pKIExtendedKeyUsage: 1.3.6.1.5.5.7.3.2
+pKIKeyUsage:: oAA=
+pKIMaxIssuingDepth: 0
+pKIOverlapPeriod:: AICmCv/e//8=
+revision: 100
+showInAdvancedViewOnly: TRUE
+uSNChanged: 13453
+uSNCreated: 13451
+whenChanged: 20250910131957.0Z
+whenCreated: 20250910131957.0Z
+
