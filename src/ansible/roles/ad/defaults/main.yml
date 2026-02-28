@@ -11,3 +11,10 @@ skip_addc_install: no
 skip_schema: no
 # Open firewall for all incomming traffic.
 open_firewall: yes
+
+# Temporary Directory for ADCS files for setup
+temp_dir: 'C:\temp'
+# Certificate Template Info
+templates:
+- { name: "EnrollmentAgent2", file: "enrollmentagent2.ldf" }
+- { name: "SmartcardLogon4", file: "smartcardlogon4.ldf" }

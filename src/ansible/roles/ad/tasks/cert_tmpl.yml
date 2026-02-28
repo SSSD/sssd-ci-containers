@@ -1,0 +1,130 @@
+# Certificate Template setup generated with Gemini assistance
+
+- name: Setup Certificate Templates for Smart Card Authentication
+  block:
+
+  - name: Install ADCS Certificate Authority role
+    win_feature:
+      name: ADCS-Cert-Authority
+      include_management_tools: yes
+      state: present
+
+  - name: Configure ADCS as Enterprise Root CA
+    win_shell: |
+      Install-AdcsCertificationAuthority -CAType EnterpriseRootCA `
+        -CACommonName "ad-RootCA" `
+        -KeyLength 2048 `
+        -HashAlgorithmName SHA256 `
+        -ValidityPeriod Years `
+        -OverwriteExistingCAinDS `
+        -OverwriteExistingDatabase `
+        -ValidityPeriodUnits 10 -Force
+    register: adcs_config
+    args:
+      executable: powershell.exe
+
+  - name: Create temporary directory
+    win_file:
+      path: "{{ temp_dir }}"
+      state: directory
+
+  - name: Copy LDIF template files to server
+    win_copy:
+      src: "{{ item.file }}"
+      dest: "{{ temp_dir }}\\{{ item.file }}"
+    loop: "{{ templates }}"
+
+  - name: Import Certificate Templates via LDIFDE
+    win_shell: "ldifde -i -f .\\{{ item.file }}"
+    args:
+      chdir: "{{ temp_dir }}"
+    loop: "{{ templates }}"
+    ignore_errors: yes
+
+#  - name: Prepare PowerShell Gallery environment
+#    win_shell: |
+#      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+#      Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+#      Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+
+  - name: Update PowerShellGet module
+    win_shell: |
+      Install-Module -Name PowerShellGet -Force -SkipPublisherCheck -AllowClobber
+    args:
+      executable: PowerShell.exe
+
+  - name: Install PSPKI module for ACL management
+    community.windows.win_psmodule:
+      name: PSPKI
+      state: present
+
+#  - name: Apply Security ACLs to Templates
+#    win_shell: |
+#      $configNC = (Get-ADRootDSE).configurationNamingContext
+#      $templateDN = "CN={{ item.name }},CN=Certificate Templates,CN=Public Key Services,CN=Services,$configNC"
+#
+#      $sidUsers = (New-Object System.Security.Principal.NTAccount("Domain Users")).Translate([System.Security.Principal.SecurityIdentifier])
+#      $sidComps = (New-Object System.Security.Principal.NTAccount("Domain Computers")).Translate([System.Security.Principal.SecurityIdentifier])
+#
+#      $acl = Get-Acl -Path "AD:$templateDN"
+#
+#      $rights = [System.DirectoryServices.ActiveDirectoryRights]::GenericAll
+#      $type = [System.Security.AccessControl.AccessControlType]::Allow
+#      $inherit = [System.Security.AccessControl.InheritanceFlags]::ContainerInherit
+#      $guid = [Guid]::Empty
+#
+#      $uRule = New-Object System.DirectoryServices.ActiveDirectoryAccessRule($sidUsers, $rights, $type, $guid, $inherit, $guid)
+#      $cRule = New-Object System.DirectoryServices.ActiveDirectoryAccessRule($sidComps, $rights, $type, $guid, $inherit, $guid)
+#
+#      $acl.AddAccessRule($uRule)
+#      $acl.AddAccessRule($cRule)
+#
+#      Set-Acl -Path "AD:$templateDN" -AclObject $acl
+#    loop: "{{ templates }}"
+
+  - name: Apply Security ACLs to Templates
+    win_shell: |
+      $configNC = (Get-ADRootDSE).configurationNamingContext
+      $templateDN = "CN={{ item.name }},CN=Certificate Templates,CN=Public Key Services,CN=Services,$configNC"
+
+      $sidUsers = (New-Object System.Security.Principal.NTAccount("Domain Users")).Translate([System.Security.Principal.SecurityIdentifier])
+      $sidComps = (New-Object System.Security.Principal.NTAccount("Domain Computers")).Translate([System.Security.Principal.SecurityIdentifier])
+
+      $acl = Get-Acl -Path "AD:$templateDN"
+
+      # Define specific rights for Read and Enroll
+      $rights = [System.DirectoryServices.ActiveDirectoryRights]::ReadProperty -bor [System.DirectoryServices.ActiveDirectoryRights]::ExtendedRight
+
+      $type = [System.Security.AccessControl.AccessControlType]::Allow
+      $inherit = [System.Security.AccessControl.InheritanceFlags]::ContainerInherit
+      $guid = [Guid]::Empty
+
+      # Enrollment Extended Right GUID: 0e10c968-78fb-11d2-90d4-00c04f79dc55
+      $enrollGuid = [Guid]"0e10c968-78fb-11d2-90d4-00c04f79dc55"
+
+      # Create rules using the Enrollment Extended Right GUID
+      $uRule = New-Object System.DirectoryServices.ActiveDirectoryAccessRule($uSid, $rights, $type, $enrollGuid, $inherit, $guid)
+      $cRule = New-Object System.DirectoryServices.ActiveDirectoryAccessRule($cSid, $rights, $type, $enrollGuid, $inherit, $guid)
+
+      $acl.AddAccessRule($uRule)
+      $acl.AddAccessRule($cRule)
+
+      Set-Acl -Path "AD:$templateDN" -AclObject $acl
+    loop: "{{ templates }}"
+
+  - name: Publish Templates
+    win_shell: "Add-CATemplate -Name {{ item.name }} -Force"
+    loop: "{{ templates }}"
+    register: publish_result
+    until: publish_result is succeeded
+    retries: 60
+    delay: 15
+
+  - name: Install OpenSSL using Win_Chocolatey
+    win_chocolatey:
+      name: openssl
+      state: present
+
+  become: yes
+  become_method: runas
+  become_user: Administrator

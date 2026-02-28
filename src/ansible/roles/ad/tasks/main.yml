@@ -119,3 +119,6 @@
 - name: 'Configure DNS on vagrant AD'
   include_tasks: 'dns.yml'
   when: not skip_dns
+
+- name: Install Certificate Templates for Smart Card
+  include_tasks: 'cert_tmpl.yml'
