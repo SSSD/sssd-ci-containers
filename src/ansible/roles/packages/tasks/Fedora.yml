@@ -282,13 +282,12 @@
     when: passkey_support
   when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
-- name: Install usbip on the client if running Fedora
+- name: Install usbip on the client
   dnf:
     state: present
     name:
     - usbip
   when:
-    - ansible_distribution == "Fedora"
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
 
