@@ -39,6 +39,21 @@
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'
 
+- name: Enable EPEL for python3-koji when passkey testing
+  block:
+  - name: Import EPEL key from a url
+    rpm_key:
+      state: present
+      key: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-10
+
+  - name: Install EPEL repositories
+    dnf:
+      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
+      state: present
+  when:
+    - passkey_support
+    - "'base_client' in group_names or 'client' in group_names"
+
 - name: Install packages for usbip needed for virtual passkey testing
   dnf:
     state: present
@@ -49,7 +64,7 @@
     - autoconf
     - systemd-devel
     - libtool
-    - koji
+    - python3-koji
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
