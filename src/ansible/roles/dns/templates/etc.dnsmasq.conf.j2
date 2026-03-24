@@ -12,6 +12,9 @@ domain=test
 # Disable caching so we always query AD and IPA DNS
 cache-size=0
 
+# RH DNS Server
+server=/redhat.com/10.11.5.19
+
 # These zones have their own DNS server
 {% for host in groups['ipa'] %}
 server=/{{ '.'.join(hostvars[host].inventory_hostname.split('.')[1:]) }}/{{ hostvars[host]['ansible_facts']['default_ipv4']['address'] }}
