@@ -71,6 +71,7 @@
       - shadow-utils-subid
       - sudo
       - rsync
+      - passwd
       disable_gpg_check: yes
   when: "'base_ground' in group_names"
 
