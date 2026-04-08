@@ -107,7 +107,7 @@
 - name: Add reverse zone for artificial hosts
   shell: |
     kinit admin
-    ipa --no-prompt dnszone-add --name-from-ip 10.255.251.0/24
+    ipa --no-prompt dnszone-add --dynamic-update=True --allow-sync-ptr=True --name-from-ip 10.255.251.0/24
   args:
     stdin: '{{ ipa_password }}'
   when: inventory_hostname == 'master.ipa.test'
