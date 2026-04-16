@@ -18,6 +18,9 @@
     group: root
     mode: 0644
 
+- name: Set hostname to FQDN for AD join
+  ansible.builtin.command: "hostname {{ inventory_hostname.split('.')[0] }}.{{ ad_domain }}"
+
 - name: Join AD domain
   command: realm join {{ ad_domain | quote }} --verbose
   args:

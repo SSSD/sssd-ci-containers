@@ -8,6 +8,7 @@ and development.
 
 ```console
 $ sudo dnf install -y podman podman-docker docker-compose
+
 $ sudo systemctl enable --now podman.socket
 $ sudo setsebool -P container_manage_cgroup true
 $ cp env.example .env
@@ -16,7 +17,7 @@ $ sudo podman exec -it client /bin/bash
 ```
 
 **Note:** once you get a console on the client container, you may want to bring
-SSSD online because it has been most probably started before the other services
+SSSD online because it has been most probably started before the other services,
 and therefore it went offline: `pkill --signal SIGUSR2 sssd`.
 
 ![sssd-ci-containers demo](misc/demo.gif)
@@ -50,16 +51,16 @@ $ ssh -l root -i ./data/ssh-keys/root.id_rsa 172.16.100.40
 ```
 
 See [Available containers](#available-containers) for container names, IP
-adresses and DNS names. See [Host configuration](#host-configuration) to
+addresses and DNS names. See [Host configuration](#host-configuration) to
 configure your system DNS resolver so you can use DNS names directly instead of
 using IP addresses in the ssh command.
 
 ## Host configuration
 
-You can trust sssd-ci self signed CA certificate and setup DNS forwarding on
+You can trust sssd-ci self-signed CA certificate and setup DNS forwarding on
 your local host in order to access provided services directly outside the
 containers (for example accessing IPA Web UI at `https://master.ipa.test` or
-perfoming an `ldapsearch`).
+performing an `ldapsearch`).
 
 * `sudo make trust-ca` configure your system to trust sssd-ci CA
 * `sudo make setup-dns` forward all `*.test` queries to sssd-ci DNS server.
@@ -72,16 +73,18 @@ perfoming an `ldapsearch`).
 
 ## Available containers
 
-| Name         |        IP       |            FQDN            | Description                         |
-|--------------|-----------------|----------------------------|-------------------------------------|
-| ipa          | `172.16.100.10` | `master.ipa.test`          | IPA server                          |
-| ldap         | `172.16.100.20` | `master.ldap.test`         | TLS ready 389 Directory Server      |
-| samba        | `172.16.100.30` | `dc.samba.test`            | Samba DC root domain                |
-| client       | `172.16.100.40` | `client.test`              | Client machine with configured SSSD |
-| nfs          | `172.16.100.50` | `nfs.test`                 | NFS server                          |
-| kdc          | `172.16.100.60` | `kdc.test`                 | Kerberos KDC                        |
-| keycloak     | `172.16.100.70` | `master.keycloak.test`     | Keycloak IdP                        |
-| ipa2         | `172.16.100.11` | `master.ipa2.test`         | IPA server in different realm       |
+| Name         |        IP       | FQDN                   | Description                         |
+|--------------|-----------------|------------------------|-------------------------------------|
+| ipa          | `172.16.100.10` | `master.ipa.test`      | IPA server                          |
+| ldap         | `172.16.100.20` | `master.ldap.test`     | TLS ready 389 Directory Server      |
+| samba        | `172.16.100.30` | `dc.samba.test`        | Samba DC root domain                |
+| client       | `172.16.100.40` | `client.test`          | Client machine with configured SSSD |
+| nfs          | `172.16.100.50` | `nfs.test`             | NFS server                          |
+| kdc          | `172.16.100.60` | `kdc.test`             | Kerberos KDC                        |
+| keycloak     | `172.16.100.70` | `master.keycloak.test` | Keycloak IdP                        |
+| ipa2         | `172.16.100.11` | `master.ipa2.test`     | IPA server in different realm       |
+
+* Note during Samba/AD/IPA domain enrollment, client.test hostname will be changed to client.$domain.
 
 ## Available user accounts
 
@@ -161,7 +164,7 @@ defined in [Vagrantfile](./src/Vagrantfile) that can be instantiated via
 |--------------|-----------------|-----------------|--------------|----------------|
 | ad           | `172.16.200.10` | `dc.ad.test`    | `AD`         | AD forest root |
 
-### Preqrequisites
+### Prerequisites
 
 The following vagrant plugins are required:
 
@@ -174,6 +177,10 @@ We recommend to use vagrant from
 [quay.io/sssd/vagrant:latest](https://quay.io/repository/sssd/vagrant?tab=tags&tag=latest)
 container instead to prevent any issues. You can define the following function
 in your `.bashrc`:
+
+```console
+$ sudo dnf install -y vagrant vagrant-libvirt
+```
 
 ```bash
 function vagrant {
