@@ -23,6 +23,10 @@
     ansible.builtin.systemd_service:
       name: httpd
       state: restarted
+
+  - name: Destroy any remaining kerberos TGT
+    command: kdestroy -A
+    failed_when: false
   when: inventory_hostname == groups.ipa.0
 
 - block:
@@ -64,6 +68,10 @@
     file:
       path: /etc/krb5.keytab
       state: absent
+
+  - name: Destroy any remaining kerberos TGT
+    command: kdestroy -A
+    failed_when: false
   when:
   - inventory_hostname == groups.client.0
   - join_ipa
