@@ -197,3 +197,9 @@
   - join_ad
   - trust_ipa_ad
   - inventory_hostname != 'master.ipa2.test'
+
+# Leftover TGT from kinit above can cause sasl bind failures such as
+# (Server ldap/dc.samba.test@IPA.TEST not found in Kerberos database)
+- name: Destroy any remaining kerberos TGT
+  command: kdestroy -A
+  failed_when: false
