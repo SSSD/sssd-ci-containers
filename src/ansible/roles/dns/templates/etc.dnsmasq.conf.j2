@@ -1,7 +1,7 @@
 # This config is specific to downstream ci and does not
 # handle multiple AD DCs and other setups yet.
 # TODO: Add group DNS_SERVER that will contain all machines running dns to add them
-# as servers here like master.ipa.test dc.samba.test and ad.
+# as servers here like master.ipa.test dc.samba.test and dc.ad.test
 # dnsmasq config
 listen-address=::1,127.0.0.53,127.0.0.1,{{ hostvars['dns.test']['ansible_facts']['default_ipv4']['address'] }}
 log-queries
@@ -23,19 +23,29 @@ server=/{{ '.'.join(hostvars[host].inventory_hostname.split('.')[1:]) }}/{{ host
 server=/samba.test/{{ hostvars['dc.samba.test']['ansible_facts']['default_ipv4']['address'] }}
 {% endif %}
 {% if 'dc.ad.test' in hostvars %}
-server=/ad.test/{{ hostvars['dc.ad.test']['ansible_facts']['ip_addresses'][0] }}
+server=/{{ hostvars[ad]['ansible_facts']['windows_domain'] }}/{{ hostvars['dc.ad.test']['ansible_facts']['ip_addresses'][0] }}
 {% elif 'ad' in groups and groups['ad'] %}
 {% for ad in groups['ad'] %}
 server=/{{ hostvars[ad]['ansible_facts']['windows_domain'] }}/{{ hostvars[ad]['ansible_facts']['ip_addresses'][0] }}
 {% endfor %}
 {% endif %}
 
+# Add reverse zones for artificial hosts
 {% if 'master.ipa.test' in hostvars %}
-# Add reverse zones for artificial hosts in IPA domain
-server=/251.255.10.in-addr.arpa/{{ hostvars['master.ipa.test']['ansible_facts']['default_ipv4']['address'] }}
+rev-server=10.255.251.0/24,{{ hostvars['master.ipa.test']['ansible_facts']['default_ipv4']['address'] }}
+{% endif %}
+{% if 'dc.samba.test' in hostvars %}
+rev-server=10.255.252.0/24,{{ hostvars['dc.samba.test']['ansible_facts']['default_ipv4']['address'] }}
+{% endif %}
+{% if 'dc.ad.test' in hostvars %}
+rev-server=10.255.250.0/24,{{ hostvars['dc.ad.test']['ansible_facts']['default_ipv4']['address'] }}
+{% elif 'ad' in groups and groups['ad'] %}
+{% for ad in groups['ad'] %}
+rev-server=10.255.250.0/24,{{ hostvars[ad]['ansible_facts']['ip_addresses'][0] }}
+{% endfor %}
 {% endif %}
 
-# Add SRV record for LDAP
+# Add SRV record records
 {% if 'master.ldap.test' in hostvars %}
 srv-host=_ldap._tcp.ldap.test,master.ldap.test,389
 {% endif %}
