@@ -184,6 +184,9 @@
       - net-tools
       - nss-pam-ldapd
       - python3-libsss_nss_idmap
+      - samba-winbind
+      - samba-winbind-clients
+      - samba-common-tools
       - tcpdump
       - wireshark-cli
       - binutils
