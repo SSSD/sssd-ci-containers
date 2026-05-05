@@ -42,4 +42,12 @@
       group: root
       mode: 0755
 
+  - name: Copy idp_login_entra_id.py
+    copy:
+      src: idp_login_entra_id.py
+      dest: "{{ test_venv }}/bin/idp_login_entra_id.py"
+      owner: root
+      group: root
+      mode: 0755
+
   when: selenium_support
