@@ -387,17 +387,6 @@
       - flaky
   when: "'client_devel' in group_names or 'ipa_devel' in group_names"
 
-- name: Install packages needed for IdP testing with selenium
-  block:
-  - name: Install packages required for running selenium
-    dnf:
-      state: present
-      name:
-      - python3-virtualenv
-      - bzip2
-    when: selenium_support
-  when: "'base_client' in group_names or 'client' in group_names"
-
 - name: Install packages for testing GDM
   block:
   - name: Install packages for GDM and SCAutolib from general repos
