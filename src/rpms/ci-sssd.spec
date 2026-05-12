@@ -1,4 +1,4 @@
-%define build_timestamp %(date +"%%Y_%%m_%%d_%%H_%%M_%%S")
+%{!?build_timestamp:%global build_timestamp %(date +"%%Y_%%m_%%d_%%H_%%M_%%S")}
 
 Name:           ci-sssd
 Version:        1
