@@ -1,4 +1,10 @@
-%{!?build_timestamp:%global build_timestamp %(date +"%%Y_%%m_%%d_%%H_%%M_%%S")}
+# https://github.com/fedora-copr/copr/issues/4065 prevents using more precise timestamp
+# 
+# Builds on the same day will not have determnistic release numbers however
+# @sssd/ci-deps does not build multiple times in a single day. Issue occurring
+# with build crossing over from 11:59pm to midnight w/ multiple builds is possible but 
+# quite unlikely.
+%{!?build_timestamp:%global build_timestamp %(date +"%%Y_%%m_%%d")}
 
 Name:           ci-sssd
 Version:        1
