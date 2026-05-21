@@ -30,55 +30,119 @@
   win_reboot:
   when: installation.changed
 
-- name: Install AD Certificate Services
-  win_feature:
-    name: AD-Certificate
-    include_management_tools: yes
-    include_sub_features: yes
-    state: present
-  register: adcs_feature
+- name: Create PowerShell script for LDAPS certificate
+  win_copy:
+    content: |
+      $ErrorActionPreference = "Stop"
+      $markerFile = "C:\Windows\Temp\ldaps-cert-setup.status"
 
-- name: Configure Enterprise Root CA
-  win_shell: |
-    Import-Module ADCSDeployment
-    Install-AdcsCertificationAuthority \
-      -CAType EnterpriseRootCA \
-      -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" \
-      -KeyLength 2048 \
-      -HashAlgorithmName SHA256 \
-      -Force
+      try {
+          $fqdn = [System.Net.Dns]::GetHostEntry($env:COMPUTERNAME).HostName
+
+          # Check if certificate already exists
+          # Use regex to match CN component within Subject (handles additional RDNs like OU, DC)
+          $existingCert = Get-ChildItem Cert:\LocalMachine\My -ErrorAction SilentlyContinue | Where-Object {
+              $_.Subject -match "CN=$([regex]::Escape($fqdn))(,|$)" -and
+              $_.EnhancedKeyUsageList.ObjectId -contains "1.3.6.1.5.5.7.3.1"
+          }
+
+          if ($existingCert) {
+              Write-Host "Certificate already exists"
+          } else {
+              # Create self-signed certificate with Server Authentication and CA capabilities
+              Write-Host "Creating LDAPS certificate for $fqdn"
+              $cert = New-SelfSignedCertificate `
+                  -DnsName $fqdn `
+                  -CertStoreLocation Cert:\LocalMachine\My `
+                  -KeyExportPolicy Exportable `
+                  -KeySpec KeyExchange `
+                  -KeyLength 2048 `
+                  -KeyUsage DigitalSignature,KeyEncipherment `
+                  -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1","2.5.29.19={text}ca=1&pathlength=0")
+
+              if (-not $cert) {
+                  throw "Failed to create certificate"
+              }
+
+              # Add to Root store so it's trusted as a CA
+              Write-Host "Adding certificate to Root store"
+              $store = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "LocalMachine")
+              $store.Open("ReadWrite")
+              $store.Add($cert)
+              $store.Close()
+              Write-Host "Certificate created"
+          }
+
+          # Mark as done only on success
+          "Done" | Out-File $markerFile
+          exit 0
+
+      } catch {
+          Write-Error "LDAPS certificate setup failed: $_"
+          # Ensure marker file is not created on failure
+          if (Test-Path $markerFile) {
+              Remove-Item $markerFile -Force
+          }
+          exit 1
+      }
+
+    dest: C:\Windows\Temp\setup-ldaps-cert.ps1
+
+- name: Execute LDAPS certificate setup script
+  win_shell: C:\Windows\Temp\setup-ldaps-cert.ps1
   args:
-    creates: 'C:\Windows\System32\CertSrv'
+    creates: 'C:\Windows\Temp\ldaps-cert-setup.status'
+  register: cert_setup
+  changed_when: "'Certificate created' in cert_setup.stdout"
+  failed_when: cert_setup.rc != 0
 
-- name: Install AD CS Web Enrollment
-  win_feature:
-    name: ADCS-Web-Enrollment
-    include_management_tools: yes
-    state: present
-
-- name: Enable LDAPS (Force Certificate Enrollment)
-  win_shell: |
-    gpupdate /force
-
-    certutil -pulse
-  changed_when: true
+- name: Reboot to enable LDAPS
+  win_reboot:
+    reboot_timeout: 600
+    post_reboot_delay: 30
+  when: cert_setup.changed
 
 - name: Verify LDAPS (Port 636) is Open
   win_wait_for:
     port: 636
     delay: 10
     timeout: 120
+    state: started
+  register: ldaps_port
+  failed_when: ldaps_port.failed
+  retries: 3
+  delay: 10
+  until: ldaps_port is succeeded
 
-- name: Export Root CA Certificate (PEM Format)
+- name: Export LDAPS Certificate (PEM Format)
   win_shell: |
-    $cert = Get-ChildItem Cert:\LocalMachine\Root | Sort-Object NotBefore -Descending | Select-Object -First 1
+    $ErrorActionPreference = "Stop"
+    try {
+        $fqdn = [System.Net.Dns]::GetHostEntry($env:COMPUTERNAME).HostName
 
-    if ($cert) {
+        # Get the LDAPS certificate from My store
+        # Use regex to match CN component within Subject (handles additional RDNs like OU, DC)
+        $cert = Get-ChildItem Cert:\LocalMachine\My -ErrorAction SilentlyContinue | Where-Object {
+            $_.Subject -match "CN=$([regex]::Escape($fqdn))(,|$)" -and
+            $_.EnhancedKeyUsageList.ObjectId -contains "1.3.6.1.5.5.7.3.1"
+        } | Sort-Object NotBefore -Descending | Select-Object -First 1
+
+        if (-not $cert) {
+            throw "No LDAPS certificate found in My store for $fqdn"
+        }
+
         $pem = "-----BEGIN CERTIFICATE-----`r`n" + [Convert]::ToBase64String($cert.RawData, "InsertLineBreaks") + "`r`n-----END CERTIFICATE-----"
         $pem | Out-File -FilePath "C:\Windows\Temp\ad-root-ca.crt" -Encoding ascii
+        Write-Host "Certificate exported successfully"
+        exit 0
+    } catch {
+        Write-Error "Failed to export LDAPS certificate: $_"
+        exit 1
     }
   args:
     creates: 'C:\Windows\Temp\ad-root-ca.crt'
+  register: cert_export
+  failed_when: cert_export.rc != 0
 
 - name: Fetch CA Certificate to Ansible Controller
   fetch:
