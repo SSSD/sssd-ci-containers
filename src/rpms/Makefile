@@ -1,3 +1,13 @@
+set-version: prep
+	@dnf install -y git
+	@if git describe; then \
+		GIT_VERSION=$$(git describe | sed 's/-/_/g'); \
+		echo "Git describe succeeded. Version: $$GIT_VERSION"; \
+		sed -i "s/^Release:.*/Release: $$GIT_VERSION%{?dist}/" $(PWD)/rpmbuild/SPECS/ci-sssd.spec; \
+	else \
+		echo "Git describe failed with exit code $$?"; \
+	fi
+
 prep:
 	mkdir -p $(PWD)/rpmbuild/BUILD
 	mkdir -p $(PWD)/rpmbuild/RPMS
@@ -8,11 +18,11 @@ prep:
 	cp sss_pac_responder_client.c $(PWD)/rpmbuild/SOURCES
 	cp ci-sssd.spec $(PWD)/rpmbuild/SPECS
 
-srpm: prep
-	rpmbuild --define "_topdir $(PWD)/rpmbuild" -bs ci-sssd.spec
+srpm: set-version
+	rpmbuild --define "_topdir $(PWD)/rpmbuild" -bs $(PWD)/rpmbuild/SPECS/ci-sssd.spec
 
-rpms: prep
-	rpmbuild --define "_topdir $(PWD)/rpmbuild" -ba ci-sssd.spec
+rpms: set-version
+	rpmbuild --define "_topdir $(PWD)/rpmbuild" -ba $(PWD)/rpmbuild/SPECS/ci-sssd.spec
 
 clean:
 	rm -fr $(PWD)/rpmbuild

@@ -1,8 +1,6 @@
-%{!?build_timestamp:%global build_timestamp %(date +"%%Y_%%m_%%d_%%H_%%M_%%S")}
-
 Name:           ci-sssd
 Version:        1
-Release:        2%{?dist}.%{build_timestamp}
+Release:        2%{?dist}
 Summary:        SSSD CI Packages
 URL:            https://github.com/SSSD/sssd-ci-containers
 
