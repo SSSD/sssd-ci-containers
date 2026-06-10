@@ -32,6 +32,18 @@
     path: "{{ samba_keytab }}"
   register: enrollment_samba
 
+# Adding alias kerberos principal for client.test
+# C8 is not longer built and needs to use the old hostname
+- name: Add additional principal for client.test
+  shell: |
+    samba-tool spn add host/client.test@{{ samba_domain | upper }} client$
+  delegate_to: dc.samba.test
+
+- name: Get additional principal for client.test
+  shell: |
+    kadmin -p Administrator@{{ samba_domain | upper }} -w {{ samba_password }} -q \
+    "ktadd -k /etc/krb5.keytab host/client.test@{{ samba_domain | upper }}"
+
 - name: Copy Samba keytab to {{ samba_keytab }}
   copy:
     src: /etc/krb5.keytab

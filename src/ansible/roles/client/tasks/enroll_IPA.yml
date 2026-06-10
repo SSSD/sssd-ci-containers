@@ -35,6 +35,20 @@
     path: "{{ ipa_keytab }}"
   register: enrollment_ipa
 
+# Adding alias kerberos principal for client.test
+# C8 is not longer built and needs to use the old hostname
+- name: Add additional principal for client.test
+  shell: |
+    echo "{{ ipa_password }}" | kinit admin@"{{ ipa_domain | upper }}"
+    ipa host-add-principal "{{ inventory_hostname.split('.')[0] }}.{{ ipa_domain }}" \
+      "host/client.test@{{ ipa_domain | upper }}"
+  delegate_to: master.ipa.test
+
+- name: Get additional principal for client.test
+  shell: |
+    echo "{{ ipa_password }}" | kinit admin@"{{ ipa_domain | upper }}"
+    ipa-getkeytab -p host/client.test@{{ ipa_domain | upper }} -k /etc/krb5.keytab
+
 - name: Copy IPA keytab to {{ ipa_keytab }}
   copy:
     src: /etc/krb5.keytab
