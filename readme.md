@@ -1,7 +1,7 @@
 # SSSD Containers for CI
 
 **These containers and images are intended to be used in SSSD CI and they should
-not be used in production.** However, you can use them during SSSD local testing
+not be used in production.** However you can use them during SSSD local testing
 and development.
 
 ## Quick start
