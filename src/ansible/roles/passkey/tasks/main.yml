@@ -49,11 +49,12 @@
       src: vfido.service
       dest: /etc/systemd/system
 
-  - name: Start vfido service
-    systemd_service:
-      name: vfido
-      daemon_reload: true
-      state: started
+# commented because log filling due to missing vhci_hcd module in some instances
+#  - name: Start vfido service
+#    systemd_service:
+#      name: vfido
+#      daemon_reload: true
+#      state: started
 
   - name: Clone virtual-fido to test_venv
     git:
