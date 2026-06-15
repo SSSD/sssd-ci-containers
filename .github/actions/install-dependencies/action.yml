@@ -20,7 +20,7 @@ runs:
     if: ${{ inputs.tag != 'centos-8' }}
     shell: bash
     run: |
-      sudo pip3 install ansible passlib
+      sudo pip3 install ansible==13.6 passlib
 
   - name: Install deb packages
     shell: bash

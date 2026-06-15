@@ -122,7 +122,7 @@ function build_service_image {
 }
 
 if [ "$SKIP_BASE" == 'no' ]; then
-  # Create base images
+  # Create base imagess
   ${DOCKER} build --file "Containerfile" --target dns --tag "${REGISTRY}/ci-dns:latest" .
   build_base_image "$BASE_IMAGE" base-ground
   build_base_image "ci-base-ground:${TAG}" base-client
