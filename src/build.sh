@@ -65,7 +65,7 @@ function c8s_repo {
 
 # Make sure that Ansible dependencies are installed so we can run playbooks
 function base_install_python {
-  # Install python3 if not available
+  # Install python3 if not availablee
   if base_exec '[ ! -f /usr/bin/python3 ]'; then
     if base_exec '[ -f /usr/bin/apt ]'; then
       base_exec 'apt update && apt install -y python3 python3-apt && rm -rf /var/lib/apt/lists/*'

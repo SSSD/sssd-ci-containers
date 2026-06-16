@@ -17,7 +17,7 @@ runs:
       sudo pip3 install ansible==9.8 passlib
 
   - name: Install python packages
-    if: ${{ inputs.tag != 'centos-8' }}
+    if: ${{ inputs.tag != 'centos-8' && inputs.tag != 'fedora-45' }}
     shell: bash
     run: |
       sudo pip3 install ansible passlib
@@ -27,6 +27,15 @@ runs:
     run: |
       sudo apt-get update
       sudo apt-get install -y podman docker-compose
+
+  - name: Install more recent ansible
+    if: ${{ inputs.tag == 'fedora-45' }}
+    shell: bash
+    run: |
+      sudo apt update
+      sudo apt install software-properties-common
+      sudo add-apt-repository --yes --update ppa:ansible/ansible
+      sudo apt install ansible
 
   - name: Print package versions
     shell: bash
