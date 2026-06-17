@@ -54,6 +54,7 @@
       name: vfido
       daemon_reload: true
       state: started
+    ignore_errors: yes
 
   - name: Clone virtual-fido to test_venv
     git:
