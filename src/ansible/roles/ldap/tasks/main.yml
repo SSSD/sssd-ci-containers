@@ -52,6 +52,49 @@
       add: objectclasses
       objectclasses: ( 2.16.840.1.113730.3.8.24.9 NAME 'passkeyUser' DESC 'IPA passkey user' AUXILIARY MAY passkey)
 
+- name: Stop LDAP service
+  service:
+    name: dirsrv@localhost.service
+    state: stopped
+
+- name: Create base ldap binary backup
+  shell: |
+    dsctl slapd-localhost db2bak base
+  args:
+    creates: '/var/lib/dirsrv/slapd-localhost/bak/base'
+
+- name: 'Install BigLDAP generator'
+  copy:
+    src: generate-bigldap-data.py
+    dest: /usr/local/bin/generate-bigldap-data.py
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create largedata ldap binary backup and restore base
+  block:
+  - name: Create large ldap binary backup
+    shell: |
+      /usr/local/bin/generate-bigldap-data.py > /var/lib/dirsrv/slapd-localhost/bak/largedata.ldif && \
+      dsctl slapd-localhost ldif2db userroot /var/lib/dirsrv/slapd-localhost/bak/largedata.ldif && \
+      systemctl start dirsrv@localhost.service && \
+      dsconf slapd-localhost plugin memberof enable && \
+      systemctl restart dirsrv@localhost.service && \
+      dsconf slapd-localhost plugin memberof fixup --wait dc=ldap,dc=test && \
+      systemctl stop dirsrv@localhost.service && \
+      dsctl slapd-localhost db2bak largedata
+    args:
+      creates: '/var/lib/dirsrv/slapd-localhost/bak/largedata'
+  always:
+  - name: Restore base backup
+    shell: |
+      dsctl slapd-localhost bak2db base
+
+- name: Remove big ldif file
+  file:
+    state: absent
+    path: /var/lib/dirsrv/slapd-localhost/bak/largedata.ldif
+
 - name: Restart LDAP service
   service:
     name: dirsrv@localhost.service
