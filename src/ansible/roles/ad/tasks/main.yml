@@ -76,6 +76,8 @@
   win_chocolatey:
     name: bind-toolsonly
     state: present
+    # This playbook use to work without the version specified, root cause for the change is still unknown
+    version: 9.16.28
   register: bind_install
 
 - name: Debug bind installation
