@@ -16,5 +16,5 @@ open_firewall: yes
 temp_dir: 'C:\temp'
 # Certificate Template Info
 templates:
-- { name: "EnrollmentAgent2", file: "enrollmentagent2.ldf" }
-- { name: "SmartcardLogon4", file: "smartcardlogon4.ldf" }
+- { name: "EnrollmentAgent_IDMTEST", file: "enrollmentagent2.ldf" }
+- { name: "SmartcardLogon_IDMTEST", file: "smartcardlogon4.ldf" }
