@@ -203,6 +203,7 @@
         - nss-tools
         - selinux-policy-devel
         - selinux-policy-targeted
+        - crypto-policies-scripts
         - make
     when: virt_smartcard
 
