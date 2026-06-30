@@ -52,6 +52,38 @@
       add: objectclasses
       objectclasses: ( 2.16.840.1.113730.3.8.24.9 NAME 'passkeyUser' DESC 'IPA passkey user' AUXILIARY MAY passkey)
 
+- name: Copy big ldif to backup folder
+  copy:
+    src: largedata.ldif
+    dest: /var/lib/dirsrv/slapd-localhost/bak
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Stop LDAP service
+  service:
+    name: dirsrv@localhost.service
+    state: stopped
+
+- name: Create base ldap binary backup
+  shell: |
+    dsctl slapd-localhost db2bak base
+  args:
+    creates: '/var/lib/dirsrv/slapd-localhost/bak/base'
+
+- name: Create largedata ldap binary backup and restore base
+  block:
+  - name: Create large ldap binary backup
+    shell: |
+      dsctl slapd-localhost ldif2db userroot /var/lib/dirsrv/slapd-localhost/bak/largedata.ldif && \
+      dsctl slapd-localhost db2bak largedata
+    args:
+      creates: '/var/lib/dirsrv/slapd-localhost/bak/largedata'
+  always:
+  - name: Restore base backup
+    shell: |
+      dsctl slapd-localhost bak2db base
+
 - name: Restart LDAP service
   service:
     name: dirsrv@localhost.service
