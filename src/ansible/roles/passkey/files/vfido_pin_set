@@ -5,5 +5,6 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-pushd /opt/test_venv/virtual-fido
-/usr/bin/go run ./cmd/demo pin set --pin $1
+# Run in the virtual-fido directory where vault.json is stored
+cd /opt/test_venv/virtual-fido
+"$(dirname "$0")/vfido-demo" pin set --pin "$1"

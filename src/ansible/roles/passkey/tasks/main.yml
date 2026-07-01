@@ -44,6 +44,21 @@
     with_fileglob:
       - "vfido_*"
 
+  - name: Clone virtual-fido to test_venv
+    git:
+      repo: "https://github.com/bulwarkid/virtual-fido.git"
+      dest: "{{ test_venv }}/virtual-fido"
+      version: 512d8a3fef0e073171a7ef3261f300e8a5e48694
+      clone: yes
+      update: yes
+      depth: 1
+
+  - name: Build vfido-demo binary once to avoid Go compiler fork limits
+    command: go build -ldflags="-s -w" -o {{ test_venv }}/bin/vfido-demo ./cmd/demo
+    args:
+      chdir: "{{ test_venv }}/virtual-fido"
+      creates: "{{ test_venv }}/bin/vfido-demo"
+
   - name: Install vfido systemd service unit file
     copy:
       src: vfido.service
@@ -54,15 +69,5 @@
       name: vfido
       daemon_reload: true
       state: started
-    ignore_errors: yes
-
-  - name: Clone virtual-fido to test_venv
-    git:
-      repo: "https://github.com/bulwarkid/virtual-fido.git"
-      dest: "{{ test_venv }}/virtual-fido"
-      version: 512d8a3fef0e073171a7ef3261f300e8a5e48694
-      clone: yes
-      update: yes
-      depth: 1
 
   when: passkey_support

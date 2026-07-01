@@ -1,4 +1,5 @@
 #!/bin/bash
 
-pushd /opt/test_venv/virtual-fido
-/usr/bin/go run ./cmd/demo pin enable
+# Run in the virtual-fido directory where vault.json is stored
+cd /opt/test_venv/virtual-fido
+"$(dirname "$0")/vfido-demo" pin enable

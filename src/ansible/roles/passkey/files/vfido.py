@@ -28,7 +28,8 @@ def run_demo():
     """Run in background"""
     global demo_process
 
-    cmd = ["go", "run", "./cmd/demo", "start"]
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    cmd = [os.path.join(script_dir, "vfido-demo"), "start"]
 
     print(f"Starting virtual-fido demo...")
     print(f"Command: {' '.join(cmd)}")
@@ -36,7 +37,6 @@ def run_demo():
     with open("/tmp/virtual-fido.out", "w") as f:
         demo_process = subprocess.Popen(
             cmd,
-            cwd="/opt/test_venv/virtual-fido",
             stdin=subprocess.PIPE,
             stdout=f,
             stderr=subprocess.STDOUT,
