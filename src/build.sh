@@ -58,7 +58,7 @@ function base_exec {
 }
 
 function c8s_repo {
-    # Update repos to working ones
+    # Update repos to working oness
     ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s/mirrorlist/#mirrorlist/g" /etc/yum.repos.d/CentOS-* || true'
     ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-* || true'
 }
