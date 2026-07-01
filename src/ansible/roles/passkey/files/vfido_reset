@@ -1,4 +1,3 @@
 #!/bin/bash
 
 rm -f /opt/test_venv/virtual-fido/vault.json
-rm -rf /root/.cache/go-build
