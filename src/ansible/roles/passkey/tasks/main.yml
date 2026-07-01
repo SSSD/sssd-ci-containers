@@ -65,4 +65,10 @@
       update: yes
       depth: 1
 
+  - name: Build vfido-demo binary once to avoid Go compiler fork limits
+    command: go build -ldflags="-s -w" -o {{ test_venv }}/bin/vfido-demo ./cmd/demo
+    args:
+      chdir: "{{ test_venv }}/virtual-fido"
+      creates: "{{ test_venv }}/bin/vfido-demo"
+
   when: passkey_support

@@ -1,4 +1,3 @@
 #!/bin/bash
 
-pushd /opt/test_venv/virtual-fido
-/usr/bin/go run ./cmd/demo pin disable
+"$(dirname "$0")/vfido-demo" pin disable
