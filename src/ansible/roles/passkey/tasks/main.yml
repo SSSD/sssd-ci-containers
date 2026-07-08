@@ -64,10 +64,14 @@
       src: vfido.service
       dest: /etc/systemd/system
 
-  - name: Start vfido service
+  - name: Enable vfido service (will start at container runtime)
     systemd_service:
       name: vfido
       daemon_reload: true
-      state: started
+      enabled: true
+
+  - name: Load vhci_hcd kernel module for vfido feature detection
+    command: modprobe vhci_hcd
+    ignore_errors: true
 
   when: passkey_support
