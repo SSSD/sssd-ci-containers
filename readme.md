@@ -6,6 +6,13 @@ and development.
 
 ## Quick start
 
+Clone the sssd-ci-containers repository:
+```console
+$ git clone git@github.com:SSSD/sssd-ci-containers.git
+$ cd sssd-ci-containers
+```
+
+Install necessary packages to setup containers:
 ```console
 $ sudo dnf install -y podman podman-docker docker-compose
 
