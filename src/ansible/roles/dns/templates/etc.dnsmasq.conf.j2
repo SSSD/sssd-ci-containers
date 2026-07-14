@@ -48,18 +48,18 @@ srv-host=_ldap._tcp.ldap.test,master.ldap.test,389
 
 # All hosts A record
 {% for host in groups['all'] %}
-{% if hostvars[host].ansible_system == 'Linux' %}
+{% if hostvars[host]['ansible_facts']['system'] == 'Linux' %}
 address=/{{ host }}/{{ hostvars[host]['ansible_facts']['default_ipv4']['address'] }}
-{% elif hostvars[host].ansible_system == 'Win32NT' %}
+{% elif hostvars[host]['ansible_facts']['system'] == 'Win32NT' %}
 address=/{{ host }}/{{ hostvars[host]['ansible_facts']['ip_addresses'][0] }}
 {% endif %}
 {% endfor %}
 
 # All hosts PTR records
 {% for host in groups['all'] %}
-{% if hostvars[host].ansible_system == 'Linux' %}
+{% if hostvars[host]['ansible_facts']['system'] == 'Linux' %}
 ptr-record={{ hostvars[host]['ansible_facts']['default_ipv4']['address'].split('.') | reverse | join(".") }}.in-addr.arpa,{{ host }}
-{% elif hostvars[host].ansible_system == 'Win32NT' %}
+{% elif hostvars[host]['ansible_facts']['system'] == 'Win32NT' %}
 ptr-record={{ hostvars[host]['ansible_facts']['ip_addresses'][0].split('.') | reverse | join(".") }}.in-addr.arpa,{{ host }}
 {% endif %}
 {% endfor %}

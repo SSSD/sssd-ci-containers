@@ -3,10 +3,10 @@
 
 - name: Add fqdn and short hostname to /etc/hosts
   ansible.builtin.lineinfile:
-    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} \
+    line: "{{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }} \
       {{ inventory_hostname }} {{ inventory_hostname.split('.')[0] }}"
     path: /etc/hosts
-  when: ansible_os_family != "Windows"
+  when: ansible_facts['os_family'] != "Windows"
   become: true
 
 - name: Setup dns (on dns machine)

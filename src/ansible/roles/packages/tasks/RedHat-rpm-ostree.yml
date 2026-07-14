@@ -33,36 +33,6 @@
   when:
   - "'base_client' in group_names or 'client' in group_names"
 
-# The ansible.posix.rhel_rpm_ostree can only check
-# for presence but can not install anything
-- name: Check sssd packages that should be present and fail when they are missing
-  ansible.posix.rhel_rpm_ostree:
-    name:
-    - adcli
-    - authselect
-    - realmd
-    - sssd-idp
-    - sssd-client
-    - sssd-nfs-idmap
-    - sssd-client
-    - sssd-common
-    - sssd-krb5-common
-    - sssd-common-pac
-    - sssd-ad
-    - sssd-ipa
-    - sssd-krb5
-    - sssd-ldap
-    - sssd-dbus
-    - python3-sssdconfig
-    - sssd-proxy
-    - python3-sss
-    - sssd-tools
-    - sssd
-    - sssd-kcm
-    - sssd-idp
-    - sssd-passkey
-    state: present
-
 # If realmd was installed after polkit it needs to be restarted
 - name: Restart polkit
   ansible.builtin.systemd_service:
