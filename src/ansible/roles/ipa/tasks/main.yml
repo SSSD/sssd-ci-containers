@@ -5,7 +5,7 @@
 
 - name: Configure IPA IP address (from ssh)
   set_fact:
-    ipa_ip: "{{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['address'] }}"
+    ipa_ip: "{{ ansible_facts['default_ipv4']['address'] }}"
   when: '"meta_ip" not in hostvars[inventory_hostname]'
 
 - name: Prepare IPA facts
