@@ -41,11 +41,10 @@
   - not rpm_ostree.stat.exists
 
 - name: Copy common data
-  synchronize:
+  ansible.builtin.copy:
     src: '{{ data_path }}/'
     dest: /var/data/
 
-# synchronize rsync option --chown was ignored for some reason
 - name: Set correct permissions on /var/data
   shell: |
     chown -R root:root /var/data
@@ -88,7 +87,7 @@
 - name: Append or create authorized_keys
   lineinfile:
     dest: "/root/.ssh/authorized_keys"
-    line: "{{ lookup('file', '{{ data_path }}/ssh-keys/root.id_rsa.pub') }}"
+    line: "{{ lookup('file', data_path ~ '/ssh-keys/root.id_rsa.pub') }}"
     create: yes
     state: present
     owner: 'root'
