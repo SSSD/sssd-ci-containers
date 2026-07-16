@@ -1,10 +1,10 @@
-dn: CN=EnrollmentAgent_IDMTEST,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=ad,DC=test
+dn: CN=EnrollmentAgent_IDMTEST,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,{{ ad_suffix }}
 changetype: add
 cn: EnrollmentAgent_IDMTEST
 displayName: Enrollment Agent IDMTEST
 distinguishedName:
  CN=EnrollmentAgent_IDMTEST,CN=Certificate Templates,CN=Public Key Services,CN=Service
- s,CN=Configuration,DC=ad,DC=test
+ s,CN=Configuration,{{ ad_suffix }}
 dSCorePropagationData: 20250909213804.0Z
 dSCorePropagationData: 16010101000000.0Z
 flags: 131616
@@ -22,7 +22,7 @@ msPKI-Template-Minor-Revision: 2
 msPKI-Template-Schema-Version: 4
 name: EnrollmentAgent_IDMTEST
 objectCategory:
- CN=PKI-Certificate-Template,CN=Schema,CN=Configuration,DC=ad,DC=test
+ CN=PKI-Certificate-Template,CN=Schema,CN=Configuration,{{ ad_suffix }}
 objectClass: top
 objectClass: pKICertificateTemplate
 pKICriticalExtensions: 2.5.29.15
