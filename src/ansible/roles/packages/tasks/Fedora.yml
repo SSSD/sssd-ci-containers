@@ -139,6 +139,7 @@
   - name: Check if beaker-tasks yum repo exists
     shell: yum repolist | grep beaker-tasks
     ignore_errors: true
+    failed_when: false
     register: beaker_tasks
 
   - name: Set fact for beaker_tasks repo to be disabled if necessary
