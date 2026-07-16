@@ -61,6 +61,8 @@ function c8s_repo {
     # Update repos to working ones
     ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s/mirrorlist/#mirrorlist/g" /etc/yum.repos.d/CentOS-* || true'
     ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-* || true'
+    # Drop stale mirrorlist metadata and refresh from vault
+    ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && dnf clean all && dnf makecache || true'
 }
 
 # Make sure that Ansible dependencies are installed so we can run playbooks
@@ -84,16 +86,23 @@ function base_install_python {
 function build_base_image {
   local from=$1
   local name=$2
+  local quay_image
 
   for svc in $UNAVAILABLE; do
-    if [ "base-$svc" != $name ]; then
+    # base images: UNAVAILABLE=samba matches name=base-samba -> ci-base-samba
+    # other images: UNAVAILABLE=client-devel matches name=client-devel -> ci-client-devel
+    if [ "base-$svc" = "$name" ]; then
+      quay_image="quay.io/sssd/ci-base-$svc:latest"
+    elif [ "$svc" = "$name" ]; then
+      quay_image="quay.io/sssd/ci-$name:latest"
+    else
       continue
     fi
 
     echo "Service $svc is not available in $BASE_IMAGE."
-    echo "Using quay.io/sssd/ci-base-$svc:latest instead."
-    ${DOCKER} pull "quay.io/sssd/ci-base-$svc:latest"
-    ${DOCKER} tag "quay.io/sssd/ci-base-$svc:latest" "${REGISTRY}/ci-$name:${TAG}"
+    echo "Using $quay_image instead."
+    ${DOCKER} pull "$quay_image"
+    ${DOCKER} tag "$quay_image" "${REGISTRY}/ci-$name:${TAG}"
     return 0
   done
 

@@ -1,17 +1,26 @@
-- name: 'Facts are the same as in CentOS {{ ansible_facts["distribution_major_version"] }}'
+---
+- name: "Facts same as CentOS {{ ansible_facts['distribution_major_version'] }}"
   include_tasks: '{{ include_centos }}'
   loop_control:
     loop_var: include_centos
   with_first_found:
-  - files: '{{ "CentOS" | distro_includes(ansible_facts["distribution_major_version"]) }}'
+    - files: >-
+        {{ "CentOS"
+        | distro_includes(ansible_facts["distribution_major_version"]) }}
 
 - name: Set distribution specific facts
   set_fact:
-    buildroot: no
-    debuginfo: no
+    buildroot: false
+    debuginfo: false
     ipa: '{{ ipa_packages }}'
 
-- name: Set distribution specific facts for RHEL 7
+- name: Set distribution specific facts for RHEL 7 and 8
   set_fact:
-    passkey_support: No
-  when: ansible_facts['distribution_major_version'] == '7'
+    passkey_support: false
+  when: ansible_facts['distribution_major_version'] | int <= 8
+
+- name: Set distribution specific facts for RHEL 9 and 10
+  set_fact:
+    passkey_support: true
+    buildroot: true
+  when: ansible_facts['distribution_major_version'] | int >= 9
