@@ -30,6 +30,19 @@
     mode: 0700
 
 # Backward compatibility symlink
+- name: Check if /data exists as a directory
+  stat:
+    path: /data
+  register: data_stat
+  when: not rpm_ostree.stat.exists
+
+- name: Rename /data to /data.bak if it is an existing directory
+  command: mv /data /data.bak
+  when:
+  - not rpm_ostree.stat.exists
+  - data_stat.stat.exists
+  - data_stat.stat.isdir
+
 - name: Create symlink /data /var/data
   ansible.builtin.file:
     src: '/var/data'
