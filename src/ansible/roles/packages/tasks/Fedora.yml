@@ -68,11 +68,20 @@
       - policycoreutils
       - policycoreutils-python-utils
       - python3-pip
-      - shadow-utils-subid
       - sudo
       - rsync
       - passwd
       disable_gpg_check: yes
+
+  - name: Install shadow-utils-subid (RHEL 8.6+, all other distros)
+    dnf:
+      state: present
+      name:
+      - shadow-utils-subid
+      disable_gpg_check: yes
+    when: not (ansible_facts['distribution'] == 'RedHat' and
+               ansible_facts['distribution_major_version'] == '8' and
+               ansible_facts['distribution_version'] is version('8.6', '<'))
   when: "'base_ground' in group_names"
 
 - name: Install extended set of packages
