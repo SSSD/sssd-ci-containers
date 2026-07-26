@@ -5,6 +5,7 @@ Vagrant.configure("2") do |config|
         this.vm.guest = :windows
         this.vm.communicator = "winrm"
         this.winrm.username = "Administrator"
+        this.winrm.password = "vagrant"
         this.vm.network "private_network",
             :ip => "172.16.200.10",
             :libvirt__dhcp_enabled => false,

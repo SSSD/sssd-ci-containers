@@ -79,6 +79,7 @@
     # This playbook use to work without the version specified, root cause for the change is still unknown
     version: 9.16.28
   register: bind_install
+  ignore_errors: yes
 
 - name: Debug bind installation
   debug:
