@@ -4,3 +4,6 @@ baseurl={{ item.url }}
 enabled=1
 gpgcheck=0
 skip_if_unavailable=True
+{%- if item.module_hotfixes | default(false) %}
+module_hotfixes=true
+{%- endif %}
