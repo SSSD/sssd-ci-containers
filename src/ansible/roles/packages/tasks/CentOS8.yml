@@ -31,5 +31,15 @@
       dnf module enable -y idm:DL1
   when: "'base_ground' in group_names"
 
+- name: Install java-21-openjdk-headless for Keycloak
+  block:
+  - name: Install Keycloak dependencies
+    dnf:
+      state: present
+      allowerasing: true
+      name:
+      - java-21-openjdk-headless
+  when: "'base_keycloak' in group_names"
+
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'

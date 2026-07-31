@@ -312,11 +312,21 @@
       state: present
       allowerasing: true
       name:
-      - java-25-openjdk-headless
       - openssl
       - unzip
       - curl
       - jq
+
+  - name: Check installed packages
+    ansible.builtin.package_facts:
+
+  - name: Install java-25-openjdk-headless
+    dnf:
+      state: present
+      allowerasing: true
+      name:
+      - java-25-openjdk-headless
+    when: "'java-21-openjdk-headless' not in ansible_facts.packages"
   when: "'base_keycloak' in group_names"
 
 - name: Install additional packages for client development image
