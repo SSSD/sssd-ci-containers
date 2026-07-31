@@ -14,7 +14,9 @@
       group: root
       mode: 0644
     with_items:
-    - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c8s-build/latest/$basearch'}
+    # c8s-build ships modular RPMs without modulemd; module_hotfixes lets
+    # dnf install them anyway (needed for IPA and ~-devel deps).
+    - {name: 'buildroot', url: 'https://kojihub.stream.centos.org/kojifiles/repos/c8s-build/latest/$basearch', module_hotfixes: true}
     - {name: 'crb', url: 'http://vault.centos.org/centos/8-stream/PowerTools/$basearch/os/'}
     when: buildroot
 

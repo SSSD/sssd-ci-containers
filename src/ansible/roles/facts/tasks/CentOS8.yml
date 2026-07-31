@@ -3,12 +3,13 @@
 - name: 'Facts are the same as in Fedora'
   include_tasks: 'Fedora.yml'
 
-# c8s-build koji has modular RPMs without modular metadata (breaks IPA);
+# c8s-build koji has modular RPMs without modular metadata; packages/CentOS8.yml
+# enables the repo with module_hotfixes=true so IPA/~-devel can still install.
 # epel-playground-debuginfo is gone on EL8; samba DC is UNAVAILABLE so it
 # comes from Fedora quay image and C8S IPA cannot establish a trust with it
 - name: Set distribution specific facts
   set_fact:
     passkey_support: false
     debuginfo: false
-    buildroot: false
+    buildroot: true
     trust_ipa_samba: false
