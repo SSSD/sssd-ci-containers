@@ -294,6 +294,7 @@
       - nmap-ncat
       - git
     when: passkey_support
+    ignore_errors: yes
   when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
 - name: Install usbip on the client
@@ -304,6 +305,7 @@
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
+  ignore_errors: yes
 
 - name: Install packages for Keycloak base image
   block:

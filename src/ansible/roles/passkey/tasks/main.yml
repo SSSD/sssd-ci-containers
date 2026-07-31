@@ -18,6 +18,7 @@
       path: /opt/random.c
       state: absent
   when: passkey_support
+  ignore_errors: yes
 
 - name: Configure vfido wrapper for virtual-fido to support passkeys
   block:
@@ -75,3 +76,4 @@
     ignore_errors: true
 
   when: passkey_support
+  ignore_errors: yes

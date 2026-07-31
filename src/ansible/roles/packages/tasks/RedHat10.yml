@@ -13,6 +13,7 @@
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
+  ignore_errors: yes
 
 - name: Install packages for usbip needed for virtual passkey testing
   dnf:
@@ -28,6 +29,7 @@
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
+  ignore_errors: yes
 
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'
