@@ -30,6 +30,26 @@
   win_reboot:
   when: installation.changed
 
+- name: Enable AES Kerberos encryption for FIPS/STIG client compatibility
+  win_shell: |
+    Import-Module ActiveDirectory
+
+    # Enable AES 256 encryption support on domain controllers
+    # 0x18 = AES128 (0x08) + AES256 (0x10)
+    Get-ADComputer -Filter {PrimaryGroupID -eq 516} -Properties msDS-SupportedEncryptionTypes |
+      Set-ADComputer -Replace @{'msDS-SupportedEncryptionTypes' = 24}
+
+    # Configure supported Kerberos encryption types via registry
+    New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters" -Force
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters" `
+      -Name "SupportedEncryptionTypes" -Value 24 -Type DWord -Force
+
+    gpupdate /force
+  register: aes_config
+  until: aes_config.rc == 0
+  retries: 3
+  delay: 30
+
 - name: Install AD Certificate Services
   win_feature:
     name: AD-Certificate
