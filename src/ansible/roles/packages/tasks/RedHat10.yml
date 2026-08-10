@@ -10,6 +10,11 @@
     state: present
     name: 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_facts["distribution_major_version"] }}.noarch.rpm'
     disable_gpg_check: yes
+  register: epel_passkey
+  # Tolerate failure on STIG-hardened systems where packages may be unsigned
+  failed_when:
+    - epel_passkey is failed
+    - not stig_enabled | default(false) | bool
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
@@ -25,6 +30,11 @@
     - systemd-devel
     - libtool
     - python3-koji
+  register: usbip_deps
+  # Tolerate failure on STIG-hardened systems where packages may be unsigned
+  failed_when:
+    - usbip_deps is failed
+    - not stig_enabled | default(false) | bool
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"

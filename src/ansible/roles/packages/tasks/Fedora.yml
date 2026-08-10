@@ -294,6 +294,11 @@
       - go
       - nmap-ncat
       - git
+    register: passkey_packages
+    # Tolerate failure on STIG-hardened systems where packages may be unsigned
+    failed_when:
+      - passkey_packages is failed
+      - not stig_enabled | default(false) | bool
     when: passkey_support
   when: "'base_client' in group_names or 'client' in group_names or 'base_ipa' in group_names or 'ipa' in group_names"
 
@@ -302,6 +307,11 @@
     state: present
     name:
     - usbip
+  register: usbip_install
+  # Tolerate failure on STIG-hardened systems where packages may be unsigned
+  failed_when:
+    - usbip_install is failed
+    - not stig_enabled | default(false) | bool
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"

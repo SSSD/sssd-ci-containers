@@ -50,6 +50,12 @@
     dnf:
       name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
       state: present
+  # Tolerate failure on STIG-hardened systems where packages may be unsigned
+  rescue:
+  - name: Fail EPEL setup if not STIG
+    fail:
+      msg: "EPEL setup for passkey failed and stig_enabled is not set"
+    when: not stig_enabled | default(false) | bool
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
@@ -65,6 +71,11 @@
     - systemd-devel
     - libtool
     - python3-koji
+  register: usbip_deps
+  # Tolerate failure on STIG-hardened systems where packages may be unsigned
+  failed_when:
+    - usbip_deps is failed
+    - not stig_enabled | default(false) | bool
   when:
     - passkey_support
     - "'base_client' in group_names or 'client' in group_names"
