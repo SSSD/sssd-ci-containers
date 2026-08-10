@@ -17,6 +17,12 @@
     file:
       path: /opt/random.c
       state: absent
+  # Tolerate failure on STIG-hardened systems where gcc/openssl-devel may be missing
+  rescue:
+  - name: Fail passkey build if not STIG
+    fail:
+      msg: "Passkey build failed and stig_enabled is not set"
+    when: not stig_enabled | default(false) | bool
   when: passkey_support
 
 - name: Configure vfido wrapper for virtual-fido to support passkeys
@@ -74,4 +80,10 @@
     command: modprobe vhci_hcd
     ignore_errors: true
 
+  # Tolerate failure on STIG-hardened systems where git/go may be missing
+  rescue:
+  - name: Fail vfido setup if not STIG
+    fail:
+      msg: "Vfido setup failed and stig_enabled is not set"
+    when: not stig_enabled | default(false) | bool
   when: passkey_support

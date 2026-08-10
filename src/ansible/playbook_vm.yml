@@ -8,6 +8,7 @@
   ansible.builtin.import_playbook: playbook_image_base.yml
   vars:
     passkey_support: "{{ override_passkey_support | default('no') | bool }}"
+    stig_enabled: "{{ override_stig_enabled | default('no') | bool }}"
     user_regular_uid: 1024
     ansible_become: yes
     extended_packageset: "{{ override_extended_packageset | default('no') | bool }}"
@@ -18,6 +19,7 @@
   ansible.builtin.import_playbook: playbook_image_service.yml
   vars:
     passkey_support: "{{ override_passkey_support | default('no') | bool }}"
+    stig_enabled: "{{ override_stig_enabled | default('no') | bool }}"
     user_regular_uid: 1024
     ansible_become: yes
     join_ad: "{{ override_join_ad | default('no') | bool }}"
