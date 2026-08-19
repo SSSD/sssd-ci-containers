@@ -87,6 +87,13 @@ runs:
           REGISTRY="${{ inputs.registry }}"          \
           TAG="${{ inputs.tag }}"
 
+        # Debug: check container state before exec steps
+        sudo podman ps -a
+        sudo podman inspect ldap --format '{{.State.Status}} {{.State.Running}} {{.State.StartedAt}}' || true
+        sudo podman logs ldap 2>&1 | tail -100 || true
+        sudo podman top ldap || echo "podman top failed"
+        sudo podman exec ldap ps aux || echo "ps failed"
+
   - name: Workaround failing sudo
     shell: bash
     run: |
