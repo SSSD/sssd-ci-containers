@@ -87,6 +87,13 @@ runs:
           REGISTRY="${{ inputs.registry }}"          \
           TAG="${{ inputs.tag }}"
 
+  - name: Debug container state
+    shell: bash
+    run: |
+      sudo podman ps -a
+      sudo podman inspect ldap --format '{{.State.Status}} {{.State.Running}} {{.State.StartedAt}}'
+      sudo podman logs ldap 2>&1 | tail -100
+
   - name: Workaround failing sudo
     shell: bash
     run: |
