@@ -16,7 +16,7 @@ inputs:
     description: Comma separated list of services to run (empty = all).
     required: false
   override:
-    description: Override docker-compose.
+    description: Override docker compose.
     required: false
 runs:
   using: "composite"
@@ -26,7 +26,7 @@ runs:
     run: |
       set -ex
       sudo apt-get update
-      sudo apt-get install -y podman docker-compose
+      sudo apt-get install -y podman
 
   - name: Start podman socket
     shell: bash
@@ -66,10 +66,10 @@ runs:
     run: |
       export REGISTRY="${{ inputs.registry }}"
       export TAG="${{ inputs.tag }}"
-      docker-compose --project-directory "${{ inputs.path }}" config
+      docker compose --project-directory "${{ inputs.path }}" config
 
   - name: Start containers
-    uses: nick-fields/retry@v2
+    uses: nick-fields/retry@v3
     with:
       shell: bash
       max_attempts: 3
@@ -78,10 +78,10 @@ runs:
       command: |
         # Put it down first to allow smooth retry and avoid "network need to be recreated" issue
         # This is a workaround for older podman
-        sudo make -C "${{ inputs.path }}" down         \
+        sudo timeout 300 make -C "${{ inputs.path }}" down         \
           DOCKER_HOST=unix:///run/podman/podman.sock
 
-        sudo make -C "${{ inputs.path }}" up         \
+        sudo timeout 300 make -C "${{ inputs.path }}" up         \
           DOCKER_HOST=unix:///run/podman/podman.sock \
           LIMIT="${{ inputs.limit }}"                \
           REGISTRY="${{ inputs.registry }}"          \

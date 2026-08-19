@@ -7,7 +7,7 @@ push:
 	/bin/bash -c "src/push.sh"
 
 up:
-	docker-compose up --no-recreate --detach ${LIMIT}
+	docker compose up --no-recreate --detach ${LIMIT}
 
 up-passkey:
 	$(eval HIDRAW := $(shell fido2-token -L | cut -f1 -d:))
@@ -17,26 +17,26 @@ up-passkey:
 		exit 1; \
 	fi
 
-	@HIDRAW=${HIDRAW} docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
+	@HIDRAW=${HIDRAW} docker compose -f docker-compose.yml -f docker-compose.passkey.yml up \
 	--no-recreate --detach ${LIMIT}
 
-	@docker-compose -f docker-compose.yml -f docker-compose.passkey.yml exec client \
+	@docker compose -f docker-compose.yml -f docker-compose.passkey.yml exec client \
 	/usr/bin/setfacl -m u:sssd:rw ${HIDRAW}
 
 # deprecated
 up-keycloak:
-	docker-compose -f docker-compose.yml up \
+	docker compose -f docker-compose.yml up \
 	--no-recreate --detach ${LIMIT}
 
 stop:
-	docker-compose stop
+	docker compose stop
 
 down:
-	docker-compose -f docker-compose.yml \
+	docker compose -f docker-compose.yml \
 	-f docker-compose.passkey.yml down
 
 update:
-	docker-compose pull
+	docker compose pull
 
 trust-ca:
 	/bin/bash -c "src/tools/trust-ca.sh"
