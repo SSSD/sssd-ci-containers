@@ -87,29 +87,29 @@ runs:
           REGISTRY="${{ inputs.registry }}"          \
           TAG="${{ inputs.tag }}"
 
-  - name: Workaround failing sudo
+  - name: Post-process the containers
     shell: bash
     run: |
-      # 'sudo' calls 'unix_chkpwd' and this fails with
-      # openat(AT_FDCWD</>, "/etc/shadow", O_RDONLY|O_CLOEXEC) = -1 EACCES
-      # for unclear reason (CAP_DAC_* are granted)
-      for svc in `sudo podman container ls --format "{{ .Names }}"`; do
-        if [ $svc != "dns" ]; then
-          sudo podman exec "$svc" chmod u+r /etc/shadow &
-        fi
-      done
+      retry() {
+        for attempt in {1..3}; do
+          timeout 10s "$@" && return 0
+          echo "Attempt $attempt failed, retrying..." >&2
+          sleep 1
+        done
+      }
 
-  - name: Change regular user uid to 1001
-    shell: bash
-    run: |
-      # GitHub-hosted runner user has uid 1001, so lets propagate this to the
-      # containers to simplify permission management of shared folders.
+      set -x
 
       for svc in `sudo podman container ls --format "{{ .Names }}"`; do
         if [ $svc != "dns" ]; then
-          sudo podman exec "$svc" usermod -u 1001 ci &
-          sudo podman exec "$svc" groupmod -g 1001 ci &
+          # 'sudo' calls 'unix_chkpwd' and this fails with
+          # openat(AT_FDCWD</>, "/etc/shadow", O_RDONLY|O_CLOEXEC) = -1 EACCES
+          # for unclear reason (CAP_DAC_* are granted)
+          retry sudo podman exec "$svc" chmod u+r /etc/shadow
+
+          # GitHub-hosted runner user has uid 1001, so lets propagate this to
+          # the containers to simplify permission management of shared folders.
+          retry sudo podman exec "$svc" usermod -u 1001 ci
+          retry sudo podman exec "$svc" groupmod -g 1001 ci
         fi
       done
-
-      wait
