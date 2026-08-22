@@ -327,3 +327,92 @@ are:
 
     base-keycloak --> keycloak
 ```
+
+## Pre-populated data
+
+For performance testing we have containers with prepopulated content.
+This content is used in some topologies (e.g. BigLDAP) to avoid
+creating large amount of users and groups during the test.
+
+### ldap container
+
+The ldap container includes two backup datasets: `base` and `largedata`.
+
+For your own experiments you can restore either backup using
+the `dsctl bak2db` command. The Directory Server **must be stopped**
+before performing the restore operation:
+
+    systemctl stop dirsrv@localhost.service
+    dsctl slapd-localhost bak2db largedata
+    systemctl start dirsrv@localhost.service
+
+This is done automatically by BigLDAP topology - no need to
+write extra steps in the test.
+
+### Users and groups in the containers
+
+In directory server we have POSIX-compatible users. All users use `posixAccount`
+and `inetUser` object classes with predefined password is `Secret123`.
+
+Groups use `posixGroup` and `groupOfNames` object classes. They have `memberUID`
+and `member` attributes to support both direct user membership (`rfc2307`) and
+nested groups (`rfc2307bis`).
+
+#### `group_1k_XY`
+
+We have 50 groups `group_1k_01`, `group_1k_02`, .. `group_1k_50`.
+
+Every group has 1000 users - `member_1k_<XY>_0001` to `member_1k_<XY>_1000`.
+
+#### `group_plain_jumbo`
+
+This is a large group containing directly 50000 users. Users in this group
+are called `member_plain_jumbo_00001` .. `member_plain_jumbo_50000`
+
+#### Nested groups
+
+Nested group name syntax is `nested_group_<index>_<depth>`.
+
+
+#### `group_1k_XY`
+
+We have 50 groups `group_1k_01`, `group_1k_02`, .. `group_1k_50`.
+
+Every group has 1000 users - `member_1k_<XY>_0001` to `member_1k_<XY>_1000`.
+
+#### `group_plain_jumbo`
+
+This is a large group containing directly 50000 users. Users in this group
+are called `member_plain_jumbo_00001` .. `member_plain_jumbo_50000`
+
+#### Nested groups
+
+Nested group name syntax is `nested_group_<index>_<depth>`.
+Groups and their content looks like
+
+    - nested_group_1_1
+        - group_1k_01
+        ...
+        - group_1k_10
+        - nested_group_1_2
+            - group_1k_11
+            ...
+            - group_1k_20
+            - nested_group_1_3
+                - group_1k_21
+                ...
+                - group_1k_30
+    - nested_group_2_1
+        - group_1k_31
+        ...
+        - group_1k_40
+        - nested_group_2_2
+            - group_1k_41
+            ...
+            - group_1k_50
+
+#### Users with many groups
+
+User `user_10k` is member of `group_1k_01` .. `group_1k_10`
+
+User `user_30k` is member of `group_1k_01` .. `group_1k_30`
