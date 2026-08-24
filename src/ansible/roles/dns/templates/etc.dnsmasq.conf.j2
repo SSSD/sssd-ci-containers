@@ -16,9 +16,11 @@ cache-size=0
 server=/redhat.com/10.11.5.19
 
 # These zones have their own DNS server
+{% if groups['ipa'] is defined and groups['ipa'] | length > 0 %}
 {% for host in groups['ipa'] %}
 server=/{{ '.'.join(hostvars[host].inventory_hostname.split('.')[1:]) }}/{{ hostvars[host]['ansible_facts']['default_ipv4']['address'] }}
 {% endfor %}
+{% endif %}
 {% if hostvars['dc.samba.test'] is defined %}
 server=/samba.test/{{ hostvars['dc.samba.test']['ansible_facts']['default_ipv4']['address'] }}
 {% endif %}

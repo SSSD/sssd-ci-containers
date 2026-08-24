@@ -27,7 +27,9 @@
   - name: Destroy any remaining kerberos TGT
     command: kdestroy -A
     failed_when: false
-  when: inventory_hostname == groups.ipa.0
+  when:
+  - '"ipa" in groups and groups["ipa"] | length > 0'
+  - inventory_hostname == groups['ipa'][0]
 
 - block:
   - name: Get IPA advise script for client setup for smart cards from IPA server
@@ -73,6 +75,7 @@
     command: kdestroy -A
     failed_when: false
   when:
+  - '"ipa" in groups and groups["ipa"] | length > 0'
   - inventory_hostname == groups.client.0
   - join_ipa
   - virt_smartcard
