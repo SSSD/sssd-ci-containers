@@ -10,6 +10,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+  - name: Install deb packages
+    shell: bash
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y docker-compose
+
   - name: Install python packages with older ansible for Centos 8
     if: ${{ inputs.tag == 'centos-8' }}
     shell: bash
@@ -17,16 +23,30 @@ runs:
       sudo pip3 install ansible==9.8 passlib
 
   - name: Install python packages
-    if: ${{ inputs.tag != 'centos-8' }}
+    if: ${{ inputs.tag != 'centos-8' && inputs.tag != 'fedora-45' && inputs.tag != 'fedora-46' }}
     shell: bash
     run: |
       sudo pip3 install ansible passlib
 
-  - name: Install deb packages
+  # Install ansible from devel branch to manage Fedora 45 and 46 with python 3.15
+  # This ugly hack is needed because the latest ansible version available
+  # in the official repositories is too old and unreleased 2.22 is needed.
+  # Devel ansible needs python 3.13 on the controller.
+  - name: Install ansible from devel branch
+    if: ${{ inputs.tag == 'fedora-45' || inputs.tag == 'fedora-46' }}
     shell: bash
     run: |
+      sudo apt-get install software-properties-common gpg -y
+      sudo add-apt-repository ppa:deadsnakes/ppa -y
       sudo apt-get update
-      sudo apt-get install -y docker-compose
+      sudo apt-get install python3.13 python3.13-venv python3.13-dev -y
+      sudo python3.13 -m venv /opt/ansible-venv
+      sudo /opt/ansible-venv/bin/pip install passlib
+      sudo /opt/ansible-venv/bin/pip install https://github.com/ansible/ansible/archive/devel.tar.gz
+      sudo /opt/ansible-venv/bin/pip install ansible --no-deps
+      for bin in /opt/ansible-venv/bin/ansible*; do
+        sudo ln -sf "$bin" "/usr/local/bin/$(basename "$bin")"
+      done
 
   - name: Print package versions
     shell: bash
