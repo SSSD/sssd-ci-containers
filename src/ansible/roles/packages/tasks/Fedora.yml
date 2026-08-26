@@ -16,6 +16,15 @@
   set_fact:
     extended_packageset: "{{ extended_packageset | default('no') }}"
 
+# Broken GPG keys / missing source metalink on Fedora rawhide (F46).
+# SSSD does not need cisco-openh264.
+- name: Remove fedora-cisco-openh264.repo
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/share/dnf5/repos.d/fedora-cisco-openh264.repo
+    - /etc/yum.repos.d/fedora-cisco-openh264.repo
 - name: Install packages for ground base image
   block:
   - name: Install dnf plugins
