@@ -63,6 +63,30 @@
       ')
       allow pcscd_t node_t:tcp_socket node_bind;
 
+# EL8 libsemanage commits with rename(active, previous) then
+# rename(tmp, active). Overlayfs cannot rename merged lower-layer dirs
+# (EXDEV / ENOTEMPTY). Replace the whole targeted store so those dirs
+# live only on the writable layer. Own marker so this is not tied to
+# the later semodule virtcacard.cil.done file.
+- name: Copy SELinux policy store onto overlay upper layer
+  shell: |
+    set -e
+    parent=/var/lib/selinux
+    store=$parent/targeted
+    marker={{ (virt_smartcard_dir ~ '/selinux-overlay-fix.done') | quote }}
+    if [ ! -d "$store" ]; then
+      touch "$marker"
+      exit 0
+    fi
+    rm -rf "$parent/targeted.overlay-fix"
+    cp -a "$store" "$parent/targeted.overlay-fix"
+    rm -rf "$store"
+    mv "$parent/targeted.overlay-fix" "$store"
+    touch "$marker"
+  args:
+    creates: "{{ virt_smartcard_dir }}/selinux-overlay-fix.done"
+  when: (ansible_facts['distribution_major_version'] | default('0')) | int <= 8
+
 - name: Install custom semodule
   shell: |
     set -e
