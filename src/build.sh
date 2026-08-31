@@ -92,9 +92,18 @@ function build_base_image {
     # base images: UNAVAILABLE=samba matches name=base-samba -> ci-base-samba
     # other images: UNAVAILABLE=client-devel matches name=client-devel -> ci-client-devel
     if [ "base-$svc" = "$name" ]; then
-      quay_image="quay.io/sssd/ci-base-$svc:latest"
+      # Ansible working with centos-8 supports Fedora upto 44.
+      if [ "$TAG" == "centos-8" ] && [ "$svc" == "samba" ]; then
+        quay_image="quay.io/sssd/ci-base-$svc:fedora-44"
+      else
+        quay_image="quay.io/sssd/ci-base-$svc:latest"
+      fi
     elif [ "$svc" = "$name" ]; then
-      quay_image="quay.io/sssd/ci-$name:latest"
+      if [ "$TAG" == "centos-8" ] && [ "$svc" == "samba" ]; then
+        quay_image="quay.io/sssd/ci-$name:fedora-44"
+      else
+        quay_image="quay.io/sssd/ci-$name:latest"
+      fi
     else
       continue
     fi

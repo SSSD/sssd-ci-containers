@@ -16,24 +16,29 @@ runs:
       sudo apt-get update
       sudo apt-get install -y docker-compose
 
+  # C8S has python 3.6 which is only supported by ansible 9.8. (core 2.16)
+  # When ubuntu-latest becomes 26.04, we will need to boostrap python 3.12 with ansible 9.8.
+  # See https://docs.ansible.com/projects/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-target-node-python-support
   - name: Install python packages with older ansible for Centos 8
     if: ${{ inputs.tag == 'centos-8' }}
     shell: bash
     run: |
       sudo pip3 install ansible==9.8 passlib
 
-  - name: Install python packages
-    if: ${{ inputs.tag != 'centos-8' && inputs.tag != 'fedora-45' && inputs.tag != 'fedora-46' }}
-    shell: bash
-    run: |
-      sudo pip3 install ansible passlib
+  ## TODO: Uncomment this when ansible-core 2.22 is available in the official repositories
+  #- name: Install python packages
+  #  if: ${{ inputs.tag != 'centos-8' }}
+  #  shell: bash
+  #  run: |
+  #    sudo pip3 install ansible passlib
 
-  # Install ansible from devel branch to manage Fedora 45 and 46 with python 3.15
+  # Install ansible from devel branch to manage Fedora >= 45 with python 3.15
+  # As C9S and C10S use samba on Fedora 45 we use this for everything apart from C8S.
   # This ugly hack is needed because the latest ansible version available
   # in the official repositories is too old and unreleased 2.22 is needed.
   # Devel ansible needs python 3.13 on the controller.
   - name: Install ansible from devel branch
-    if: ${{ inputs.tag == 'fedora-45' || inputs.tag == 'fedora-46' }}
+    if: ${{ inputs.tag != 'centos-8' }}
     shell: bash
     run: |
       sudo apt-get install software-properties-common gpg -y
