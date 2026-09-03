@@ -198,6 +198,7 @@
       name:
       - autofs
       - augeas
+      - chrony
       - krb5-workstation
       - ldb-tools
       - net-tools

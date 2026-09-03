@@ -17,6 +17,7 @@
     - rsync
     - autofs
     - augeas
+    - chrony
     - krb5-workstation
     - '{{ ipa.client }}'
     - oddjob
