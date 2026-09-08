@@ -15,6 +15,16 @@
     type: string
     state: present
 
+- name: Ensure .NET Framework 4.8 is installed on Windows Server 2019
+  ansible.windows.win_package:
+    path: https://go.microsoft.com/fwlink/?linkid=2088631
+    product_id: '{92D58119-001C-32B0-B22E-293F08411DD0}'
+    arguments: /q /norestart
+    state: present
+  when:
+    - "'2019' in ansible_facts['distribution']"
+    - "ansible_facts['os_family'] == 'Windows'"
+
 - name: Detect cygwin
   win_stat:
     path: 'C:\cygwin64\etc'
