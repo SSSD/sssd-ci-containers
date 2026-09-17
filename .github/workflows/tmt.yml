@@ -1,0 +1,78 @@
+name: TMT
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - 'tmt/**'
+    - '.fmf/**'
+    - '.github/workflows/tmt.yml'
+  pull_request:
+    paths:
+    - 'tmt/**'
+    - '.fmf/**'
+    - '.github/workflows/tmt.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  # Test the tmt helper scripts directly.
+  tmt-scripts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Check scripts syntax
+      run: bash -n tmt/*.sh
+
+    # setup.sh brings up the containers and installs ci-exec and
+    # ci-install-copr into /usr/local/bin, the following steps use them.
+    - name: Setup containers
+      env:
+        LIMIT: dns client ipa
+      run: ./tmt/setup.sh
+
+    - name: Test ci-exec in a single container
+      run: ci-exec --where client --user root -- echo "hello from client"
+
+    - name: Test ci-exec in multiple containers with a shebang
+      run: |
+        ci-exec --where "client ipa" --user root <<'EOF'
+        #!/bin/bash
+        echo "running on $(hostname)"
+        EOF
+
+    - name: Test ci-install-copr from @sssd/nightly
+      run: |
+        ci-install-copr \
+          --where "client ipa" \
+          --project @sssd/nightly \
+          --packages "sssd-common sssd-client"
+
+    - name: Verify packages were installed from the copr repository
+      run: |
+        ci-exec --where "client ipa" --user root <<'EOF'
+        set -ex
+        rpm -q sssd-common sssd-client
+        dnf repolist | grep -i copr
+        EOF
+
+  # Run the example plan the same way tmt/Testing Farm would, but on the runner.
+  tmt:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      TMT_FEELING_SAFE: "1"   # required for the local provision method
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install tmt
+      run: pipx install tmt
+
+    - name: Run the example plan on the runner
+      run: tmt run -a -vvv provision --how local plan --name /tmt/plans/example

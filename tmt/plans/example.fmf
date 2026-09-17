@@ -1,0 +1,27 @@
+summary: Example plan for sssd-ci-containers helpers
+description: |
+    Bring up the containers with tmt/setup.sh, install SSSD from a Copr
+    repository with tmt/ci-install-copr.sh and verify it with tmt/ci-exec.sh.
+
+    Run it with `tmt run` (provisions a virtual machine) or override the
+    provision method, for example `tmt run -a provision --how local` to run
+    directly on a CI runner.
+
+provision:
+    how: virtual
+    hardware:
+      memory: ">= 4 GB"
+
+prepare:
+    - name: Setup containers
+      how: shell
+      script: LIMIT="dns client ipa" $TMT_TREE/tmt/setup.sh
+
+    - name: Install SSSD from @sssd/nightly
+      how: shell
+      script: ci-install-copr --where "client ipa" --project @sssd/nightly --packages "sssd sssd-common"
+
+execute:
+    how: tmt
+    script: ci-exec --where client --user root -- sssd --version
+    duration: 5m
