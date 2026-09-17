@@ -1,3 +1,5 @@
+DOCKER ?= $(shell command -v podman >/dev/null 2>&1 && echo podman || echo docker)
+
 # make build BASE_IMAGE=fedora:latest TAG=latest
 build:
 	/bin/bash -c "src/build.sh"
@@ -7,7 +9,7 @@ push:
 	/bin/bash -c "src/push.sh"
 
 up:
-	docker-compose up --no-recreate --detach ${LIMIT}
+	$(DOCKER) compose up --no-recreate --detach ${LIMIT}
 
 up-passkey:
 	$(eval HIDRAW := $(shell fido2-token -L | cut -f1 -d:))
@@ -17,26 +19,26 @@ up-passkey:
 		exit 1; \
 	fi
 
-	@HIDRAW=${HIDRAW} docker-compose -f docker-compose.yml -f docker-compose.passkey.yml up \
+	@HIDRAW=${HIDRAW} $(DOCKER) compose -f docker-compose.yml -f docker-compose.passkey.yml up \
 	--no-recreate --detach ${LIMIT}
 
-	@docker-compose -f docker-compose.yml -f docker-compose.passkey.yml exec client \
+	@$(DOCKER) compose -f docker-compose.yml -f docker-compose.passkey.yml exec client \
 	/usr/bin/setfacl -m u:sssd:rw ${HIDRAW}
 
 # deprecated
 up-keycloak:
-	docker-compose -f docker-compose.yml up \
+	$(DOCKER) compose -f docker-compose.yml up \
 	--no-recreate --detach ${LIMIT}
 
 stop:
-	docker-compose stop
+	$(DOCKER) compose stop
 
 down:
-	docker-compose -f docker-compose.yml \
+	$(DOCKER) compose -f docker-compose.yml \
 	-f docker-compose.passkey.yml down
 
 update:
-	docker-compose pull
+	$(DOCKER) compose pull
 
 trust-ca:
 	/bin/bash -c "src/tools/trust-ca.sh"
