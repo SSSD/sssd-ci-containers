@@ -28,15 +28,6 @@ runs:
       sudo apt-get update
       sudo apt-get install -y docker-compose
 
-      # Create wrapper script for docker-compose that uses podman compose
-      # /usr/bin/docker-compose is not available on ubuntu-26-04 even when
-      # installed
-      if ! command -v docker-compose &> /dev/null; then
-        echo -e '#!/bin/bash\nexec podman compose "$@"' | sudo tee /usr/bin/docker-compose > /dev/null
-        sudo chmod +x /usr/bin/docker-compose
-        docker-compose --help
-      fi
-
   - name: Start podman socket
     shell: bash
     run: |
@@ -75,7 +66,7 @@ runs:
     run: |
       export REGISTRY="${{ inputs.registry }}"
       export TAG="${{ inputs.tag }}"
-      docker-compose --project-directory "${{ inputs.path }}" config
+      podman compose --project-directory "${{ inputs.path }}" config
 
   - name: Start containers
     uses: nick-fields/retry@v2
