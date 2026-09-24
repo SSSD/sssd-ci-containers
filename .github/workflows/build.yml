@@ -37,7 +37,7 @@ jobs:
       uses: ./.github/actions/get-build-matrix
 
   fedora:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: 'get-matrix'
     permissions:
       contents: read
@@ -69,7 +69,7 @@ jobs:
         extra_tags: ${{ matrix.image.extra }}
 
   other:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: 'fedora'
     if: ${{ !cancelled() }}
     permissions:
