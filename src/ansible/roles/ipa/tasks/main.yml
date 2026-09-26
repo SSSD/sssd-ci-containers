@@ -104,6 +104,16 @@
       {{ ipa_password }}
       {{ ipa_password }}
 
+- name: Allow immediate password changes on global policy
+  shell: |
+    kinit admin
+    ipa pwpolicy-mod --minlife=0
+  args:
+    stdin: '{{ ipa_password }}'
+  register: global_minlife
+  failed_when:
+  - 'global_minlife.rc != 0 and "no modifications" not in (global_minlife.stderr ~ global_minlife.stdout)'
+
 - name: Add reverse zone for artificial hosts
   shell: |
     kinit admin
