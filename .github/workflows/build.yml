@@ -5,12 +5,14 @@ on:
     - master
     paths:
     - '.github/workflows/build.yml'
+    - '.github/actions/**'
     - 'src/**'
     - 'data/**'
     - 'docker-compose.yml'
   pull_request:
     paths:
     - '.github/workflows/build.yml'
+    - '.github/actions/**'
     - 'src/**'
     - 'data/**'
     - 'docker-compose.yml'
