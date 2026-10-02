@@ -1,0 +1,91 @@
+all:
+  children:
+    local:
+      hosts:
+        localhost:
+      vars:
+        ansible_connection: local
+        ansible_python_interpreter: /usr/bin/python3
+    base:
+      children:
+        base_client:
+          hosts:
+            base-client
+        base_ipa:
+          hosts:
+            base-ipa
+        base_ldap:
+          hosts:
+            base-ldap
+        base_samba:
+          hosts:
+            base-samba
+        base_nfs:
+          hosts:
+            base-nfs
+        base_kdc:
+          hosts:
+            base-kdc
+        base_keycloak:
+          hosts:
+            base-keycloak
+        base_ground:
+          hosts:
+            base-ground
+        client_devel:
+          hosts:
+            client-devel
+        ipa_devel:
+          hosts:
+            ipa-devel
+      vars:
+        ansible_connection: podman
+        ansible_host: sssd-wip-base
+        ansible_python_interpreter: /usr/bin/python3
+        extended_packageset: yes
+    services:
+      children:
+        client:
+          hosts:
+            client.test:
+              ansible_host: client
+        ipa:
+          hosts:
+            master.ipa.test:
+              ansible_host: ipa
+            master.ipa2.test:
+              ansible_host: ipa2
+        ldap:
+          hosts:
+            master.ldap.test:
+              ansible_host: ldap
+        samba:
+          hosts:
+            dc.samba.test:
+              ansible_host: samba
+        nfs:
+          hosts:
+            nfs.test:
+              ansible_host: nfs
+        kdc:
+          hosts:
+            kdc.test:
+              ansible_host: kdc
+        keycloak:
+          hosts:
+            master.keycloak.test:
+              ansible_host: keycloak
+      vars:
+        ansible_connection: podman
+        ansible_python_interpreter: /usr/bin/python3
+    windows:
+      children:
+        ad:
+          hosts:
+            dc.ad.test:
+              ansible_host: 172.16.200.10
+      vars:
+        ansible_connection: winrm
+        ansible_port: 5985
+        ansible_user: Administrator
+        ansible_password: vagrant
