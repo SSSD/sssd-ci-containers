@@ -40,6 +40,7 @@ rev-server=10.255.252.0/24,{{ hostvars['dc.samba.test']['ansible_facts']['defaul
 {% if groups['ad'] is defined and groups['ad'] | length > 0 %}
 {% for ad_host in groups['ad'] %}
 {% set ad_ip = hostvars[ad_host]['ansible_facts']['ip_addresses'][0] %}
+rev-server=10.255.250.0/24,{{ ad_ip }}
 rev-server={{ ad_ip.split('.')[0:3] | join('.') }}.0/24,{{ ad_ip }}
 {% endfor %}
 {% endif %}
