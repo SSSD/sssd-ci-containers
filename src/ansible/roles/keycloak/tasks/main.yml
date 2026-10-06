@@ -73,7 +73,7 @@
     su - keycloak -c '''
     export KEYCLOAK_ADMIN=admin
     export KEYCLOAK_ADMIN_PASSWORD={{ service.keycloak.admin_password }}
-    export KC_HOSTNAME=$(hostname):8443
+    export KC_HOSTNAME={{ inventory_hostname }}:8443
     export KC_HTTPS_CERTIFICATE_FILE=/var/data/certs/master.keycloak.test.crt
     export KC_HTTPS_CERTIFICATE_KEY_FILE=/var/data/certs/master.keycloak.test.key
     export KC_HTTPS_TRUST_STORE_FILE=/var/data/certs/master.keycloak.test.keystore
