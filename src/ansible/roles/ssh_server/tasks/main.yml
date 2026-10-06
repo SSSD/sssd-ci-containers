@@ -20,6 +20,7 @@
     mode: 0600
     content: |
       PermitRootLogin yes
+      PerSourcePenalties no
   when: not stat_ecdsa_key.stat.exists
 
 - name: Start SSH daemon
