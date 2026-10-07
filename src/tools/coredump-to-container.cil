@@ -1,0 +1,6 @@
+; Allow the host systemd-coredump to connect to a container's internal
+; /run/systemd/coredump socket when forwarding a coredump into the container
+; (CoredumpReceive=yes). Without this, SELinux denies
+;   systemd_coredump_t -> container_file_t : sock_file { write }
+; and the dump silently falls back to being stored on the host.
+(allow systemd_coredump_t container_file_t (sock_file (write)))
