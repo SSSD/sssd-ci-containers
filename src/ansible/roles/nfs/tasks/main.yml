@@ -1,3 +1,16 @@
+# F45 got nfs-utils update that is not compatible with older kernel,
+# thus using fedora-45 containers on F44 host will cause mount nfs to hang.
+#
+# Disabling NFSv4 and using NFSv3 is a working workaround.
+#
+# See: https://bugzilla.redhat.com/show_bug.cgi?id=2547879
+- name: Disable NFSv4
+  lineinfile:
+    path: /etc/nfs.conf
+    insertafter: '^\[nfsd\]'
+    line: 'vers4=n'
+    state: present
+
 - name: Start NFS services
   service:
     name: '{{ item }}.service'
