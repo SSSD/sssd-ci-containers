@@ -124,6 +124,8 @@ services:
     volumes:
     - ./shared:/shared:rw
     - /sys/devices/platform:/sys/devices/platform:rw
+    devices:
+    - /dev/autofs:/dev/autofs
     device_cgroup_rules:
     - c 240:* rmw
     - c 241:* rmw
