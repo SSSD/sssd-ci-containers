@@ -395,6 +395,8 @@
       name:
       - python3-virtualenv
       - bzip2
+      - gtk3
+      - dbus-glib
     when: selenium_support
   when: "'base_client' in group_names or 'client' in group_names"
 
