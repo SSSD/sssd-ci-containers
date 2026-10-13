@@ -63,40 +63,46 @@
     include_sub_features: yes
     include_management_tools: yes
 
-- name: Install powershell modules
+- name: Copy PSIni module to remote
+  ansible.windows.win_copy:
+    src: psini-3.1.4.nupkg
+    dest: 'C:\Windows\Temp\psini-3.1.4.zip'
+
+- name: Install PSIni module from vendored package
   win_shell: |
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Get-PackageProvider NuGet -ForceBootstrap
-    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
-    Install-Module PSIni -RequiredVersion 3.1.4 -Confirm:$False
+    $modPath = 'C:\Program Files\WindowsPowerShell\Modules\PSIni\3.1.4'
+    New-Item -ItemType Directory -Path $modPath -Force | Out-Null
+    Expand-Archive -Path 'C:\Windows\Temp\psini-3.1.4.zip' -DestinationPath $modPath -Force
+    Remove-Item -Path "$modPath\_rels", "$modPath\package",
+      "$modPath\[Content_Types].xml", "$modPath\PSIni.nuspec" `
+      -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item 'C:\Windows\Temp\psini-3.1.4.zip' -Force
+  args:
+    creates: 'C:\Program Files\WindowsPowerShell\Modules\PSIni\3.1.4\PSIni.psd1'
 
-- name: Install chocolatey
-  win_chocolatey:
-    name: chocolatey
+- name: Create BIND tools directory
+  ansible.windows.win_file:
+    path: 'C:\BIND'
+    state: directory
+
+- name: Copy BIND tools zip to remote
+  ansible.windows.win_copy:
+    src: bind9-toolsonly-9.16.28-x64.zip
+    dest: 'C:\Windows\Temp\bind9-toolsonly.zip'
+
+- name: Extract BIND tools
+  win_shell: |
+    Expand-Archive -Path 'C:\Windows\Temp\bind9-toolsonly.zip' `
+      -DestinationPath 'C:\BIND' -Force
+    Remove-Item 'C:\Windows\Temp\bind9-toolsonly.zip'
+  args:
+    creates: 'C:\BIND\dig.exe'
+
+- name: Add BIND tools to system PATH
+  ansible.windows.win_path:
+    elements: 'C:\BIND'
+    scope: machine
     state: present
-  register: choco_install
-  changed_when: choco_install.changed or (choco_install.msg | default('')) is search('installed')
-
-- name: Update chocolatey
-  win_command: choco upgrade chocolatey -y
-  when: choco_install.changed
-  changed_when: 'False'
-
-- name: Install bind package
-  win_chocolatey:
-    name: bind-toolsonly
-    state: present
-    # This playbook use to work without the version specified, root cause for the change is still unknown
-    version: 9.16.28
-  register: bind_install
-  until: bind_install is succeeded
-  retries: 5
-  delay: 60
-
-- name: Debug bind installation
-  debug:
-    msg: "BIND tools installed: {{ bind_install.changed | default('no change') }}"
-  when: bind_install is defined
 
 - name: Make sure Active Directory Web Services is running
   win_service:
