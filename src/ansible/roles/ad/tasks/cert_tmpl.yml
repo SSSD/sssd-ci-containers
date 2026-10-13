@@ -1,5 +1,6 @@
 # Certificate Template setup generated with Gemini assistance
 
+
 - name: Setup Certificate Templates for Smart Card Authentication
   block:
 
@@ -54,6 +55,18 @@
     loop: "{{ templates }}"
     ignore_errors: yes
 
+  - name: Bootstrap NuGet package provider
+    # PowerShellGet's Install-Module requires the NuGet provider. This used to be a side
+    # effect of the old "Install powershell modules" task in main.yml, which bootstrapped
+    # NuGet while installing PSIni from PSGallery. That task was replaced with a vendored,
+    # offline PSIni install (no NuGet/PSGallery dependency), so bootstrap NuGet here
+    # explicitly for this task's sake instead.
+    win_shell: |
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+      Get-PackageProvider NuGet -ForceBootstrap
+    args:
+      executable: PowerShell.exe
+
   - name: Update PowerShellGet module
     win_shell: |
       Install-Module -Name PowerShellGet -Force -SkipPublisherCheck -AllowClobber
@@ -98,17 +111,24 @@
     retries: 60
     delay: 15
 
-  - name: Install OpenSSL using Win_Chocolatey
-    win_chocolatey:
-      name: openssl
+  - name: Copy OpenSSL installer to remote
+    ansible.windows.win_copy:
+      src: Win64OpenSSL_Light-3_3_7.msi
+      dest: 'C:\Windows\Temp\Win64OpenSSL_Light-3_3_7.msi'
+
+  - name: Install OpenSSL from vendored MSI
+    ansible.windows.win_package:
+      path: 'C:\Windows\Temp\Win64OpenSSL_Light-3_3_7.msi'
+      product_id: '{DDB9F7E3-FB58-456E-B753-546700BDACEB}'
       state: present
-      timeout: 3000
+      arguments: /qn
     register: openssl_install
-    # Infrastructure flake, not a package/version issue: parallel CI runs can trigger rate limiting / slow downloads
-    # from the OpenSSL vendor URL, same class of issue fixed for bind-toolsonly in main.yml.
-    until: openssl_install is succeeded
-    retries: 5
-    delay: 60
+
+  - name: Remove OpenSSL installer
+    ansible.windows.win_file:
+      path: 'C:\Windows\Temp\Win64OpenSSL_Light-3_3_7.msi'
+      state: absent
+    when: openssl_install.changed
 
   - name: Add OpenSSL directory to machine PATH
     ansible.windows.win_path:
