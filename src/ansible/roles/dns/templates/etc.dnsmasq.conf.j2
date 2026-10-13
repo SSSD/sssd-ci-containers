@@ -59,6 +59,13 @@ address=/{{ host }}/{{ hostvars[host]['ansible_facts']['ip_addresses'][0] }}
 {% endif %}
 {% endfor %}
 
+# Add a second ldap (instance) for failover located on the same server.
+# SSSD keys its failover server list on the hostname, so the alias yields a
+# separate server entry even though the address is shared.
+{% if hostvars['master.ldap.test'] is defined %}
+address=/master2.ldap.test/{{ hostvars['master.ldap.test']['ansible_facts']['default_ipv4']['address'] }}
+{% endif %}
+
 # All hosts PTR records
 {% for host in groups['all'] %}
 {% if hostvars[host]['ansible_facts']['system'] == 'Linux' %}
