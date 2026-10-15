@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 #
-# Select which tests to run based on a pull request's diff.
+# Select which tests to run from SELECT_TESTS or a pull request's diff.
 #
-# Inspects the diff of a GitHub pull request and decides whether the change
-# is test-only. If so, it writes a pytest -k filter expression naming only the
-# tests that were added or modified into an env file; the caller is expected
-# to pass it as -k "$SELECT_TESTS" when running pytest. When the change is not
-# test-only (or there is no pull request), nothing is written, meaning the
-# caller should run the full test suite.
+# Uses SELECT_TESTS if nonempty; otherwise inspects the diff of a GitHub pull
+# request and decides whether the change is test-only. If so, it writes a
+# pytest -k filter expression naming only the tests that were added or modified
+# into an env file as SELECTED_TESTS; the caller is expected to pass it as
+# -k "${SELECTED_TESTS:-}" when running pytest. When the change is not test-only
+# (or there is no pull request), nothing is written, meaning the caller should
+# run the full test suite.
+#
+# Keep SELECTED_TESTS out of the plan's initial environment so inline scripts
+# expand it at runtime, after the tests have been selected.
 #
 # Usage:
 #   ci-select-tests.sh --repo OWNER/REPO [options]
@@ -18,7 +22,7 @@
 #   --test-dir DIR     Repo-relative directory holding the tests, used to
 #                       decide whether a change is test-only.
 #                                                  Default: src/tests/system/tests
-#   --env-file FILE    File to write SELECT_TESTS into.
+#   --env-file FILE    File to write SELECTED_TESTS into.
 #                                                  Default: $TMT_PLAN_ENVIRONMENT_FILE
 #
 # Examples:
@@ -51,6 +55,13 @@ fi
 if [[ -z "$env_file" ]]; then
     echo "ERROR: No env file given, use --env-file or set TMT_PLAN_ENVIRONMENT_FILE." >&2
     exit 1
+fi
+
+if [[ -n "${SELECT_TESTS:-}" ]]; then
+    echo "SELECTED_TESTS=$SELECT_TESTS" >> "$env_file"
+    echo "Set SELECTED_TESTS from SELECT_TESTS in env file:"
+    grep '^SELECTED_TESTS=' "$env_file"
+    exit 0
 fi
 
 if [[ -z "$pr" ]]; then
@@ -92,13 +103,13 @@ TESTS=$(echo -e "$ADDED\n$MODIFIED" | sort | uniq)
 echo "Following tests were added or modified (or token is present in diff):"
 echo "$TESTS"
 
-# Store only the -k expression. The caller passes it as -k "$SELECT_TESTS" so
+# Store only the -k expression. The caller passes it as -k "${SELECTED_TESTS:-}" so
 # an empty value (unset here) makes pytest run all tests. Do not embed the -k
 # flag or quotes: this crosses to the test as a runtime env var, which the
 # shell does not re-parse (unlike GitHub Actions text substitution).
 if [[ -n "$TESTS" ]]; then
     FILTER=$(echo "$TESTS" | xargs | sed 's/ / or /g')
-    echo "SELECT_TESTS=$FILTER" >> "$env_file"
-    echo "Set SELECT_TESTS in env file:"
-    grep SELECT_TESTS "$env_file"
+    echo "SELECTED_TESTS=$FILTER" >> "$env_file"
+    echo "Set SELECTED_TESTS in env file:"
+    grep '^SELECTED_TESTS=' "$env_file"
 fi
