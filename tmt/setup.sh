@@ -17,6 +17,11 @@
 #   LIMIT      Space separated services to run.  Default: all
 #   OVERRIDE   docker-compose override content.  Default: repository default
 #
+# The chosen tag is stored as SELECTED_TAG in $TMT_PLAN_ENVIRONMENT_FILE when
+# that variable is nonempty. Otherwise, setup runs without persisting the tag.
+# Keep SELECTED_TAG out of the plan's initial environment so inline scripts
+# expand it at runtime, after setup has selected the tag.
+#
 
 set -ex -o pipefail
 
@@ -64,7 +69,11 @@ function get_tag {
         exit 1
     fi
 }
+
 TAG="${TAG:-$(get_tag)}"
+if [[ -n "${TMT_PLAN_ENVIRONMENT_FILE:-}" ]]; then
+    echo "SELECTED_TAG=$TAG" >> "$TMT_PLAN_ENVIRONMENT_FILE"
+fi
 
 DOCKER_HOST="unix:///run/podman/podman.sock"
 export REGISTRY TAG DOCKER_HOST
