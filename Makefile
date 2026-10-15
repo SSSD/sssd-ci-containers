@@ -30,6 +30,9 @@ up-keycloak:
 	$(DOCKER) compose -f docker-compose.yml up \
 	--no-recreate --detach ${LIMIT}
 
+start:
+	docker-compose start
+
 stop:
 	$(DOCKER) compose stop
 
