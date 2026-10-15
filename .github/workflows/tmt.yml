@@ -33,7 +33,11 @@ jobs:
     - name: Setup containers
       env:
         LIMIT: dns client ipa
-      run: ./tmt/setup.sh
+        TAG: fedora-latest
+      run: TMT_PLAN_ENVIRONMENT_FILE="$GITHUB_ENV" ./tmt/setup.sh
+
+    - name: Verify selected container tag
+      run: test "${SELECTED_TAG:-}" = "fedora-latest"
 
     - name: Test ci-exec in a single container
       run: ci-exec --where client --user root -- echo "hello from client"
