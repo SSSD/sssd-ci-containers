@@ -57,6 +57,21 @@ function base_exec {
   ${DOCKER} exec sssd-wip-base /bin/bash -c "$1"
 }
 
+function dnf_resilience {
+    # CI runners have no IPv6 egress, but the CentOS and Fedora mirror names
+    # publish AAAA records, so dnf can pick a mirror it cannot reach and fail
+    # with "Could not resolve host" or "All mirrors were tried". Force IPv4 and
+    # give slow mirrors more room before giving up.
+    #
+    # base-ground is the ancestor of every other image, so this applies to all
+    # of them. Skipped on apt based images, which have no dnf.conf.
+    base_exec '[ -f /etc/dnf/dnf.conf ] || exit 0
+      grep -q "^ip_resolve=" /etc/dnf/dnf.conf || echo "ip_resolve=4" >> /etc/dnf/dnf.conf
+      grep -q "^timeout="    /etc/dnf/dnf.conf || echo "timeout=60"   >> /etc/dnf/dnf.conf
+      grep -q "^retries="    /etc/dnf/dnf.conf || echo "retries=20"   >> /etc/dnf/dnf.conf
+      grep -q "^minrate="    /etc/dnf/dnf.conf || echo "minrate=100"  >> /etc/dnf/dnf.conf'
+}
+
 function c8s_repo {
     # Update repos to working ones
     ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s/mirrorlist/#mirrorlist/g" /etc/yum.repos.d/CentOS-* || true'
@@ -118,6 +133,7 @@ function build_base_image {
   echo "Building $name from $from"
   ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
+    dnf_resilience
     c8s_repo
     base_install_python
   fi
