@@ -1,6 +1,8 @@
 #!/opt/test_venv/bin/python3
 
+import os
 import sys
+import tempfile
 
 from selenium import webdriver
 from datetime import datetime
@@ -9,6 +11,15 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+# Create a isolated runtime directory for the 'nobody' user
+runtime_dir = tempfile.mkdtemp(prefix="selenium_runtime_")
+os.chmod(runtime_dir, 0o700)
+
+# Update environment variables for the current process
+env = os.environ.copy()
+env["XDG_RUNTIME_DIR"] = runtime_dir
+env["HOME"] = runtime_dir  # Ensures dconf/profile writes to a safe location
 
 if (len(sys.argv) - 1) != 3:
     print("Incorrect number of arguments")
@@ -29,12 +40,14 @@ options.binary_location = "/opt/test_venv/bin/firefox"
 if  parse(webdriver.__version__) < parse('4.10.0'):
     options.headless = True
     driver = webdriver.Firefox(executable_path="/opt/test_venv/bin/geckodriver",
-                            options=options)
+        options=options, env=env)
 else:
     options.add_argument('-headless')
     service = webdriver.FirefoxService(
         executable_path="/opt/test_venv/bin/geckodriver",
-        service_args=['--log', 'debug'], log_output="/tmp/123gecko.log")
+        service_args=['--log', 'debug'],
+        log_output="/tmp/123gecko.log",
+        env=env)
     driver = webdriver.Firefox(options=options, service=service)
 
 driver.get(verification_uri)

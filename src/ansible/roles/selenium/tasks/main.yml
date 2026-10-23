@@ -1,5 +1,14 @@
 - name: Setup selenium for running test logins against Identity Providers
   block:
+  - name: Install packages required for running selenium
+    dnf:
+      state: present
+      name:
+      - python3-virtualenv
+      - bzip2
+      - gtk3
+      - dbus-glib
+
   - name: Install selenium into the specified (virtualenv), inheriting globally installed modules
     pip:
       name: selenium==4.19.0
@@ -41,5 +50,22 @@
       owner: root
       group: root
       mode: 0755
+
+  - name: Copy idp_login_entra_id.py
+    copy:
+      src: idp_login_entra_id.py
+      dest: "{{ test_venv }}/bin/idp_login_entra_id.py"
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Configure SSH daemon without pre-generated hostkey
+    ansible.builtin.copy:
+      dest: /etc/ssh/sshd_config.d/05-idp-testing.conf
+      owner: root
+      group: root
+      mode: 0644
+      content: |
+        KbdInteractiveAuthentication yes
 
   when: selenium_support
