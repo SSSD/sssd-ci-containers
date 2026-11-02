@@ -12,6 +12,11 @@
 #
 # Keep SELECTED_TESTS out of the plan's initial environment so inline scripts
 # expand it at runtime, after the tests have been selected.
+# Value of SELECTED_TESTS should be quoted: tmt reads this env file with shlex.split(),
+# re-tokenizing on whitespace. A bare "a or b" would be split into the
+# tokens "a", "or", "b"; the ones without "=" then make tmt fail with
+# "Failed to extract variables from 'dotenv' format." The quotes are
+# consumed by shlex, so tmt stores the value without them.
 #
 # Usage:
 #   ci-select-tests.sh --repo OWNER/REPO [options]
@@ -58,7 +63,7 @@ if [[ -z "$env_file" ]]; then
 fi
 
 if [[ -n "${SELECT_TESTS:-}" ]]; then
-    echo "SELECTED_TESTS=$SELECT_TESTS" >> "$env_file"
+    echo "SELECTED_TESTS=\"$SELECT_TESTS\"" >> "$env_file"
     echo "Set SELECTED_TESTS from SELECT_TESTS in env file:"
     grep '^SELECTED_TESTS=' "$env_file"
     exit 0
@@ -105,11 +110,11 @@ echo "$TESTS"
 
 # Store only the -k expression. The caller passes it as -k "${SELECTED_TESTS:-}" so
 # an empty value (unset here) makes pytest run all tests. Do not embed the -k
-# flag or quotes: this crosses to the test as a runtime env var, which the
-# shell does not re-parse (unlike GitHub Actions text substitution).
+# flag: that crosses to the test as a runtime env var, which the shell does not
+# re-parse (unlike GitHub Actions text substitution).
 if [[ -n "$TESTS" ]]; then
     FILTER=$(echo "$TESTS" | xargs | sed 's/ / or /g')
-    echo "SELECTED_TESTS=$FILTER" >> "$env_file"
+    echo "SELECTED_TESTS=\"$FILTER\"" >> "$env_file"
     echo "Set SELECTED_TESTS in env file:"
     grep '^SELECTED_TESTS=' "$env_file"
 fi
