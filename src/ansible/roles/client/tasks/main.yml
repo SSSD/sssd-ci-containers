@@ -57,6 +57,16 @@
   - '"ad" in groups and groups["ad"] | length > 0'
   - join_ad
 
+# The client is not enrolled into the Kerberos realm, its host keytab is only
+# provisioned so that SSSD can perform a SASL GSSAPI bind against the LDAP
+# server. The realm is not an identity domain, it is not added to domains.
+- name: Join KDC realm
+  ansible.builtin.include_tasks:
+    file: enroll_KDC.yml
+  when:
+  - '"kdc" in groups and groups["kdc"] | length > 0'
+  - join_kdc
+
 - name: Stop SSSD
   service:
     name: sssd.service
