@@ -1,0 +1,55 @@
+---
+- name: Set KDC facts
+  set_fact:
+    kdc_hostname: "{{ groups['kdc'] | first }}"
+    kdc_realm: "{{ service.kdc.realm }}"
+    kdc_keytab: /var/enrollment/{{ service.kdc.domain }}.keytab
+    kdc_staging_keytab: /var/kerberos/krb5kdc/{{ inventory_hostname }}.keytab
+    controller_staging_keytab: /tmp/sssd-ci-{{ inventory_hostname }}.keytab
+
+- name: Stat {{ kdc_keytab }} to detect that we are already enrolled
+  stat:
+    path: "{{ kdc_keytab }}"
+  register: enrollment_kdc
+
+- name: Provision KDC keytab on {{ kdc_hostname }}
+  when: not enrollment_kdc.stat.exists
+  block:
+    - name: Create host principal and keytab on {{ kdc_hostname }}
+      shell: |
+        set -eo pipefail
+        principal="host/{{ inventory_hostname }}@{{ kdc_realm }}"
+        if ! kadmin.local -q "getprinc $principal" 2>&1 | grep -q "Principal: $principal"; then
+          kadmin.local -q "addprinc -randkey $principal"
+        fi
+        rm -f {{ kdc_staging_keytab }}
+        kadmin.local -q "ktadd -norandkey -k {{ kdc_staging_keytab }} $principal"
+      delegate_to: "{{ kdc_hostname }}"
+
+    - name: Fetch {{ kdc_staging_keytab }} from {{ kdc_hostname }}
+      fetch:
+        src: "{{ kdc_staging_keytab }}"
+        dest: "{{ controller_staging_keytab }}"
+        flat: yes
+      delegate_to: "{{ kdc_hostname }}"
+
+    - name: Copy KDC keytab to {{ kdc_keytab }}
+      copy:
+        src: "{{ controller_staging_keytab }}"
+        dest: "{{ kdc_keytab }}"
+        owner: root
+        group: root
+        mode: 0600
+
+  always:
+    - name: Remove staging keytab from {{ kdc_hostname }}
+      file:
+        path: "{{ kdc_staging_keytab }}"
+        state: absent
+      delegate_to: "{{ kdc_hostname }}"
+
+    - name: Remove staging keytab from the controller
+      file:
+        path: "{{ controller_staging_keytab }}"
+        state: absent
+      delegate_to: localhost
