@@ -1,0 +1,46 @@
+---
+- name: Set KDC facts
+  set_fact:
+    kdc_hostname: "{{ groups['kdc'] | first }}"
+    kdc_realm: "{{ service.kdc.realm }}"
+    kdc_keytab: /var/enrollment/{{ service.kdc.domain }}.keytab
+
+- name: Stat {{ kdc_keytab }} to detect that we are already enrolled
+  stat:
+    path: "{{ kdc_keytab }}"
+  register: enrollment_kdc
+
+- name: Create host principal and keytab on {{ kdc_hostname }}
+  shell: |
+    set -e
+    principal="host/{{ inventory_hostname }}@{{ kdc_realm }}"
+    if ! kadmin.local -q "getprinc $principal" 2>&1 | grep -q "Principal: $principal"; then
+      kadmin.local -q "addprinc -randkey $principal"
+    fi
+    kadmin.local -q "ktadd -norandkey -k /var/kerberos/krb5kdc/client.keytab $principal"
+  delegate_to: "{{ kdc_hostname }}"
+  when: not enrollment_kdc.stat.exists
+
+- name: Fetch {{ kdc_keytab }} from {{ kdc_hostname }}
+  fetch:
+    src: /var/kerberos/krb5kdc/client.keytab
+    dest: /tmp/sssd-ci-kdc.keytab
+    flat: yes
+  delegate_to: "{{ kdc_hostname }}"
+  when: not enrollment_kdc.stat.exists
+
+- name: Copy KDC keytab to {{ kdc_keytab }}
+  copy:
+    src: /tmp/sssd-ci-kdc.keytab
+    dest: "{{ kdc_keytab }}"
+    owner: root
+    group: root
+    mode: 0600
+  when: not enrollment_kdc.stat.exists
+
+- name: Cleanup after fetching the keytab
+  file:
+    path: /var/kerberos/krb5kdc/client.keytab
+    state: absent
+  delegate_to: "{{ kdc_hostname }}"
+  when: not enrollment_kdc.stat.exists
