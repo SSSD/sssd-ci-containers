@@ -10,6 +10,7 @@ push:
 
 up:
 	$(DOCKER) compose up --no-recreate --detach ${LIMIT}
+	-@src/tools/enable-coredump-receive.sh
 
 up-passkey:
 	$(eval HIDRAW := $(shell fido2-token -L | cut -f1 -d:))
@@ -25,10 +26,13 @@ up-passkey:
 	@$(DOCKER) compose -f docker-compose.yml -f docker-compose.passkey.yml exec client \
 	/usr/bin/setfacl -m u:sssd:rw ${HIDRAW}
 
+	-@src/tools/enable-coredump-receive.sh -f docker-compose.yml -f docker-compose.passkey.yml
+
 # deprecated
 up-keycloak:
 	$(DOCKER) compose -f docker-compose.yml up \
 	--no-recreate --detach ${LIMIT}
+	-@src/tools/enable-coredump-receive.sh -f docker-compose.yml
 
 stop:
 	$(DOCKER) compose stop
