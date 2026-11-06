@@ -71,6 +71,9 @@ def fetch_pr_diff(repo: str, pr: str) -> str:
 def is_non_test_file_modified(patch_set: PatchSet, test_dir: str) -> bool:
     """Check if any non-test files were modified."""
     for patched_file in patch_set:
+        # Ignore changes to multihost files
+        if patched_file.path.startswith("src/tests/multihost"):
+            continue
         # Check if the file path is outside the test directory
         if not patched_file.path.startswith(test_dir):
             return True
@@ -84,6 +87,9 @@ def has_non_test_function(patch_set: PatchSet) -> bool:
     non_test_func_pattern = re.compile(r'^\s*def\s+(?!test_)\w+')
 
     for patched_file in patch_set:
+        # Ignore changes to multihost functions
+        if patched_file.path.startswith("src/tests/multihost"):
+            continue
         for hunk in patched_file:
             # Check hunk header (@@) for function context
             if hunk.section_header and non_test_func_pattern.search(hunk.section_header):
