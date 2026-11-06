@@ -103,7 +103,7 @@ fi
 echo "# Install helper scripts"
 sudo install -m 0755 "$repo/tmt/ci-exec.sh"         /usr/local/bin/ci-exec
 sudo install -m 0755 "$repo/tmt/ci-install-copr.sh" /usr/local/bin/ci-install-copr
-sudo install -m 0755 "$repo/tmt/ci-select-tests.sh" /usr/local/bin/ci-select-tests
+sudo install -m 0755 "$repo/tmt/ci-select-tests.py" /usr/local/bin/ci-select-tests
 
 echo "# Start podman socket"
 sudo systemctl enable --now podman.socket
