@@ -68,14 +68,22 @@ def fetch_pr_diff(repo: str, pr: str) -> str:
             time.sleep(wait_time)
 
 
-def is_non_test_file_modified(patch_set: PatchSet, test_dir: str) -> bool:
+def man_files_only_modified(diff_filenames: Set) -> bool:
+    """Check if only man page files were modified."""
+    for name in diff_filenames:
+        if not name.startswith("src/man/"):
+            return False
+    return True
+
+
+def is_non_test_file_modified(diff_filenames: Set, test_dir: str) -> bool:
     """Check if any non-test files were modified."""
-    for patched_file in patch_set:
+    for name in diff_filenames:
         # Ignore changes to multihost files
-        if patched_file.path.startswith("src/tests/multihost"):
+        if name.startswith("src/tests/multihost"):
             continue
         # Check if the file path is outside the test directory
-        if not patched_file.path.startswith(test_dir):
+        if not name.startswith(test_dir):
             return True
     return False
 
@@ -140,6 +148,8 @@ def main():
 
     args = parser.parse_args()
 
+    diff_filenames = set()
+
     # Use environment variables as defaults
     pr = args.pr or os.environ.get('PACKIT_PR_ID', '')
     env_file = args.env_file or os.environ.get('TMT_PLAN_ENVIRONMENT_FILE', '')
@@ -178,8 +188,17 @@ def main():
     # Parse the diff using unidiff
     patch_set = PatchSet(diff_content)
 
+    # Set of diff filenames
+    for patched_file in patch_set:
+        diff_filenames.add(patched_file.path)
+
+    # Check if only man pages were modified
+    if man_files_only_modified(diff_filenames):
+        print("Only man pages modified, error out to skip running system tests.")
+        sys.exit(1)
+
     # Check if non-test files were modified
-    if is_non_test_file_modified(patch_set, args.test_dir):
+    if is_non_test_file_modified(diff_filenames, args.test_dir):
         print("Non-test files were changed. Will run all tests.")
         sys.exit(0)
 
