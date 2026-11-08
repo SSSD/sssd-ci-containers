@@ -1,0 +1,152 @@
+From 51cf0f929bddfdce7635cf9050643319b61f24f9 Mon Sep 17 00:00:00 2001
+From: Scott Poore <spoore@redhat.com>
+Date: Wed, 25 Nov 2026 07:17:09 -0600
+Subject: [PATCH 4/4] crypto/cose/ctap: zero-pad EC coordinates and ECDH secret
+ to fixed width
+
+EC curve coordinates and the CTAP2 PIN-protocol ECDH shared secret were
+serialized with (*big.Int).Bytes(), which returns the minimal big-endian
+encoding and omits leading zero bytes. These are fixed-width field
+elements (32 bytes for P-256) and must be zero-padded. When a value's
+most-significant byte was zero (~1/256 per coordinate), it was emitted one
+byte short.
+
+Most visibly, the ClientPIN getKeyAgreement response could carry a 31-byte
+X or Y coordinate. libfido2 requires exactly 32-byte P-256 coordinates and
+rejects the malformed key, so the PIN protocol aborts before the PIN token
+exchange. Because the PIN key-agreement key is generated once per process
+and reused, a single unlucky key made every PIN operation (passkey
+registration and login) fail for that process's lifetime, surfacing as
+intermittent "Failed to generate passkey" / "A problem occurred while
+generating the credentials" errors. The same hazard affected credential
+and attestation keys and the ECDH shared secret (a short secret would make
+the device's SHA-256 disagree with the client's, breaking PIN token
+decryption).
+
+Add util.FixedBytes (big.Int.FillBytes to an exact width) and a
+crypto.P256CoordinateSize constant, and use them to pad:
+- ctap handleGetKeyAgreement X/Y (and set the previously-unset Curve)
+- cose encodeECDSAPublicKey / encodeECDSAPrivateKey X/Y/D
+- crypto ECDH shared secret
+
+RSA COSE components are left as-is; the EC/ES256 passkey path does not use
+them.
+
+Assisted-by: Claude Code (Opus 4.8)
+---
+ cose/cose.go     | 12 +++++++-----
+ crypto/crypto.go | 11 ++++++++++-
+ ctap/ctap.go     |  5 +++--
+ util/util.go     | 13 +++++++++++++
+ 4 files changed, 33 insertions(+), 8 deletions(-)
+
+diff --git a/cose/cose.go b/cose/cose.go
+index eabfbc0..6f87071 100644
+--- a/cose/cose.go
++++ b/cose/cose.go
+@@ -166,12 +166,13 @@ func encodeECDSAPublicKey(publicKey *ecdsa.PublicKey) []byte {
+ 	} else {
+ 		panic(fmt.Sprintf("Invalid key to encode with COSE"))
+ 	}
++	coordinateSize := (publicKey.Curve.Params().BitSize + 7) / 8
+ 	key := COSEEC2Key{
+ 		KeyType:   int8(COSE_KEY_TYPE_EC2),
+ 		Algorithm: int8(alg),
+ 		Curve:     int8(curve),
+-		X:         publicKey.X.Bytes(),
+-		Y:         publicKey.Y.Bytes(),
++		X:         util.FixedBytes(publicKey.X, coordinateSize),
++		Y:         util.FixedBytes(publicKey.Y, coordinateSize),
+ 	}
+ 	return util.MarshalCBOR(key)
+ }
+@@ -202,13 +203,14 @@ func encodeECDSAPrivateKey(privateKey *ecdsa.PrivateKey) []byte {
+ 	} else {
+ 		panic(fmt.Sprintf("Invalid key to encode with COSE"))
+ 	}
++	coordinateSize := (privateKey.Curve.Params().BitSize + 7) / 8
+ 	key := COSEEC2Key{
+ 		KeyType:   int8(COSE_KEY_TYPE_EC2),
+ 		Algorithm: int8(alg),
+ 		Curve:     int8(curve),
+-		X:         privateKey.X.Bytes(),
+-		Y:         privateKey.Y.Bytes(),
+-		D:         privateKey.D.Bytes(),
++		X:         util.FixedBytes(privateKey.X, coordinateSize),
++		Y:         util.FixedBytes(privateKey.Y, coordinateSize),
++		D:         util.FixedBytes(privateKey.D, coordinateSize),
+ 	}
+ 	return util.MarshalCBOR(key)
+ }
+diff --git a/crypto/crypto.go b/crypto/crypto.go
+index 8590bba..140e134 100644
+--- a/crypto/crypto.go
++++ b/crypto/crypto.go
+@@ -159,6 +159,12 @@ func DecryptAESCBC(key []byte, data []byte) []byte {
+ 	return decryptedData
+ }
+ 
++// P256CoordinateSize is the fixed byte length of a P-256 field element (an X/Y
++// coordinate or an ECDH shared-secret X value). Big-endian encodings of these
++// values must be zero-padded to this width; (*big.Int).Bytes() omits leading
++// zero bytes and would otherwise produce short, malformed fields.
++const P256CoordinateSize = 32
++
+ /* Note: This should be replaced once crypto/ecdh gets released (Go 1.20?) */
+ type ECDHKey struct {
+ 	Priv []byte
+@@ -173,7 +179,10 @@ func GenerateECDHKey() *ECDHKey {
+ 
+ func (key *ECDHKey) ECDH(remoteX, remoteY *big.Int) []byte {
+ 	secret, _ := elliptic.P256().Params().ScalarMult(remoteX, remoteY, key.Priv)
+-	return secret.Bytes()
++	// Zero-pad to the field size: the CTAP2 PIN protocol hashes the 32-byte
++	// shared-secret X value, and (*big.Int).Bytes() would drop a leading zero
++	// (~1/256 of the time), yielding a hash that disagrees with the client.
++	return util.FixedBytes(secret, P256CoordinateSize)
+ }
+ 
+ func (key *ECDHKey) PublicKeyBytes() []byte {
+diff --git a/ctap/ctap.go b/ctap/ctap.go
+index 1ea0fd5..30e906b 100644
+--- a/ctap/ctap.go
++++ b/ctap/ctap.go
+@@ -502,8 +502,9 @@ func (server *CTAPServer) handleGetKeyAgreement() []byte {
+ 		KeyAgreement: &cose.COSEEC2Key{
+ 			KeyType:   int8(cose.COSE_KEY_TYPE_EC2),
+ 			Algorithm: int8(cose.COSE_ALGORITHM_ID_ECDH_HKDF_256),
+-			X:         key.X.Bytes(),
+-			Y:         key.Y.Bytes(),
++			Curve:     int8(cose.COSE_CURVE_ID_P256),
++			X:         util.FixedBytes(key.X, crypto.P256CoordinateSize),
++			Y:         util.FixedBytes(key.Y, crypto.P256CoordinateSize),
+ 		},
+ 	}
+ 	ctapLogger.Printf("CLIENT_PIN_GET_KEY_AGREEMENT RESPONSE: %#v\n\n", response)
+diff --git a/util/util.go b/util/util.go
+index b914d73..82561f4 100644
+--- a/util/util.go
++++ b/util/util.go
+@@ -98,6 +98,19 @@ func Read(reader io.Reader, length uint) []byte {
+ 	return output
+ }
+ 
++// FixedBytes returns the big-endian encoding of i, left-padded with zero bytes
++// to exactly size bytes. Unlike (*big.Int).Bytes(), which omits leading zero
++// bytes, this preserves fixed-width fields such as EC curve coordinates and
++// ECDH shared secrets: a value whose most-significant byte is zero (~1/256 of
++// randomly generated keys) would otherwise be encoded one byte short and
++// rejected by strict parsers such as libfido2. Panics if i does not fit in
++// size bytes.
++func FixedBytes(i *big.Int, size int) []byte {
++	buf := make([]byte, size)
++	i.FillBytes(buf)
++	return buf
++}
++
+ func Fill(buffer *bytes.Buffer, length int) {
+ 	if buffer.Len() < length {
+ 		zeroes := make([]byte, length-buffer.Len())
+-- 
+2.56.1
+

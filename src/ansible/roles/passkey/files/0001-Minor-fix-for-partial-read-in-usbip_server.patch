@@ -1,0 +1,62 @@
+From d59935801063b772eca7f750e01938abb50517b6 Mon Sep 17 00:00:00 2001
+From: Scott Poore <spoore@redhat.com>
+Date: Sat, 7 Nov 2026 18:57:15 -0600
+Subject: [PATCH] Minor fix for partial read in usbip_server
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+In some cases the USB-IP server only gets a partial buffer read that
+doesn't include all the data.  This results in a CTAPHID error:
+
+[CTAP] CLIENT_PIN: ... SubCommand: clientPinSubcommandGetKeyAgreement ← succeeded
+[CTAPHID] INVALID COMMAND: 0
+[CTAPHID] CTAPHID TRANSACTION ERROR: ctapHIDErrInvalidCommand
+[CTAPHID] CTAPHID: Read 57 bytes, Need 46 more
+
+Changing usbip_server and util to use io.ReadFull() to process the full
+buffer and avoid issues with partial data being processed.
+
+Assisted-by: Claude Code (Opus 4.8)
+---
+ usbip/usbip_server.go | 3 ++-
+ util/util.go          | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/usbip/usbip_server.go b/usbip/usbip_server.go
+index 4108ee0..6221bb6 100644
+--- a/usbip/usbip_server.go
++++ b/usbip/usbip_server.go
+@@ -1,6 +1,7 @@
+ package usbip
+ 
+ import (
++	"io"
+ 	"net"
+ 	"strings"
+ 	"sync"
+@@ -122,7 +123,7 @@ func (conn *usbipConnection) handleCommandSubmit(device USBIPDevice, header usbi
+ 	usbipLogger.Printf("[COMMAND SUBMIT] %s\n\n", command)
+ 	transferBuffer := make([]byte, command.TransferBufferLength)
+ 	if header.Direction == usbipDirOut && command.TransferBufferLength > 0 {
+-		_, err := conn.conn.Read(transferBuffer)
++		_, err := io.ReadFull(conn.conn, transferBuffer)
+ 		util.CheckErr(err, "Could not read transfer buffer")
+ 	}
+ 	// Getting the reponse may not be immediate, so we need a callback
+diff --git a/util/util.go b/util/util.go
+index 44869c6..b914d73 100644
+--- a/util/util.go
++++ b/util/util.go
+@@ -93,7 +93,7 @@ func Write(writer io.Writer, data []byte) {
+ 
+ func Read(reader io.Reader, length uint) []byte {
+ 	output := make([]byte, length)
+-	_, err := reader.Read(output)
++	_, err := io.ReadFull(reader, output)
+ 	CheckErr(err, "Could not read data")
+ 	return output
+ }
+-- 
+2.56.0
+

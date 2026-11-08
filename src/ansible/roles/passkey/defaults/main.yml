@@ -1,3 +1,8 @@
 test_venv: /opt/test_venv
 #kver: "{{ ansible_facts['kernel'] | regex_replace('\\.[^.]*$', '') }}"
 kver: "{{ ansible_facts['kernel'] | regex_replace('\\.' + ansible_facts['architecture'] + '$', '') }}"
+vf_patch_files:
+  - 0001-Minor-fix-for-partial-read-in-usbip_server.patch
+  - 0002-usb-process-inbound-HID-reports-in-order-to-fix-CTAP.patch
+  - 0003-Add-defer-close-for-vault-file.patch
+  - 0004-crypto-cose-ctap-zero-pad-EC-coordinates-and-ECDH-se.patch

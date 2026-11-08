@@ -1,0 +1,36 @@
+From 59cb062d7e112b8ba351eda5e11279fb397818dd Mon Sep 17 00:00:00 2001
+From: Scott Poore <spoore@redhat.com>
+Date: Tue, 24 Nov 2026 15:53:28 -0600
+Subject: [PATCH 3/3] Add defer close for vault file
+
+Close the vault file in SaveData and RetrieveData for the demo server,
+which previously leaked a file descriptor on every open.
+
+Assisted-by: Claude Code (Opus 4.8)
+---
+ cmd/demo/server.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cmd/demo/server.go b/cmd/demo/server.go
+index 9cf299c..9ae801e 100644
+--- a/cmd/demo/server.go
++++ b/cmd/demo/server.go
+@@ -52,6 +52,7 @@ func (support *ClientSupport) ApproveClientAction(action fido_client.ClientActio
+ func (support *ClientSupport) SaveData(data []byte) {
+ 	f, err := os.OpenFile(support.vaultFilename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+ 	checkErr(err, "Could not open vault file")
++	defer f.Close()
+ 	_, err = f.Write(data)
+ 	checkErr(err, "Could not write vault data")
+ }
+@@ -62,6 +63,7 @@ func (support *ClientSupport) RetrieveData() []byte {
+ 		return nil
+ 	}
+ 	checkErr(err, "Could not open vault")
++	defer f.Close()
+ 	data, err := io.ReadAll(f)
+ 	checkErr(err, "Could not read vault data")
+ 	return data
+-- 
+2.56.1
+
