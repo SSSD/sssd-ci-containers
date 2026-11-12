@@ -26,6 +26,7 @@
     join_ldap: "{{ override_join_ldap | default('no') | bool }}"
     join_samba: "{{ override_join_samba | default('no') | bool }}"
     join_ipa: "{{ override_join_ipa | default('no') | bool }}"
+    join_kdc: "{{ override_join_kdc | default('no') | bool }}"
     trust_ipa_samba: "{{ override_trust_ipa_samba | default('no') | bool }}"
     trust_ipa_ad: "{{ override_trust_ipa_ad | default('no') | bool }}"
     trust_ipa_ad_two_way: "{{ override_trust_ipa_ad_two_way | default('no') | bool }}"

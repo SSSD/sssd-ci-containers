@@ -22,6 +22,13 @@
   - ipa
   - { role: ipasmartcard, when: "ansible_facts['os_family'] == 'RedHat' and virt_smartcard" }
 
+# The kdc role must run before the client role, enroll_KDC.yml needs the
+# Kerberos database to request the client host keytab.
+- hosts: kdc
+  gather_facts: no
+  roles:
+  - kdc
+
 - hosts: client
   gather_facts: no
   roles:
@@ -36,11 +43,6 @@
   gather_facts: no
   roles:
   - nfs
-
-- hosts: kdc
-  gather_facts: no
-  roles:
-  - kdc
 
 - hosts: keycloak
   gather_facts: no
