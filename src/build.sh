@@ -50,7 +50,7 @@ function cleanup {
 }
 
 function compose {
-  docker-compose -f "../docker-compose.yml" -f "./docker-compose.build.yml" $@
+  ${DOCKER} compose -f "../docker-compose.yml" -f "./docker-compose.build.yml" $@
 }
 
 function base_exec {
