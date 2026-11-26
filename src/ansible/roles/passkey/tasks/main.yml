@@ -59,6 +59,18 @@
       update: yes
       depth: 1
 
+  - name: Copy patch for virtual-fido into place
+    copy:
+      src: "{{ item }}"
+      dest: "{{ test_venv }}/virtual-fido/"
+    loop: "{{ vf_patch_files }}"
+
+  - name: Apply patch to git repo for virtual-fido
+    command: "git am {{ item }}"
+    args:
+      chdir: "{{ test_venv }}/virtual-fido"
+    loop: "{{ vf_patch_files }}"
+
   - name: Build vfido-demo binary once to avoid Go compiler fork limits
     command: go build -ldflags="-s -w" -o {{ test_venv }}/bin/vfido-demo ./cmd/demo
     args:

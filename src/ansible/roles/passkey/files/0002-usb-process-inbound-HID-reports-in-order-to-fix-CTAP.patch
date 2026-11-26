@@ -1,0 +1,83 @@
+From 2ecc3fc3cc1ee1bab81d3669ff5e5e4f1a5186fd Mon Sep 17 00:00:00 2001
+From: Scott Poore <spoore@redhat.com>
+Date: Tue, 24 Nov 2026 15:51:33 -0600
+Subject: [PATCH 2/3] usb: process inbound HID reports in order to fix CTAPHID
+ desync
+
+Each inbound (host->device) HID report was dispatched on its own
+goroutine via `go device.delegate.HandleMessage(data)`. A multi-packet
+CTAPHID message arrives as several USB/IP CMD_SUBMITs, so an init packet
+and its continuation packets were handed to separate goroutines. Go does
+not order goroutine execution, so a continuation packet could acquire the
+channel lock before its init packet. The CTAPHID layer then saw it with
+no transaction in progress and parsed it as a new transaction, whose
+"command" byte is really a sequence number (0) with the high bit clear,
+and rejected it as "INVALID COMMAND: 0". The stream desynced, the device
+never produced a response, the host's URB timed out (ECONNRESET), and
+libfido2 returned FIDO_ERR_RX.
+
+This surfaced intermittently as passkey authentication failures (e.g. the
+GDM passkey login tests), masked on the SSSD side by the pre-flight
+assertion probe reporting a generic "Assertion not found".
+
+Replace the goroutine-per-packet dispatch with a single ordered consumer:
+a buffered inputQueue channel drained by one worker goroutine started in
+NewUSBDevice. This preserves arrival order (fixing the desync) while
+keeping message handling off the USB/IP read loop, so a delegate that
+blocks waiting for user approval (the touch prompt) does not stall OUTPUT
+response polling or cancel/unlink handling.
+
+Assisted-by: Claude Code (Opus 4.8)
+---
+ usb/usb_device.go | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/usb/usb_device.go b/usb/usb_device.go
+index 72ed8d6..98d289c 100644
+--- a/usb/usb_device.go
++++ b/usb/usb_device.go
+@@ -19,16 +19,32 @@ type USBDeviceDelegate interface {
+ type USBDevice struct {
+ 	delegate        USBDeviceDelegate
+ 	requestBuffer *util.RequestBuffer
++	// inputQueue serializes inbound (host->device) HID reports so that
++	// multi-packet CTAPHID messages (an init packet followed by its
++	// continuation packets) are delivered to the delegate strictly in
++	// arrival order. Dispatching each report on its own goroutine would let
++	// a continuation packet be processed before its init packet, which the
++	// CTAPHID layer then misreads as a brand new transaction ("INVALID
++	// COMMAND"), desyncing the stream. A single consumer goroutine keeps the
++	// USBIP read loop responsive (the delegate may block waiting for user
++	// approval) without sacrificing ordering.
++	inputQueue chan []byte
+ }
+ 
+ func NewUSBDevice(delegate USBDeviceDelegate) *USBDevice {
+ 	device := &USBDevice{
+ 		delegate:        delegate,
+ 		requestBuffer:   util.MakeRequestBuffer(),
++		inputQueue:      make(chan []byte, 64),
+ 	}
+ 	delegate.SetResponseHandler(func(response []byte) {
+ 		device.handleResponse(response)
+ 	})
++	go func() {
++		for data := range device.inputQueue {
++			device.delegate.HandleMessage(data)
++		}
++	}()
+ 	return device
+ }
+ 
+@@ -85,7 +101,7 @@ func (device *USBDevice) HandleMessage(id uint32, onFinish func(response []byte)
+ 		// onFinish will be called when a response is returned
+ 	case usbEndpointInput:
+ 		usbLogger.Printf("INPUT DATA: %#v\n\n", data)
+-		go device.delegate.HandleMessage(data)
++		device.inputQueue <- data
+ 		onFinish(nil)
+ 	default:
+ 		util.Panic(fmt.Sprintf("Invalid USB endpoint: %d", endpoint))
+-- 
+2.56.1
+
